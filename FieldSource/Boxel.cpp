@@ -1,5 +1,5 @@
 #include "Boxel.hh"
-#include "Planesource.hh"
+#include "PlaneSource.hh"
 
 unsigned int Boxel::drawSurfaces = 2;
 

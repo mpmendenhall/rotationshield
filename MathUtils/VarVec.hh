@@ -9,6 +9,7 @@
 #include "Permutation.hh"
 #include "MiscUtils.hh"
 #include <iostream>
+#include <algorithm>
 #include <exception>
 
 class DimensionMismatchError: public std::exception {

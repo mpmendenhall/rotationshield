@@ -6,6 +6,7 @@
 #include "Visr.hh"
 #include "MiscUtils.hh"
 #include <vector>
+#include <stdio.h>
 
 /// A (directed) line, represented by two endpoint vectors
 class Line {

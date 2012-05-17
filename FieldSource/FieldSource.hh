@@ -4,10 +4,10 @@
 /// Makes sure to only load this file once
 #define FIELDSOURCE_HH 1
 
-#include "geometry.hh"
+#include "Geometry.hh"
 #include "MiscUtils.hh"
 #include "RefCounter.hh"
-#include "integrator.hh"
+#include "Integrator.hh"
 					
 /// Base (virtual) class for magnetic field sources due to current distributions
 class FieldSource: public RefCounter {

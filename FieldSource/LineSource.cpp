@@ -1,4 +1,4 @@
-#include "Linesource.hh"
+#include "LineSource.hh"
 #include "gsl/gsl_sf_ellint.h"
 
 vec3 LineSource::fieldAt(const vec3& v) const

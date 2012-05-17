@@ -1,4 +1,4 @@
-#include "InfiniteLinesource.hh"
+#include "InfiniteLineSource.hh"
 
 vec3 InfiniteLineSource::fieldAt(const vec3& v) const {
 	vec3 b = cross(l.s-v,l.dv);

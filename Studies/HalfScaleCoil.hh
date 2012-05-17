@@ -1,3 +1,5 @@
+#include <cassert>
+
 /// Half-scale coil
 /// N=30, radius=0.324, length=2.146,
 /// distortion a = -0.00295
@@ -84,7 +86,8 @@ void halfScaleTranslated(vec3 translation, std::ostream& gridf, std::ostream& fi
 	
 	FieldAnalyzer FA = FieldAnalyzer(ms);
 	
-	FA.survey(-sampleUR*0.5,sampleUR*0.5,11,11,11,fitf,gridf);
+	assert(false); // TODO
+	//FA.survey(-sampleUR*0.5,sampleUR*0.5,11,11,11,fitf,gridf);
 	
 	ms->release();
 }
@@ -125,7 +128,9 @@ void halfScaleTilted(vec3 translation, std::ostream& gridf, std::ostream& fitf) 
 	
 	FieldAnalyzer FA = FieldAnalyzer(ms);
 	
-	FA.survey(-sampleUR*0.5,sampleUR*0.5,11,11,11,fitf,gridf);
+	assert(false); // TODO
+	//FA.survey(-sampleUR*0.5,sampleUR*0.5,11,11,11,fitf,gridf);
+	
 	
 	ms->release();
 }

@@ -4,8 +4,6 @@
 #include "Vec.hh"
 #include "MiscUtils.hh"
 
-#define WITH_OPENGL 1 
-
 #ifndef WITH_OPENGL
 
 namespace vsr {
