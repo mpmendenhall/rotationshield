@@ -54,7 +54,13 @@ public:
 	void checkDimensions(const VarVec& v) const throw(DimensionMismatchError) { if(v.size() != size()) throw(DimensionMismatchError()); }
 	
 	/// dot product with another vector
-	T dot(const VarVec<T>& v) const { checkDimensions(v); assert(size()); T s = data[0]*v[0]; for(unsigned int i=1; i<size(); i++) s+=data[i]*v[i]; return s; }
+	T dot(const VarVec<T>& v) const {
+		checkDimensions(v);
+		if(!size()) return 0;
+		T s = data[0]*v[0];
+		for(unsigned int i=1; i<size(); i++) s+=data[i]*v[i];
+		return s;
+	}
 	/// square magnitude \f$ v \cdot v \f$
 	T mag2() const { return dot(*this); }
 	/// magnitude \f$ \sqrt{v\cdot v} \f$

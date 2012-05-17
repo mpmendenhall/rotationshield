@@ -3,21 +3,21 @@
 #include <iostream>
 #include <fstream>
 
-#include "tests.hh"
-#include "HalfScaleCoil.hh"
-#include "FullScaleCoil.hh"
+#include "CosThetaBuilder.hh"
+#include "SymmetricSolver.hh"
+#include "PlaneSource.hh"
+#include "ShieldBuilder.hh"
+#include "analysis.hh"
 
 int main (int argc, char * const argv[]) {
-	
-	reference_sanity_check();
-	
+		
 	// set up output paths
-	std::string basepath = "/Users/michael/Documents/EDM/ShieldStudies/";
-	std::string projectpath = basepath+"/Bare_Fullscale/";
+	std::string basepath = "../";
+	std::string projectpath = basepath+"/CosThetaCoil/";
 	makeDir(projectpath);
-	std::string fieldspath = basepath+"/Fields/";
+	std::string fieldspath = projectpath+"/Fields/";
 	makeDir(fieldspath);
-	std::string gfpath = basepath+"/GFs/";
+	std::string gfpath = projectpath+"/GFs/";
 	makeDir(gfpath);
 	
 	// set up output files for field scans
@@ -38,28 +38,36 @@ int main (int argc, char * const argv[]) {
 	ms->visualize();
 	
 	// optional: construct shield
-	if(0) {
-		mdouble shieldDistance = 0.069;
-		mdouble sradius = cradius + shieldDistance;
-		mdouble slen = clen + 0.40;
+	if(1) {
+		mdouble shieldDistance = 0.069;				// distance of shield from wires, 6.9cm
+		mdouble sradius = cradius + shieldDistance;	// shield radius
+		mdouble slen = clen + 0.40;					// shield length, coil + 40cm
 		FieldEstimator2D* fe = new FieldEstimator2D();
 		fe->addsource(vec2(-clen/2.0,cradius),1.0);
 		fe->addsource(vec2(clen/2.0,cradius),1.0);
-		ShieldBuilder* G = new ShieldBuilder(128);
-		G->makeOptCyl(10, 20, sradius, -slen/2, slen/2, new PlaneSource(Plane(),10000), fe);
+		ShieldBuilder* G = new ShieldBuilder(128);	// 128 segments around shield builder
+		G->makeOptCyl(10, 20, sradius, -slen/2, slen/2, new PlaneSource(Plane(),10000), fe); // optimized grid with 10+20 divisions along z
+		// solve for shield response function
 		SymmetricSolver* sp = new SymmetricSolver(G);
 		sp->solve();
+		// calculate response to coil fields
 		sp->calculateIncident(ms);
 		sp->calculateResult();
 		ms->addsource(sp);
 		ms->visualize();
 	}
 
+	// example of probing field value
+	vec3 b0 = ms->fieldAt(vec3(0,0,0));
+	printf("Field at center: ");
+	b0.display();
 	
 	// survey data points on grid
 	FieldAnalyzer FA = FieldAnalyzer(ms);
 	//        lower left corner,     upper right corner, nx,ny,nz, output files
 	FA.survey(vec3(0.0,0.0,0.0),vec3(0.20,0.20,0.5),10,10,10,statsout,fieldsout);
+	
+	
 	
 	
 	// cleanup

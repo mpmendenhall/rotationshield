@@ -32,10 +32,10 @@ GL_LINKER_ARGS = -L$(GLUT_LIB) -lGL -lglut
 # optmization
 GCC_OPTIMIZATION_LEVEL = 3
 
-CPPFLAGS = -g $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -Wall -Wuninitialized -I. -IMathUtils -IFieldSource -ISolver -IBuilder -IStudies -IIO\
+CPPFLAGS = -g $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL)\
+		-Wall -Wuninitialized -I. -IMathUtils -IFieldSource -ISolver -IBuilder -IStudies -IIO\
 		$(BASE_INCLUDE_DIRS) $(USERFLAGS)
-		# $(GL_INCLUDES)
-	
+
 
 #############
 # Everything below here "should" work without modification
@@ -60,7 +60,6 @@ objects = $(obj_IO) $(obj_MathUtils) $(obj_FieldSource) $(obj_Solver) $(obj_Buil
 	
 RotationShield : main.cpp $(objects)
 	$(CXX) main.cpp $(objects) -o RotationShield $(CPPFLAGS) $(BASE_LIB_DIRS) -lCLHEP -lgsl -lfftw3 -lgslcblas
-	# $(GL_LINKER_ARGS)
 	
 
 #
