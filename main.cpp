@@ -2,6 +2,9 @@
 
 #include <iostream>
 #include <fstream>
+#include <stdlib.h>
+#include <pthread.h>
+#include <time.h>
 
 #include "CosThetaBuilder.hh"
 #include "SymmetricSolver.hh"
@@ -9,8 +12,11 @@
 #include "ShieldBuilder.hh"
 #include "analysis.hh"
 
-int main (int argc, char * const argv[]) {
-		
+void* calcthread(void*) {
+	
+	//usleep(1000000);
+	//vsr::pause();
+	
 	// set up output paths
 	std::string basepath = "../";
 	std::string projectpath = basepath+"/CosThetaCoil/";
@@ -36,6 +42,7 @@ int main (int argc, char * const argv[]) {
 	CosThetaBuilder b = CosThetaBuilder(15, cradius, clen, &shiftPositioner);
 	b.regularCoil(*ms,&pert);
 	ms->visualize();
+	//vsr::pause();
 	
 	// optional: construct shield
 	if(1) {
@@ -56,7 +63,7 @@ int main (int argc, char * const argv[]) {
 		ms->addsource(sp);
 		ms->visualize();
 	}
-
+	
 	// example of probing field value
 	vec3 b0 = ms->fieldAt(vec3(0,0,0));
 	printf("Field at center: ");
@@ -74,7 +81,15 @@ int main (int argc, char * const argv[]) {
 	ms->release();
 	fieldsout.close();
 	statsout.close();
-	vsr::Visr::W->pause();
+	vsr::pause();
 	
+	return NULL;
+}
+
+int main (int argc, char * const argv[]) {
+	vsr::initWindow();
+	pthread_t thread;
+	pthread_create( &thread, NULL, &calcthread, NULL );
+	vsr::doGlutLoop();
 	return 0;
 }

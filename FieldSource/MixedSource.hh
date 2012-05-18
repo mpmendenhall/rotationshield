@@ -40,10 +40,10 @@ public:
 	void display() const { printf("Multisource:\n"); for(unsigned int i=0; i<sources.size(); i++) sources[i]->display(); }
 	/// Visualize the field source
 	virtual void visualize(bool top = true, mdouble scaling = 1.0) const {
-		if(top) { vsr::Visr::W->startRecording(); vsr::Visr::W->clearWindow(); }
-		vsr::Visr::W->setColor(displayColor[0],displayColor[1],displayColor[2]);
+		if(top) { vsr::startRecording(true); vsr::clearWindow(); }
+		vsr::setColor(displayColor[0],displayColor[1],displayColor[2]);
 		for(unsigned int i=0; i<sources.size(); i++) sources[i]->visualize(false);
-		if(top) vsr::Visr::W->stopRecording();
+		if(top) vsr::stopRecording();
 	}
 	
 	vec3 displayColor;

@@ -57,7 +57,7 @@ void comparison_shield(std::ostream& gridf, std::ostream& fitf) {
 	FieldAnalyzer FA = FieldAnalyzer(MxS);
 	FA.survey(vec3(-.15,-.06,-.25),vec3(.15,.06,.25),9,9,9,fitf,gridf);
 	
-	vsr::Visr::W->pause();
+	vsr::pause();
 	
 	s->release();
 	MxS->release();
@@ -80,7 +80,7 @@ void shieldingFactorTest(std::ostream& outf, mdouble mu) {
 	s->calculateIncident(new UniformField(vec3(1,0,0)));
 	s->calculateResult();
 	s->visualize();
-	vsr::Visr::W->pause();
+	vsr::pause();
 	
 	MixedSource* MxS = new MixedSource();
 	MxS->addsource(s);
@@ -97,7 +97,7 @@ void shieldingFactorTest(std::ostream& outf, mdouble mu) {
 	MxSb->addsource(new UniformField(vec3(0,0,1)));
 	outf << MxSb->fieldAt(vec3(0,0,0))[2] << "\n";
 	
-	vsr::Visr::W->pause();
+	vsr::pause();
 	
 	s->release();
 }
@@ -159,7 +159,7 @@ void dipoleTest() {
 	//FA.visualizeSurvey(vec3(0,0,-0.5), vec3(0,0.75,0.5), 1,31,31);
 
 
-	vsr::Visr::W->pause();
+	vsr::pause();
 }
 
 void infiniTest() {
@@ -212,7 +212,7 @@ void infiniTest() {
 	//FA.visualizeSurvey(vec3(0,0,-0.5), vec3(0,0.75,0.5), 1,31,31);
 	
 	
-	vsr::Visr::W->pause();
+	vsr::pause();
 }
 
 

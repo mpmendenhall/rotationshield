@@ -5,19 +5,14 @@
 #include <GL/freeglut.h>
 
 namespace vsr {
-	
-	void initWindow(const std::string& windowTitle = "OpenGL Viewer Window");
-	void* doGlutLoop( void *vptr_args );
-	void redrawDisplay();
-	
-	void resetViewTransformation();
-	void reshapeWindow(int width, int height);
-	void keypress(unsigned char key, int x, int y);
-	void specialKeypress(int key, int x, int y);
-	void startMouseTracking(int button, int state, int x, int y);
-	void mouseTrackingAction(int x, int y);
-	
-	pthread_mutex_t displayLock;
+		
+	struct qcmd {
+		qcmd(void (*f)(std::vector<float>&)): fcn(f) {}
+		void (*fcn)(std::vector<float>&);
+		std::vector<float> v;
+	};
+	std::deque<qcmd> commands;
+	pthread_mutex_t commandLock;
 	GLuint displayList;
 	std::vector<GLuint> displaySegs;
 	int clickx0,clicky0;
@@ -28,45 +23,67 @@ namespace vsr {
 	float xtrans, ytrans;
 	float ar;
 	bool pause_display;
-	
-	Visr::Visr() {
-		pause_display = false;
-		pthread_mutexattr_t displayLockAttr;
-		pthread_mutexattr_init(&displayLockAttr);
-		pthread_mutexattr_settype(&displayLockAttr, PTHREAD_MUTEX_RECURSIVE);
-		pthread_mutex_init(&displayLock,&displayLockAttr);
-		initWindow("OpenGL Viewer Window");
-		resetViewTransformation();
-		startRecording();
-		printf("Drawing initial teapot...\n");
-		clearWindow();
-		glColor3f(0.0, 0.0, 1.0);
-		glutWireTeapot(0.5);
-		stopRecording();
+
+	void doGlutLoop() {
+		glutMainLoop();
 	}
 	
-	void Visr::setColor(float r, float g, float b) {
-		glColor3f(r,g,b);
+	void redrawDisplay() {
+		glCallLists(displaySegs.size(),GL_UNSIGNED_INT,&displaySegs.front());
+		glutSwapBuffers();
+		glFlush();
+		glFinish();
 	}
 	
-	void Visr::setColor(float r, float g, float b, float a) {
-		glColor4f(r,g,b,a);
+	void resetViewTransformation();
+	void reshapeWindow(int width, int height);
+	void keypress(unsigned char key, int x, int y);
+	void specialKeypress(int key, int x, int y);
+	void startMouseTracking(int button, int state, int x, int y);
+	void mouseTrackingAction(int x, int y);
+	void redrawIfUnlocked();
+	
+	void appendv(std::vector<float>& v, vec3 a) {
+		v.push_back(a[0]);
+		v.push_back(a[1]);
+		v.push_back(a[2]);
 	}
 	
-	void Visr::clearWindow() {
+	void addCmd(qcmd c) {
+		pthread_mutex_lock(&commandLock);
+		commands.push_back(c);
+		pthread_mutex_unlock(&commandLock);
+	}
+	
+	void _setColor(std::vector<float>& v) {
+		assert(v.size()==4);
+		glColor3f(v[0],v[1],v[2]);
+	}
+	void setColor(float r, float g, float b, float a) {
+		qcmd c(&_setColor);
+		c.v.push_back(r);
+		c.v.push_back(g);
+		c.v.push_back(b);
+		c.v.push_back(a);
+		addCmd(c);
+	}
+	
+	void _clearWindow(std::vector<float>&) {
 		glClearColor(0.0, 0.0, 0.0, 0.0);
 		glClearDepth(100.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
+	void clearWindow() {
+		addCmd(qcmd(_clearWindow));
+	}
 	
-	void Visr::pause() {
+	void pause() {
 		pause_display = true;
 		while(pause_display) usleep(50000);
 	}
 	
-	void Visr::resetViewTransformation() {	
-		pthread_mutex_lock(&displayLock);
-		printf("Re-setting view...\n");
+	void resetViewTransformation() {
+		//printf("Re-setting view...\n");
 		viewrange = 1.0;
 		xtrans = ytrans = 0;
 		glLineWidth(1.5/viewrange);
@@ -75,17 +92,13 @@ namespace vsr {
 		glTranslatef(0,0,1.0*viewrange);
 		glMatrixMode(GL_PROJECTION);	
 		glLoadIdentity();
-		glOrtho(-viewrange*ar, viewrange*ar, -viewrange, viewrange, -1000,1000);
-		pthread_mutex_unlock(&displayLock);
+		glOrtho(-viewrange*ar, viewrange*ar, -viewrange, viewrange, 10, -10);
 	}
 	
-	void Visr::startRecording(bool newseg) {
-		printf("Recording GL commands..."); fflush(stdout);
-		pthread_mutex_lock(&displayLock);
-		printf(" startRecording Lock acquired.\n");
+	void _startRecording(std::vector<float>& v) {
 		glFlush();
 		glFinish();
-		if(!newseg) {
+		if(!v.size()) {
 			if(displaySegs.size() && glIsList(displaySegs.back()))
 				glDeleteLists(displaySegs.back(),1);
 			else
@@ -94,46 +107,82 @@ namespace vsr {
 			displaySegs.push_back(glGenLists(1));
 		glNewList(displaySegs.back(), GL_COMPILE);
 	}
+	void startRecording(bool newseg) {
+		pthread_mutex_lock(&commandLock);
+		//printf("Recording GL commands..."); fflush(stdout);
+		qcmd c(_startRecording);
+		if(newseg) c.v.push_back(1);
+		addCmd(c);
+	}
 	
-	void Visr::stopRecording() {
+	void _stopRecording(std::vector<float>&) {
 		glEndList();
 		glutPostRedisplay();
 		glFlush();
 		glFinish();
-		pthread_mutex_unlock(&displayLock);
-		printf("Recording complete.\n");
+		
 	}
-	
-	void Visr::line(vec3 s, vec3 e) {
+	void stopRecording() {
+		addCmd(qcmd(_stopRecording));	
+		//printf("Recording complete (%i commands).\n",(int)commands.size());
+		pthread_mutex_unlock(&commandLock);
+	}	
+
+	void _line(std::vector<float>& v) {
+		assert(v.size()==6);
 		glBegin(GL_LINES);
-		glVertex3f(s[0],s[1],s[2]);
-		glVertex3f(e[0],e[1],e[2]);
+		glVertex3f(v[0],v[1],v[2]);
+		glVertex3f(v[3],v[4],v[5]);
 		glEnd();
 	}
+	void line(vec3 s, vec3 e) {
+		qcmd c(_line);
+		appendv(c.v,s);
+		appendv(c.v,e);
+		addCmd(c);
+	}
 	
-	void Visr::startLines() {
+	void _startLines(std::vector<float>&) {
 		glBegin(GL_LINE_STRIP);
 	}
-	
-	void Visr::vertex(vec3 v) {
+	void startLines() {
+		addCmd(qcmd(_startLines));
+	}
+	void _vertex(std::vector<float>& v) {
 		glVertex3f(v[0],v[1],v[2]);
 	}
-	
-	void Visr::endLines() {
-		glEnd();
+	void vertex(vec3 v) {
+		qcmd c(_vertex);
+		appendv(c.v,v);
+		addCmd(c);
 	}
 	
-	void Visr::plane(vec3 o, vec3 dx, vec3 dy) {
+	void _endLines(std::vector<float>&) {
+		glEnd();
+	}
+	void endLines() {
+		addCmd(qcmd(_endLines));
+	}
+	
+	void _plane(std::vector<float>& v) {
+		assert(v.size()==9);
 		glBegin(GL_QUADS);
-		glVertex3f(o[0]+0.5*dx[0]+0.5*dy[0],o[1]+0.5*dx[1]+0.5*dy[1],o[2]+0.5*dx[2]+0.5*dy[2]);
-		glVertex3f(o[0]-0.5*dx[0]+0.5*dy[0],o[1]-0.5*dx[1]+0.5*dy[1],o[2]-0.5*dx[2]+0.5*dy[2]);
-		glVertex3f(o[0]-0.5*dx[0]-0.5*dy[0],o[1]-0.5*dx[1]-0.5*dy[1],o[2]-0.5*dx[2]-0.5*dy[2]);
-		glVertex3f(o[0]+0.5*dx[0]-0.5*dy[0],o[1]+0.5*dx[1]-0.5*dy[1],o[2]+0.5*dx[2]-0.5*dy[2]);
+		glVertex3f(v[0]+0.5*v[3]+0.5*v[6],v[1]+0.5*v[4]+0.5*v[7],v[2]+0.5*v[5]+0.5*v[8]);
+		glVertex3f(v[0]-0.5*v[3]+0.5*v[6],v[1]-0.5*v[4]+0.5*v[7],v[2]-0.5*v[5]+0.5*v[8]);
+		glVertex3f(v[0]-0.5*v[3]-0.5*v[6],v[1]-0.5*v[4]-0.5*v[7],v[2]-0.5*v[5]-0.5*v[8]);
+		glVertex3f(v[0]+0.5*v[3]-0.5*v[6],v[1]+0.5*v[4]-0.5*v[7],v[2]+0.5*v[5]-0.5*v[8]);
 		glEnd();
 	}
+	void plane(vec3 o, vec3 dx, vec3 dy) {
+		qcmd c(_plane);
+		appendv(c.v,o);
+		appendv(c.v,dx);
+		appendv(c.v,dy);
+		addCmd(c);
+	}
 	
-	void Visr::quad(float* xyz)
-	{
+	void _quad(std::vector<float>& xyz) {
+		assert(xyz.size()==12);
 		glBegin(GL_LINE_LOOP);
 		glVertex3f(xyz[0],xyz[1],xyz[2]);
 		glVertex3f(xyz[3],xyz[4],xyz[5]);
@@ -141,9 +190,14 @@ namespace vsr {
 		glVertex3f(xyz[6],xyz[7],xyz[8]);
 		glEnd();
 	}
+	void quad(float* xyz) {
+		qcmd c(_quad);
+		c.v = std::vector<float>(xyz,xyz+12);
+		addCmd(c);
+	}
 	
-	void Visr::filledquad(float* xyz)
-	{
+	void _filledquad(std::vector<float>& xyz) {
+		assert(xyz.size()==12);
 		glBegin(GL_QUADS);
 		glVertex3f(xyz[0],xyz[1],xyz[2]);
 		glVertex3f(xyz[3],xyz[4],xyz[5]);
@@ -151,11 +205,15 @@ namespace vsr {
 		glVertex3f(xyz[6],xyz[7],xyz[8]);
 		glEnd();
 	}
+	void filledquad(float* xyz) {
+		qcmd c(_filledquad);
+		c.v = std::vector<float>(xyz,xyz+12);
+		addCmd(c);
+	}
 	
-	void Visr::dot(vec3 p)
-	{
+	void _dot(std::vector<float>& p) {
+		assert(p.size()==3);
 		mdouble l = viewrange/100.0;
-		
 		glBegin(GL_QUADS);
 		glVertex3f(p[0]+l,p[1],p[2]);
 		glVertex3f(p[0],p[1]+l,p[2]);
@@ -171,30 +229,20 @@ namespace vsr {
 		glVertex3f(p[0],p[1],p[2]-l);
 		glEnd();
 	}
-	
-	
-	void* doGlutLoop( void *vptr_args ) {
-		int c = 0;
-		printf("Starting GLUT main loop...\n");
-		usleep(1000000);
-		while(1) {
-			if(pthread_mutex_trylock(&displayLock)) {
-				usleep(10000);
-				continue;
-			}
-			glutMainLoopEvent();
-			c = (c+1)%50;
-			if(!c)
-				glutPostRedisplay();
-			pthread_mutex_unlock(&displayLock);
-			usleep(1000);
-		}
-		return 0x0;
+	void dot(vec3 v) {
+		qcmd c(_dot);
+		appendv(c.v,v);
+		addCmd(c);
 	}
-	
 	
 	void initWindow(const std::string& windowTitle) {
 		
+		pause_display = false;
+		pthread_mutexattr_t displayLockAttr;
+		pthread_mutexattr_init(&displayLockAttr);
+		pthread_mutexattr_settype(&displayLockAttr, PTHREAD_MUTEX_RECURSIVE);
+		pthread_mutex_init(&commandLock,&displayLockAttr);
+
 		printf("Initializing OpenGL visualization window...\n");
 		
 		int a = 1;
@@ -224,55 +272,48 @@ namespace vsr {
 		glutReshapeFunc(&reshapeWindow);
 		glutKeyboardFunc(&keypress);
 		glutSpecialFunc(&specialKeypress);
-		//glutIdleFunc(&redrawIfUnlocked);
-		
-		printf("Launching visualization thread...\n");
-		pthread_mutex_unlock(&displayLock);
-		pthread_t thread;
-		pthread_create( &thread, NULL, &doGlutLoop, NULL );
-		
+		glutIdleFunc(&redrawIfUnlocked);
+				
+		resetViewTransformation();
+		startRecording(true);
+		//printf("Drawing initial teapot...\n");
+		clearWindow();
+		glColor3f(0.0, 0.0, 1.0);
+		glutWireTeapot(0.5);
+		stopRecording();
+								
 		printf("Window init done.\n");
 	}
 	
 	void reshapeWindow(int width, int height) {	
-		
-		printf("Resizing view window to %ix%i...",width,height); fflush(stdout);
-		while(pthread_mutex_trylock(&displayLock)) {
-			printf("."); fflush(stdout);
-			usleep(100000);
-		}
-		printf(" reshapeWindow Lock acquired.\n");
-		
 		glViewport(0,0,width,height);
 		winwidth = width; winheight = height;
 		ar = float(width)/float(height);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glOrtho(-viewrange*ar+xtrans, viewrange*ar+xtrans, -viewrange+ytrans, viewrange+ytrans, 1000, -1000);
-		
 		glFlush();
 		glFinish();
-		
-		pthread_mutex_unlock(&displayLock);
-		
-		printf("Resize Done.\n");
+	}	
+	
+	void redrawIfUnlocked() {
+		if(pthread_mutex_trylock(&commandLock)) return;
+		//if(commands.size()) printf("Processing %i graphics commands...\n",(int)commands.size());
+		while(commands.size()) {
+			void (*f)(std::vector<float>&) = commands.front().fcn;
+			if(f)
+				f(commands.front().v);
+			commands.pop_front();
+		}
+		redrawDisplay();
+		pthread_mutex_unlock(&commandLock);
 	}
-	
-	
-	
-	void redrawDisplay() {
-		glCallLists(displaySegs.size(),GL_UNSIGNED_INT,&displaySegs.front());
-		glutSwapBuffers();
-		glFlush();
-		glFinish();
-	}
-	
 	
 	void keypress(unsigned char key, int x, int y) {
 		if(key == 32 || key == 13) // spacebar or return
 			pause_display = false;
-		//if(key == 27) // escape
-		//	resetViewTransformation();
+		if(key == 27) // escape
+			resetViewTransformation();
 	}
 	
 	void specialKeypress(int key, int x, int y) {
@@ -327,6 +368,3 @@ namespace vsr {
 
 #endif
 
-namespace vsr {
-	Visr* Visr::W = new Visr();
-}

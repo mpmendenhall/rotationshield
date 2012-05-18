@@ -93,8 +93,8 @@ void FieldAnalyzer::visualizeSurvey(vec3 ll, vec3 ur, int nX, int nY, int nZ) co
 	vec3 x,b;
 	for(int i=0; i<3; i++) if(n[i]==0) { dx[i] = 0; ll[i] = 0.5*(ll[i]+ur[i]); }
 	
-	vsr::Visr::W->startRecording(); 
-	vsr::Visr::W->clearWindow();
+	vsr::startRecording(); 
+	vsr::clearWindow();
 	FS->visualize(false);
 	
 	for(n[0] = 0; n[0] < nX; n[0]++) {
@@ -111,6 +111,6 @@ void FieldAnalyzer::visualizeSurvey(vec3 ll, vec3 ur, int nX, int nY, int nZ) co
 		}
 	}
 	
-	vsr::Visr::W->stopRecording();
+	vsr::stopRecording();
 }
 

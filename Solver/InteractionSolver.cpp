@@ -57,10 +57,10 @@ vec3 InteractionSolver::partialField(const vec3& v, unsigned int n1, int nf) con
 }
 
 void InteractionSolver::visualize(bool top, mdouble scaling) const {
-	if(top) { vsr::Visr::W->startRecording(); vsr::Visr::W->clearWindow(); }
+	if(top) { vsr::startRecording(true); vsr::clearWindow(); }
 	for(unsigned int i=0; i<N(); i++)
 		surfacels[i]->visualize(false);
-	if(top) vsr::Visr::W->stopRecording();
+	if(top) vsr::stopRecording();
 }
 
 mvec InteractionSolver::getFinalState(unsigned int i) const {

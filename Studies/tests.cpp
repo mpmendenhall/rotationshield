@@ -36,7 +36,7 @@ bool reference_sanity_check() {
 	pass &= compareResults(MxS->fieldAt(yscan*-1.0)[0]-b0,8.53163006651345e-01-8.53210605848347e-01,"coil -y edge");
 	pass &= compareResults(MxS->fieldAt(zscan*-1.0)[0]-b0,8.54088402519457e-01-8.53210605848347e-01,"coil -z edge");
 	
-	if(!pass) { vsr::Visr::W->pause(); return pass; }
+	if(!pass) { vsr::pause(); return pass; }
 	printf("Passed bare wires test; building shield...\n");
 	
 	FieldEstimator2D* fe = new FieldEstimator2D();
@@ -70,9 +70,9 @@ bool reference_sanity_check() {
 	pass &= compareResults(MxS->fieldAt(yscan*-1.0)[0]-b0,-6.03581955422872e-05,"all -y edge");
 	pass &= compareResults(MxS->fieldAt(zscan*-1.0)[0]-b0,-2.06183474332544e-04,"all -z edge");
 	
-	vsr::Visr::W->pause();
+	vsr::pause();
 	MxS->visualize();
-	vsr::Visr::W->pause();
+	vsr::pause();
 	
 	s->release();
 	MxS->release();
@@ -101,7 +101,7 @@ bool reference_simpleshield() {
 	
 	s->calculateIncident(MxS);
 	s->visualize();
-	vsr::Visr::W->pause();
+	vsr::pause();
 	
 	s->solve();
 	s->calculateResult();
@@ -125,7 +125,7 @@ bool reference_simpleshield() {
 	pass &= compareResults(MxS->fieldAt(-yscan)[0]-b0,-3.81123880558221e-04,"-y");
 	pass &= compareResults(MxS->fieldAt(-zscan)[0]-b0,-3.01945405912996e-04,"-z");
 	
-	vsr::Visr::W->pause();
+	vsr::pause();
 	s->release();
 	return pass;
 }

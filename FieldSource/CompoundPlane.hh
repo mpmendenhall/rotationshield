@@ -70,10 +70,10 @@ public:
 	/*
 	/// Visualize the element's subelements
 	virtual void visualize(bool top = true, mdouble logmax = 3.0) const {
-		if(top) { vsr::Visr::W->startRecording(); vsr::Visr::W->clearWindow(); }
+		if(top) { vsr::startRecording(); vsr::clearWindow(); }
 		for(unsigned int i=0; i<els.size(); i++)
 			els[i]->visualize(false);
-		if(top) vsr::Visr::W->stopRecording();
+		if(top) vsr::stopRecording();
 	}
 	*/
 	

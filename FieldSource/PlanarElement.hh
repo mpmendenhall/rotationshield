@@ -21,7 +21,7 @@ public:
 	/// Visualize the element
 	virtual void visualize(bool top = true, mdouble logmax = 3.0) const {
 		
-		if(top) { vsr::Visr::W->startRecording(); vsr::Visr::W->clearWindow(); }
+		if(top) { vsr::startRecording(true); vsr::clearWindow(); }
 		
 		float smag = state.mag2();
 		if(smag)
@@ -33,16 +33,16 @@ public:
 		
 		vec3 hsv = vec3( atan2(svec[0],svec[1]), 1.0, 1.0 );
 		vec3 rgb = hsv2rgb(hsv);
-		vsr::Visr::W->setColor(rgb[0], rgb[1] , rgb[2], 0.5*smag);
+		vsr::setColor(rgb[0], rgb[1] , rgb[2], 0.5*smag);
 		p.visualize(false);
-		vsr::Visr::W->setColor(1, .7, .7, 1.0);
+		vsr::setColor(1, .7, .7, 1.0);
 		p.visualizeCoordinates(0.2);
-		vsr::Visr::W->setColor(.7, .7, 1, 1.0);
+		vsr::setColor(.7, .7, 1, 1.0);
 		p.visualizeCoordinates(-0.2);
-		vsr::Visr::W->setColor(1,1,1,1);
+		vsr::setColor(1,1,1,1);
 		
 		p.visualizeVector(svec);
-		if(top) vsr::Visr::W->stopRecording();
+		if(top) vsr::stopRecording();
 	}
 	
 	Plane p;		//< The plane in which the element resides

@@ -23,10 +23,10 @@ public:
 	void display() const { printf("InfiniteLinesource (j=%g):\n\t",(double)j); l.display(); }
 	/// Visualize the field source
 	virtual void visualize(bool top = true, mdouble scaling = 1.0) const {
-		if(top) { vsr::Visr::W->startRecording(); vsr::Visr::W->clearWindow(); } 
+		if(top) { vsr::startRecording(true); vsr::clearWindow(); } 
 		//l.visualize(false); 
 		l.visualizeDirected(sign(j));
-		if(top) vsr::Visr::W->stopRecording(); 
+		if(top) vsr::stopRecording(); 
 	}
 		
 private:

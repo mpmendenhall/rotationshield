@@ -280,7 +280,7 @@ public:
 	
 	virtual void visualize(bool istop = true)
 	{
-		if(istop) { vsr::Visr::W->startRecording(); vsr::Visr::W->clearWindow(); }
+		if(istop) { vsr::startRecording(true); vsr::clearWindow(); }
 		
 		
 		int nsub = 0;
@@ -295,7 +295,7 @@ public:
 		
 		if(!nsub)
 		{
-			vsr::Visr::W->setColor(0.0,0.0,1.0);
+			vsr::setColor(0.0,0.0,1.0);
 			float xyzcorners[12];
 			for(int dx=0; dx<2; dx++)
 			{
@@ -306,11 +306,11 @@ public:
 					xyzcorners[3*(dx+2*dy)+2] = tm->getVal(mydepth,absx+dx,absy+dy)->mag();
 				}
 			}
-			vsr::Visr::W->quad(xyzcorners);
+			vsr::quad(xyzcorners);
 		
 		}
 		
-		if(istop) vsr::Visr::W->stopRecording();		
+		if(istop) vsr::stopRecording();		
 	}
 	
 	virtual void visualize_cyl(mdouble r = 0.75)
@@ -334,11 +334,11 @@ public:
 			for(int i=0; i<3; i++)
 			{
 				if(i==0)
-					vsr::Visr::W->setColor(1.0,0.0,0.0);
+					vsr::setColor(1.0,0.0,0.0);
 				else if(i==1)
-					vsr::Visr::W->setColor(0.0,1.0,0.0);
+					vsr::setColor(0.0,1.0,0.0);
 				else
-					vsr::Visr::W->setColor(0.0,0.0,1.0);
+					vsr::setColor(0.0,0.0,1.0);
 				
 				for(int dx=0; dx<2; dx++)
 				{
@@ -352,7 +352,7 @@ public:
 						xyzcorners[3*(dx+2*dy)+2] = y;
 					}
 				}
-				vsr::Visr::W->quad(xyzcorners);
+				vsr::quad(xyzcorners);
 			}
 		}
 	
@@ -537,10 +537,10 @@ public:
 	
 	virtual void visualize(bool istop = true) const
 	{
-		if(istop) { vsr::Visr::W->startRecording(); vsr::Visr::W->clearWindow(); }
+		if(istop) { vsr::startRecording(true); vsr::clearWindow(); }
 		for(int i=0; i<nx*ny; i++)
 			squares[i]->visualize(false);
-		if(istop) vsr::Visr::W->stopRecording();
+		if(istop) vsr::stopRecording();
 	}
 	
 	virtual void display(int v=0)
@@ -632,10 +632,10 @@ public:
 	
 	virtual void visualize(bool istop = true) const
 	{
-		if(istop) { vsr::Visr::W->startRecording(); vsr::Visr::W->clearWindow(); }
+		if(istop) { vsr::startRecording(true); vsr::clearWindow(); }
 		for(int i=0; i<this->nx*this->ny; i++)
 			this->squares[i]->visualize_cyl();
-		if(istop) vsr::Visr::W->stopRecording();
+		if(istop) vsr::stopRecording();
 	}
 };
 

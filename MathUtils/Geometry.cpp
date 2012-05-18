@@ -1,26 +1,26 @@
 #include "Geometry.hh"
 
 void Line::visualize(bool top) const { 
-	if(top) { vsr::Visr::W->startRecording(); vsr::Visr::W->clearWindow(); } 
-	vsr::Visr::W->line(s,e); 
-	if(top) vsr::Visr::W->stopRecording();
+	if(top) { vsr::startRecording(true); vsr::clearWindow(); } 
+	vsr::line(s,e); 
+	if(top) vsr::stopRecording();
 }
 
 void Line::visualizeDirected(float j) const { 
-	vsr::Visr::W->startLines();
+	vsr::startLines();
 	for(float i=0; i<8; i++) {
 		float p = i/7.0;
 		float q = 1.0-p;
 		if(p<0.5)
-			vsr::Visr::W->setColor(2*p,0,1.0,1.0);
+			vsr::setColor(2*p,0,1.0,1.0);
 		else
-			vsr::Visr::W->setColor(1.0,0,2*q,1.0);
+			vsr::setColor(1.0,0,2*q,1.0);
 		if(j>0)
-			vsr::Visr::W->vertex(s*q+e*p);
+			vsr::vertex(s*q+e*p);
 		else
-			vsr::Visr::W->vertex(s*p+e*q);
+			vsr::vertex(s*p+e*q);
 	}
-	vsr::Visr::W->endLines();
+	vsr::endLines();
 }
 
 Plane::Plane(annulusSpec a) {
@@ -47,21 +47,21 @@ const mat3 Plane::projectionMatrix() const {
 
 
 void Plane::visualize(bool top) const { 
-	if(top) { vsr::Visr::W->startRecording(); vsr::Visr::W->clearWindow(); } 
-	vsr::Visr::W->plane(o,dx,dz);
-	if(top) vsr::Visr::W->stopRecording();
+	if(top) { vsr::startRecording(true); vsr::clearWindow(); } 
+	vsr::plane(o,dx,dz);
+	if(top) vsr::stopRecording();
 }
 
 void Plane::visualizeCoordinates(float scale) const {
 	float l = min(wx,wz)*0.5*scale;
-	vsr::Visr::W->line(o, o+dx*l/wx);
-	vsr::Visr::W->line(o, o+dz*l/wz);
-	vsr::Visr::W->line(o, o+sn*l);
+	vsr::line(o, o+dx*l/wx);
+	vsr::line(o, o+dz*l/wz);
+	vsr::line(o, o+sn*l);
 }
 
 void Plane::visualizeVector(vec3 v) const {
 	v = v.normalized()*(0.5*min(wx,wz));
-	vsr::Visr::W->line(o,o+dx*v[0]/wx+dz*v[1]/wz+sn*v[2]);
+	vsr::line(o,o+dx*v[0]/wx+dz*v[1]/wz+sn*v[2]);
 }
 
 Plane Plane::readFromFile(std::istream& s) { 

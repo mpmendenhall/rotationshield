@@ -33,10 +33,10 @@ public:
 	
 	/// Visualize the element
 	virtual void visualize(bool top = true, mdouble logmax = 3.0) const {
-		if(top) { vsr::Visr::W->startRecording(); vsr::Visr::W->clearWindow(); }
+		if(top) { vsr::startRecording(); vsr::clearWindow(); }
 		for(unsigned int i=0; i<drawSurfaces; i++)
 			surfaces[i]->visualize(false);
-		if(top) vsr::Visr::W->stopRecording();
+		if(top) vsr::stopRecording();
 	}
 	
 	/// point at which to measure incident field

@@ -108,7 +108,7 @@ public:
 
 template<int N>
 void NCube<N>::visualize(NRotator<N>* rotator, bool istop) {
-	if(istop) { vsr::Visr::W->startRecording(); vsr::Visr::W->clearWindow(); }
+	if(istop) { vsr::startRecording(true); vsr::clearWindow(); }
 	
 	NCube<N-1> C;
 	reprojectparams<N> p;
@@ -122,7 +122,7 @@ void NCube<N>::visualize(NRotator<N>* rotator, bool istop) {
 		C.sub_visualize(&top_reproject<N>,&p);
 	}
 	
-	if(istop) vsr::Visr::W->stopRecording();		
+	if(istop) vsr::stopRecording();		
 }
 
 template<int N>
@@ -148,8 +148,8 @@ template<>
 void NCube<0>::sub_visualize(Vec<3,mdouble> (*f)(Vec<0,mdouble>,void*), void* params) {
 	Vec<0,mdouble> v0;
 	Vec<3,mdouble> v3 = (*f)(v0,params);
-	vsr::Visr::W->setColor(1.0,0.0,0.0,1.0);
-	vsr::Visr::W->dot(v3);
+	vsr::setColor(1.0,0.0,0.0,1.0);
+	vsr::dot(v3);
 }
 
 template<>
@@ -173,8 +173,8 @@ void NCube<1>::sub_visualize(Vec<3,mdouble> (*f)(Vec<1,mdouble>,void*), void* pa
 	v1[0] = 0.5;
 	ve = (*f)(v1,params);
 	
-	vsr::Visr::W->setColor(0.0,0.5,1.0,1.0);
-	vsr::Visr::W->line(vs,ve);
+	vsr::setColor(0.0,0.5,1.0,1.0);
+	vsr::line(vs,ve);
 }
 
 template<>
@@ -206,9 +206,9 @@ void NCube<2>::sub_visualize(Vec<3,mdouble> (*f)(Vec<2,mdouble>,void*), void* pa
 			xyz[3*(dx+2*dy) + 2] = vc[2];
 		}
 	}
-	vsr::Visr::W->setColor(1.0,0.9,0.9,0.05);
+	vsr::setColor(1.0,0.9,0.9,0.05);
 	//glDisable(GL_DEPTH_TEST);
-	vsr::Visr::W->filledquad(xyz);
+	vsr::filledquad(xyz);
 	//glEnable(GL_DEPTH_TEST);
 }
 
