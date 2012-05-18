@@ -1,4 +1,6 @@
 #include "Visr.hh"
+#include <stdio.h>
+#include <cassert>
 #include <string>
 
 #ifdef WITH_OPENGL
@@ -57,7 +59,7 @@ namespace vsr {
 	
 	void _setColor(std::vector<float>& v) {
 		assert(v.size()==4);
-		glColor3f(v[0],v[1],v[2]);
+		glColor4f(v[0],v[1],v[2],v[3]);
 	}
 	void setColor(float r, float g, float b, float a) {
 		qcmd c(&_setColor);
@@ -109,6 +111,7 @@ namespace vsr {
 	}
 	void startRecording(bool newseg) {
 		pthread_mutex_lock(&commandLock);
+		if(newseg) commands.clear();
 		//printf("Recording GL commands..."); fflush(stdout);
 		qcmd c(_startRecording);
 		if(newseg) c.v.push_back(1);

@@ -224,7 +224,7 @@ void cubeDemo()
 		R.rotate(0,3,.033737);
 		//R.rotate(1,2,0.005);
 		C.visualize(&R,true);
-		usleep(50000);
+		usleep(20000);
 	}
 }
 

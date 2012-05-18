@@ -14,9 +14,6 @@
 
 void* calcthread(void*) {
 	
-	//usleep(1000000);
-	//vsr::pause();
-	
 	// set up output paths
 	std::string basepath = "../";
 	std::string projectpath = basepath+"/CosThetaCoil/";
