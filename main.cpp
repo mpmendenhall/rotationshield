@@ -11,17 +11,20 @@
 #include "PlaneSource.hh"
 #include "ShieldBuilder.hh"
 #include "analysis.hh"
+#include "PathUtils.hh"
+#include "ControlMenu.hh"
+#include "ShortCoil.hh"
 
 void* calcthread(void*) {
 	
 	// set up output paths
 	std::string basepath = "../";
 	std::string projectpath = basepath+"/CosThetaCoil/";
-	makeDir(projectpath);
+	makePath(projectpath);
 	std::string fieldspath = projectpath+"/Fields/";
-	makeDir(fieldspath);
+	makePath(fieldspath);
 	std::string gfpath = projectpath+"/GFs/";
-	makeDir(gfpath);
+	makePath(gfpath);
 	
 	// set up output files for field scans
 	std::ofstream fieldsout;

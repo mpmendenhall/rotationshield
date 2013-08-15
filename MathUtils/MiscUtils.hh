@@ -33,9 +33,6 @@ float normalizeAngle(float a, float theta0 = -PI);
  \return a random number in the interval [a,b] */
 mdouble randunif(mdouble a, mdouble b);
 
-/// make sure the specified directory exists (if not, create it)
-void makeDir(const std::string& p);
-
 typedef Vec<4,mdouble> vec4;
 typedef Vec<3,mdouble> vec3;
 typedef Vec<2,mdouble> vec2;
