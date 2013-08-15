@@ -69,6 +69,7 @@ std::string getEnvSafe(const std::string& v, const std::string& dflt) {
 	const char* envv = getenv(v.c_str());
 	if(!envv) {
 		if(dflt == "FAIL_IF_MISSING") {
+			std::cout << "Failed to find environment variable '" << v << "'\n";
 			SMExcept e("missingEnv");
 			e.insert("var",v);
 			throw(e);

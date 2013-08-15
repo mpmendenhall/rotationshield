@@ -13,9 +13,18 @@
 
 # base path to usual unixy folders (include, lib, etc),
 # probably just '/usr/'... unless you are using Fink on Mac OS X and have your stuff in '/sw/'
-OS_DIR = /sw/
-#OS_DIR = /usr/
+OS_DIR = /usr/
 
+ifdef ROTSHIELD_MACOS
+	OS_DIR = /sw/
+	GL_PATH = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/X11
+	GL_INCLUDES = -I/sw/include/ -I$(GL_PATH)/include/
+	GL_LINKER_ARGS = $(GL_PATH)/lib/libGL.dylib /sw/lib/libglut.dylib
+else
+	GL_PATH = OS_DIR
+	GL_INCLUDES = -I$(GL_PATH)/include/
+	GL_LINKER_ARGS = -L$(GL_PATH)/lib/ -lGL -lglut
+endif
 
 # compiler command to use
 CC = cc
@@ -26,27 +35,17 @@ BASE_INCLUDE_DIRS  = -I$(OS_DIR)/include
 # lib dir flags for GSL, FFTW, etc.
 BASE_LIB_DIRS  = -L$(OS_DIR)/lib
 
-# locations of X11 and OpenGL-related stuff
-GL_PATH = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/X11
-#GL_PATH = OS_DIR
-
-GL_INCLUDES = -I/sw/include/ -I$(GL_PATH)/include/
-#GL_INCLUDES = -I$(GL_PATH)/include/
-
-# linker arguments needed for OpenGL/GLUT visualization window
-#GL_LINKER_ARGS = -L$(GL_PATH)/lib/ -lGL -lglut
-GL_LINKER_ARGS = $(GL_PATH)/lib/libGL.dylib /sw/lib/libglut.dylib
-
 # optmization
 GCC_OPTIMIZATION_LEVEL = 3
 
-#CPPFLAGS = -g $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -DWITH_OPENGL \
-#		-Wall -Wuninitialized -I. -IMathUtils -IFieldSource -ISolver -IBuilder -IStudies -IIO\
-#		$(GL_INCLUDES) $(BASE_INCLUDE_DIRS)
-
 CPPFLAGS = -g $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) \
-		-Wall -Wuninitialized -I. -IMathUtils -IFieldSource -ISolver -IBuilder -IStudies -IIO\
-		$(GL_INCLUDES) $(BASE_INCLUDE_DIRS) 
+		-Wall -Wuninitialized -I. -IMathUtils -IFieldSource -ISolver -IBuilder -IStudies -IIO $(BASE_INCLUDE_DIRS)
+
+ifdef ROTSHIELD_VIS
+	CPPFLAGS += -DWITH_OPENGL $(GL_INCLUDES) 
+	LDFLAGS += $(GL_LINKER_ARGS)
+endif
+
 
 #############
 # Everything below here "should" work without modification
@@ -65,12 +64,12 @@ obj_Solver = GenericSolver.o InteractionSolver.o SymmetricSolver.o
 
 obj_Builder = ShieldBuilder.o CosThetaBuilder.o
 
-obj_Studies = tests.o
+obj_Studies = tests.o Studies.o
 
 objects = $(obj_IO) $(obj_MathUtils) $(obj_FieldSource) $(obj_Solver) $(obj_Builder) $(obj_Studies)
 	
 RotationShield : main.cpp $(objects)
-	$(CXX) main.cpp $(objects) -o RotationShield $(CPPFLAGS) $(GL_LINKER_ARGS) $(BASE_LIB_DIRS) -lCLHEP -lgsl -lfftw3 -lgslcblas
+	$(CXX) main.cpp $(objects) -o RotationShield $(CPPFLAGS) $(LDFLAGS) $(BASE_LIB_DIRS) -lCLHEP -lgsl -lfftw3 -lgslcblas
 	
 
 #

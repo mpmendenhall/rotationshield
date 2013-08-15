@@ -13,8 +13,8 @@
 #include "analysis.hh"
 #include "PathUtils.hh"
 #include "ControlMenu.hh"
-#include "ShortCoil.hh"
 #include "tests.hh"
+#include "Studies.hh"
 
 
 void mi_sampleShieldVis(std::deque<std::string>&, std::stack<std::string>&) {
@@ -90,6 +90,29 @@ void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
 	reference_sanity_check();
 }
 
+void mi_ShortCoilOptRad(std::deque<std::string>&, std::stack<std::string>&) {
+	
+	double rd = 1.0;
+	printf("Generating short coil simulation for r=%g m\n",rd);
+	
+	// set up output paths and files
+	std::string projectpath = getEnvSafe("ROTSHIELD_OUT")+"/HalfCoil_"+dtos(rd);
+	std::string fieldspath = projectpath+"/Fields/";
+	makePath(fieldspath);
+	std::ofstream fieldsout;
+	std::ofstream statsout;
+	fieldsout.open((fieldspath+"/Fieldmap.txt").c_str());
+	statsout.open((fieldspath+"/Fieldstats.txt").c_str());
+	
+	// run
+	shortCoil(fieldsout,statsout,rd);
+
+	// cleanup
+	fieldsout.close();
+	statsout.close();
+}
+
+
 void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	
 	inputRequester exitMenu("Exit Menu",&menutils_Exit);
@@ -97,6 +120,8 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	
 	inputRequester sampleShieldVis("Example shield with visualization",&mi_sampleShieldVis);
 	inputRequester selfTests("Self test to reproduce known results",&mi_runtests);
+	inputRequester shortCoil("'Vertical' Short coil",&mi_ShortCoilOptRad);
+	shortCoil.addArg("Radius","1.0");
 	
 	/*
 	inputRequester octetProcessor("Process Octet",&mi_processOctet);
@@ -108,14 +133,11 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 		
 	// main menu
 	OptionsMenu OM("Rotation Shield Main Menu");
-	OM.addChoice(&sampleShieldVis,"shield-ex");
+	OM.addChoice(&sampleShieldVis,"exm");
 	OM.addChoice(&selfTests,"test");
+	OM.addChoice(&shortCoil,"short");
 	OM.addChoice(&exitMenu,"x");
-	OM.addSynonym("x","exit");
-	OM.addSynonym("x","quit");
-	OM.addSynonym("x","bye");
 	OM.addChoice(&peek,"peek",SELECTOR_HIDDEN);
-	
 	std::stack<std::string> stack;
 	OM.doIt(args,stack);
 	
