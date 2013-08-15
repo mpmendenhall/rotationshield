@@ -90,9 +90,9 @@ void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
 	reference_sanity_check();
 }
 
-void mi_ShortCoilOptRad(std::deque<std::string>&, std::stack<std::string>&) {
+void mi_ShortCoilOptRad(std::deque<std::string>&, std::stack<std::string>& stack) {
 	
-	double rd = 1.0;
+	float rd = streamInteractor::popFloat(stack);
 	printf("Generating short coil simulation for r=%g m\n",rd);
 	
 	// set up output paths and files
@@ -122,19 +122,10 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	inputRequester selfTests("Self test to reproduce known results",&mi_runtests);
 	inputRequester shortCoil("'Vertical' Short coil",&mi_ShortCoilOptRad);
 	shortCoil.addArg("Radius","1.0");
-	
-	/*
-	inputRequester octetProcessor("Process Octet",&mi_processOctet);
-	octetProcessor.addArg("Octet number");
-	inputRequester octetRange("Process Octet Range",&mi_anaOctRange);
-	octetRange.addArg("Start octet","0");
-	octetRange.addArg("end octet","1000");
-	*/
 		
-	// main menu
 	OptionsMenu OM("Rotation Shield Main Menu");
-	OM.addChoice(&sampleShieldVis,"exm");
-	OM.addChoice(&selfTests,"test");
+	//OM.addChoice(&sampleShieldVis,"exm");
+	//OM.addChoice(&selfTests,"test");
 	OM.addChoice(&shortCoil,"short");
 	OM.addChoice(&exitMenu,"x");
 	OM.addChoice(&peek,"peek",SELECTOR_HIDDEN);
@@ -154,7 +145,6 @@ int main(int argc, char *argv[]) {
 	std::deque<std::string> args;
 	for(int i=1; i<argc; i++)
 		args.push_back(argv[i]);
-
 #ifdef WITH_OPENGL
 	vsr::initWindow();
 	pthread_t thread;
@@ -163,6 +153,5 @@ int main(int argc, char *argv[]) {
 #else
 	menuSystem(args);
 #endif
-
 	return 0;
 }
