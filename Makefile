@@ -40,10 +40,13 @@ GL_LINKER_ARGS = $(GL_PATH)/lib/libGL.dylib /sw/lib/libglut.dylib
 # optmization
 GCC_OPTIMIZATION_LEVEL = 3
 
-CPPFLAGS = -g $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -DWITH_OPENGL \
+#CPPFLAGS = -g $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -DWITH_OPENGL \
+#		-Wall -Wuninitialized -I. -IMathUtils -IFieldSource -ISolver -IBuilder -IStudies -IIO\
+#		$(GL_INCLUDES) $(BASE_INCLUDE_DIRS)
+
+CPPFLAGS = -g $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) \
 		-Wall -Wuninitialized -I. -IMathUtils -IFieldSource -ISolver -IBuilder -IStudies -IIO\
 		$(GL_INCLUDES) $(BASE_INCLUDE_DIRS) 
-
 
 #############
 # Everything below here "should" work without modification

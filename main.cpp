@@ -1,4 +1,4 @@
-/// file "main.cpp" \brief Example of shield simulation
+/// file "main.cpp" \brief Menu system for launching various shield simulations
 
 #include <iostream>
 #include <fstream>
@@ -14,9 +14,10 @@
 #include "PathUtils.hh"
 #include "ControlMenu.hh"
 #include "ShortCoil.hh"
+#include "tests.hh"
 
-void* calcthread(void*) {
-	
+
+void mi_sampleShieldVis(std::deque<std::string>&, std::stack<std::string>&) {
 	// set up output paths
 	std::string basepath = "../";
 	std::string projectpath = basepath+"/CosThetaCoil/";
@@ -75,21 +76,71 @@ void* calcthread(void*) {
 	FA.survey(vec3(0.0,0.0,0.0),vec3(0.20,0.20,0.5),10,10,10,statsout,fieldsout);
 	
 	
-	
-	
 	// cleanup
 	ms->release();
 	fieldsout.close();
 	statsout.close();
 	vsr::pause();
+}
+
+void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
+	printf("Simple shield self-test...\n");
+	reference_simpleshield();
+	printf("\n\nReference self-test...\n");
+	reference_sanity_check();
+}
+
+void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	
+	inputRequester exitMenu("Exit Menu",&menutils_Exit);
+	inputRequester peek("Show stack",&menutils_PrintStack);
+	
+	inputRequester sampleShieldVis("Example shield with visualization",&mi_sampleShieldVis);
+	inputRequester selfTests("Self test to reproduce known results",&mi_runtests);
+	
+	/*
+	inputRequester octetProcessor("Process Octet",&mi_processOctet);
+	octetProcessor.addArg("Octet number");
+	inputRequester octetRange("Process Octet Range",&mi_anaOctRange);
+	octetRange.addArg("Start octet","0");
+	octetRange.addArg("end octet","1000");
+	*/
+		
+	// main menu
+	OptionsMenu OM("Rotation Shield Main Menu");
+	OM.addChoice(&sampleShieldVis,"shield-ex");
+	OM.addChoice(&selfTests,"test");
+	OM.addChoice(&exitMenu,"x");
+	OM.addSynonym("x","exit");
+	OM.addSynonym("x","quit");
+	OM.addSynonym("x","bye");
+	OM.addChoice(&peek,"peek",SELECTOR_HIDDEN);
+	
+	std::stack<std::string> stack;
+	OM.doIt(args,stack);
+	
+	printf("\n\n\n>>>>> Goodbye. <<<<<\n\n\n");
+}
+
+void* menuThread(void* args) {
+	std::deque<std::string>& inArgs = *(std::deque<std::string>*)args;
+	menuSystem(inArgs);
 	return NULL;
 }
 
-int main (int argc, char * const argv[]) {
+int main(int argc, char *argv[]) {
+	std::deque<std::string> args;
+	for(int i=1; i<argc; i++)
+		args.push_back(argv[i]);
+
+#ifdef WITH_OPENGL
 	vsr::initWindow();
 	pthread_t thread;
-	pthread_create( &thread, NULL, &calcthread, NULL );
+	pthread_create( &thread, NULL, &menuThread, &args );
 	vsr::doGlutLoop();
+#else
+	menuSystem(args);
+#endif
+
 	return 0;
 }
