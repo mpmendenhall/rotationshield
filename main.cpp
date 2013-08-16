@@ -16,73 +16,7 @@
 #include "tests.hh"
 #include "Studies.hh"
 
-
-void mi_sampleShieldVis(std::deque<std::string>&, std::stack<std::string>&) {
-	// set up output paths
-	std::string basepath = "../";
-	std::string projectpath = basepath+"/CosThetaCoil/";
-	makePath(projectpath);
-	std::string fieldspath = projectpath+"/Fields/";
-	makePath(fieldspath);
-	std::string gfpath = projectpath+"/GFs/";
-	makePath(gfpath);
-	
-	// set up output files for field scans
-	std::ofstream fieldsout;
-	std::ofstream statsout;
-	fieldsout.open((fieldspath+"/Fieldmap.txt").c_str());
-	statsout.open((fieldspath+"/Fieldstats.txt").c_str());
-	
-	// set up cos theta coil
-	MixedSource* ms = new MixedSource();
-	ms->retain();
-	mdouble cradius = 0.648;	// coil radius
-	mdouble clen = 4.292;		// coil length
-	VarVec<mdouble> pert = VarVec<mdouble>(1);
-	pert[0] = -0.00295;	// coil distortion parameter
-	CosThetaBuilder b = CosThetaBuilder(15, cradius, clen, &shiftPositioner);
-	b.regularCoil(*ms,&pert);
-	ms->visualize();
-	//vsr::pause();
-	
-	// optional: construct shield
-	if(1) {
-		mdouble shieldDistance = 0.069;				// distance of shield from wires, 6.9cm
-		mdouble sradius = cradius + shieldDistance;	// shield radius
-		mdouble slen = clen + 0.40;					// shield length, coil + 40cm
-		FieldEstimator2D* fe = new FieldEstimator2D();
-		fe->addsource(vec2(-clen/2.0,cradius),1.0);
-		fe->addsource(vec2(clen/2.0,cradius),1.0);
-		ShieldBuilder* G = new ShieldBuilder(128);	// 128 segments around shield builder
-		G->makeOptCyl(10, 20, sradius, -slen/2, slen/2, new PlaneSource(Plane(),10000), fe); // optimized grid with 10+20 divisions along z
-		// solve for shield response function
-		SymmetricSolver* sp = new SymmetricSolver(G);
-		sp->solve();
-		// calculate response to coil fields
-		sp->calculateIncident(ms);
-		sp->calculateResult();
-		ms->addsource(sp);
-		ms->visualize();
-	}
-	
-	// example of probing field value
-	vec3 b0 = ms->fieldAt(vec3(0,0,0));
-	printf("Field at center: ");
-	b0.display();
-	
-	// survey data points on grid
-	FieldAnalyzer FA = FieldAnalyzer(ms);
-	//        lower left corner,     upper right corner, nx,ny,nz, output files
-	FA.survey(vec3(0.0,0.0,0.0),vec3(0.20,0.20,0.5),10,10,10,statsout,fieldsout);
-	
-	
-	// cleanup
-	ms->release();
-	fieldsout.close();
-	statsout.close();
-	vsr::pause();
-}
-
+/// run self-tests
 void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
 	printf("Simple shield self-test...\n");
 	reference_simpleshield();
@@ -90,26 +24,49 @@ void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
 	reference_sanity_check();
 }
 
+/// Short ("vertical") coil with re-oriented sample cell
+/// N=30, length=2.m, radius variable
+/// shield radius nominal 10cm outside coil; shield 40cm longer than coil
+/// cell dimensions y=40cm, x=7.5cm, z=10cm, inner edge 5cm from center in x (field) direction
+/// Want:
+///   B0 = 30mG; <dBi/di> < 10^-7 G/cm
+///   sqrt(<(dBx/dz)^2>) (z=long direction, x=along polarization)
+///   cells: | 7.5 | 10 | 7.5 |    --> x
 void mi_ShortCoilOptRad(std::deque<std::string>&, std::stack<std::string>& stack) {
-	
 	float rd = streamInteractor::popFloat(stack);
 	printf("Generating short coil simulation for r=%g m\n",rd);
+	std::string projectpath = getEnvSafe("ROTSHIELD_OUT")+"/ShortCoil_"+dtos(rd);
 	
-	// set up output paths and files
-	std::string projectpath = getEnvSafe("ROTSHIELD_OUT")+"/HalfCoil_"+dtos(rd);
-	std::string fieldspath = projectpath+"/Fields/";
-	makePath(fieldspath);
-	std::ofstream fieldsout;
-	std::ofstream statsout;
-	fieldsout.open((fieldspath+"/Fieldmap.txt").c_str());
-	statsout.open((fieldspath+"/Fieldstats.txt").c_str());
+	nEDM_Geom GM(projectpath);
+	GM.coil = new CosThetaBuilder(15,rd,2.0);
+	GM.shield = new coilShield();
+	GM.shield->length = GM.coil->length+0.4;
+	GM.shield->radius = GM.coil->radius+0.1;
+	GM.construct();
 	
-	// run
-	shortCoil(fieldsout,statsout,rd);
+	GM.cell = new fieldCell(vec3(0.05,-0.20,-0.05),vec3(0.125,0.20,0.05),9,31,9);
+	GM.takeSample();
+	
+	printf("Data collection complete.\n");
+}
 
-	// cleanup
-	fieldsout.close();
-	statsout.close();
+
+/// Bare coil, variable N/r/l geometry
+void mi_BareCoil(std::deque<std::string>&, std::stack<std::string>& stack) {
+	float rd = streamInteractor::popFloat(stack);
+	float ln = streamInteractor::popFloat(stack);
+	int hn = streamInteractor::popInt(stack);
+	
+	printf("Generating coil simulation for n=%i, l=%g, r=%g m\n",hn,ln,rd);
+	std::string projectpath = getEnvSafe("ROTSHIELD_OUT")+"/BareCoil_"+itos(hn)+"_"+dtos(ln)+"_"+dtos(rd);
+	
+	nEDM_Geom GM(projectpath);
+	GM.coil = new CosThetaBuilder(hn,rd,ln);
+	GM.construct();
+	GM.cell = new fieldCell(vec3(-0.2,-0.2,-0.2),vec3(0.2,0.2,0.2),41,41,41);
+	GM.takeSample();
+	
+	printf("Data collection complete.\n");
 }
 
 
@@ -118,15 +75,20 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	inputRequester exitMenu("Exit Menu",&menutils_Exit);
 	inputRequester peek("Show stack",&menutils_PrintStack);
 	
-	inputRequester sampleShieldVis("Example shield with visualization",&mi_sampleShieldVis);
 	inputRequester selfTests("Self test to reproduce known results",&mi_runtests);
+	
 	inputRequester shortCoil("'Vertical' Short coil",&mi_ShortCoilOptRad);
 	shortCoil.addArg("Radius","1.0");
-		
+	
+	inputRequester bareCoil("Generic bare coil field probe",&mi_BareCoil);
+	bareCoil.addArg("half n","15");
+	bareCoil.addArg("Length","4.292");
+	bareCoil.addArg("Radius","0.648");
+	
 	OptionsMenu OM("Rotation Shield Main Menu");
-	//OM.addChoice(&sampleShieldVis,"exm");
 	//OM.addChoice(&selfTests,"test");
 	OM.addChoice(&shortCoil,"short");
+	OM.addChoice(&bareCoil,"bare");
 	OM.addChoice(&exitMenu,"x");
 	OM.addChoice(&peek,"peek",SELECTOR_HIDDEN);
 	std::stack<std::string> stack;

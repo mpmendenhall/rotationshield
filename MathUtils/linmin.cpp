@@ -1,4 +1,5 @@
 #include "linmin.hh"
+#include <cassert>
 
 CLHEP::HepVector lsmin(CLHEP::HepMatrix coeffs, CLHEP::HepVector rslt) {
 	CLHEP::HepSymMatrix M = CLHEP::HepDiagMatrix(coeffs.num_row(),1).similarityT(coeffs);
@@ -33,6 +34,7 @@ CLHEP::HepVector polyQuadraticFit(CLHEP::HepMatrix coords, CLHEP::HepVector valu
 
 double polynomialFit(CLHEP::HepMatrix coords, CLHEP::HepVector values, Polynomial<3,mdouble>& p) {
 	int nparams = p.terms.size();
+	assert(nparams <= values.num_row());
 	
 	// build coefficients matrix
 	CLHEP::HepMatrix coeffs(coords.num_row(),nparams);

@@ -15,7 +15,7 @@ bool reference_sanity_check() {
 	MixedSource* MxS = new MixedSource();
 	MxS->retain();
 	
-	CosThetaBuilder(17, 0.61, 3.92).regularCoil(*MxS);
+	CosThetaBuilder(17, 0.61, 3.92).buildCoil(*MxS);
 	MxS->visualize();
 	
 	FieldAnalyzer FA = FieldAnalyzer(MxS);
@@ -85,7 +85,7 @@ bool reference_simpleshield() {
 	
 	MixedSource* MxS = new MixedSource();
 	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 3.92);
-	b.regularCoil(*MxS);
+	b.buildCoil(*MxS);
 	FieldAnalyzer FA = FieldAnalyzer(MxS);
 	
 	FieldEstimator2D fe;

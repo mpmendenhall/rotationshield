@@ -70,12 +70,13 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, int nX, int nY, int nZ, std::ostrea
 	mdouble resids;
 	char axisnames[] = "xyz";
 	
-	Polynomial<3,mdouble> p = Polynomial<3,mdouble>::lowerTriangleTerms(4);
+	const unsigned int polOrder = 5;
+	Polynomial<3,mdouble> p = Polynomial<3,mdouble>::lowerTriangleTerms(polOrder);
 	for(int i=0; i<3; i++) {
 		resids = polynomialFit(coords, bfield[i], p);
-		statsout << "#4th order polynomial fit to B" << axisnames[i] << " centered at < 0 0 0 >, rms residual = " << resids << std::endl;
+		statsout << "#" << polOrder << "th order polynomial (" << p.terms.size() << " terms) fit to B" << axisnames[i] << " centered at < 0 0 0 >, rms residual = " << resids << std::endl;
 		Polynomial<3,mdouble> p2 = p;
-		p2.prune(1e-9*fabs(p(vec3())));
+		p2.prune(1e-12*fabs(p(vec3())));
 		p2.tableForm(statsout);
 		//statsout << "#4th order Polynomial for B" << axisnames[i] << " recentered at " << (ll+ur)*0.5 << std::endl;
 		//p2 = p.recentered((ll+ur)*0.5);

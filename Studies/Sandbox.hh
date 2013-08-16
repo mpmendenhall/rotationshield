@@ -31,7 +31,7 @@ void comparison_shield(std::ostream& gridf, std::ostream& fitf) {
 	MixedSource* MxS = new MixedSource();
 	MxS->retain();
 	
-	CosThetaBuilder(17, 0.61, 3.92).regularCoil(*MxS);
+	CosThetaBuilder(17, 0.61, 3.92).buildCoil(*MxS);
 	
 	
 	FieldEstimator2D fe;

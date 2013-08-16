@@ -1,4 +1,20 @@
 #include "CosThetaBuilder.hh"
+#include "strutils.hh"
+
+mdouble ShiftPositioner::angle(unsigned int i, unsigned int ncoils) const {
+	i = i%ncoils;
+	mdouble x0 = (0.5+i)/(mdouble)ncoils;
+	mdouble x = x0;
+	for(unsigned int k=0; k<shift.size(); k++) x += shift[k]*sin(PI*(mdouble)(k+1)*x0);
+	mdouble y = sqrt(1-x*x);
+	return atan2(y,x);
+}
+
+Stringmap ShiftPositioner::getInfo() const {
+	Stringmap m;
+	m.insert("class","ShiftPositioner");
+	return m;
+}
 
 mdouble shiftPositioner(unsigned int i, unsigned int ncoils, void* params) {
 	i = i%ncoils;
@@ -18,37 +34,44 @@ mdouble alarconKPositioner(unsigned int i, unsigned int ncoils, void* params) {
 	return atan2(sqrt(1/(x0*x0)-1),(1-k)*(1-k));
 }
 
-vec3 simpletrans(int N, int i, int a1, int a2, int a3, void* params) {
-	if(params)
-		return *(vec3*)params;
-	return vec3();
+
+//--------------------------------------------------------------------
+
+Stringmap VecTrans::getInfo() const {
+	Stringmap m;
+	m.insert("class","VecTrans");
+	for(unsigned int i=0; i<3; i++) {
+		m.insert(std::string("v1_")+itos(i),trans1[i]);
+		m.insert(std::string("v2_")+itos(i),trans2[i]);
+	}
+	return m;
 }
 
-vec3 fancytrans(int N, int i, int a1, int a2, int a3, void* params) {
-	if(!params)
-		return vec3();
-	doubleTrans* t = (doubleTrans*)params;
-	if(a1>0)
-		return t->trans1;
-	return t->trans2;
+//--------------------------------------------------------------------
+
+void CosThetaBuilder::writeInfo(QFile& qOut) const {
+	if(AP) qOut.insert("coilPositioner",AP->getInfo());
+	if(ET) qOut.insert("coilTrans",ET->getInfo());
+	Stringmap m;
+	m.insert("length",length);
+	m.insert("radius",radius);
+	m.insert("ncoils",itos(ncoils));
+	qOut.insert("cosThetaCoil",m);
 }
 
-
-
-void CosThetaBuilder::regularCoil(MixedSource& M, void* aparams, void* tparams) {
-	buildEndpoints(aparams,tparams);
+void CosThetaBuilder::buildCoil(MixedSource& M) {
+	buildEndpoints();
 	buildSides(M);
 	buildLineCaps(M);
 }
-
 
 vec3 CosThetaBuilder::getEndp(unsigned int n, bool xside, bool yside, bool zside) {
 	assert(n<ncoils);
 	return endp[8*n + zside + 2*yside + 4*xside];
 }
 
-
-void CosThetaBuilder::buildEndpoints(void* aparams, void* tparams) {
+void CosThetaBuilder::buildEndpoints() {
+	assert(AP);
 	mdouble x,y,phi;
 	mdouble xmul,ymul,zmul;
 	endp = std::vector<vec3>(8*ncoils);
@@ -59,10 +82,10 @@ void CosThetaBuilder::buildEndpoints(void* aparams, void* tparams) {
 					xmul = (a3)?-1:1;
 					ymul = (a2)?-1:1;
 					zmul = (a1)?-1:1;
-					phi = anglefunc(i+a3*ncoils+a2*2*ncoils+a1*4*ncoils,ncoils,aparams);
+					phi = AP->angle(i+a3*ncoils+a2*2*ncoils+a1*4*ncoils,ncoils);
 					x = radius*cos(phi);
 					y = radius*sin(phi);
-					endp[8*i + a1 + 2*a2 + 4*a3] = vec3(x*xmul,y*ymul,zmul*length*0.5) + transfunc(ncoils,i,a1,a2,a3,tparams);
+					endp[8*i + a1 + 2*a2 + 4*a3] = vec3(x*xmul,y*ymul,zmul*length*0.5) + (ET?ET->trans(ncoils,i,a1,a2,a3):vec3());
 				}
 			}
 		}
