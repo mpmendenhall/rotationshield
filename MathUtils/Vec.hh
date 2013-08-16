@@ -5,6 +5,7 @@
 #include <math.h>
 #include <cassert>
 #include <iostream>
+#include <vector>
 
 /// Fixed-length vector arithmetic class
 template<unsigned int N, typename T>
@@ -337,6 +338,14 @@ T angle( const Vec<2,T>& v ) {
 template<typename T>
 Vec<2,T> polarVec(T r, T th) {
 	return Vec<2,T>(r*cos(th),r*sin(th));
+}
+
+/// Vec to vector<double>
+template<unsigned int N, typename T>
+std::vector<double> vec2doublevec(const Vec<N,T>& v) {
+	std::vector<double> dv(N);
+	for(unsigned int i=0; i<N; i++) dv[i] = (double)v[i];
+	return dv;
 }
 
 

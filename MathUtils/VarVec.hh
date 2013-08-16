@@ -347,4 +347,13 @@ VarVec<T>& VarVec<T>::permute(const Permutation& p)
 	return *this;
 }
 
+/// VarVec to vector<double>
+template<typename T>
+std::vector<double>
+varvec2doublevec(const VarVec<T>& v) {
+	std::vector<double> dv(v.size());
+	for(unsigned int i=0; i<v.size(); i++) dv[i] = (double)v[i];
+	return dv;
+}
+
 #endif

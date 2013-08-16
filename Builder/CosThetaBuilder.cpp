@@ -13,6 +13,8 @@ mdouble ShiftPositioner::angle(unsigned int i, unsigned int ncoils) const {
 Stringmap ShiftPositioner::getInfo() const {
 	Stringmap m;
 	m.insert("class","ShiftPositioner");
+	if(shift.size())
+		m.insert("shift",vtos(varvec2doublevec<mdouble>(shift)));
 	return m;
 }
 
@@ -30,10 +32,8 @@ mdouble alarconKPositioner(unsigned int i, unsigned int ncoils, void* params) {
 Stringmap VecTrans::getInfo() const {
 	Stringmap m;
 	m.insert("class","VecTrans");
-	for(unsigned int i=0; i<3; i++) {
-		m.insert(std::string("v1_")+itos(i),trans1[i]);
-		m.insert(std::string("v2_")+itos(i),trans2[i]);
-	}
+	m.insert(std::string("t1"),vtos(vec2doublevec<3,mdouble>(trans1)));
+	m.insert(std::string("t2"),vtos(vec2doublevec<3,mdouble>(trans2)));
 	return m;
 }
 

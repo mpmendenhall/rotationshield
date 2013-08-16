@@ -37,10 +37,8 @@ void coilShield::construct(MixedSource& ms, CosThetaBuilder* ct) const {
 
 Stringmap fieldCell::getInfo() const {
 	Stringmap m;
-	for(unsigned int i=0; i<3; i++) {
-		m.insert(std::string("ll")+itos(i),ll[i]);
-		m.insert(std::string("ur")+itos(i),ur[i]);
-	}
+	m.insert(std::string("ll"),vtos(vec2doublevec<3,mdouble>(ll)));
+	m.insert(std::string("ur"),vtos(vec2doublevec<3,mdouble>(ur)));
 	m.insert("nx",nx);
 	m.insert("ny",ny);
 	m.insert("nz",nz);
