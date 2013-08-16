@@ -19,55 +19,15 @@ def GradV(V):
 	"Gradient of polynomial vector"
 	return [Vi.derivative(a) for (a,Vi) in enumerate(V)]
 
-def ShortCoilVaryRadius(basename):
-	outdir = os.environ["ROTSHIELD_OUT"]
-	datlist = [ (float(f.split("_")[1]), outdir+"/"+f) for f in os.listdir(outdir) if f[:len(basename)+1]==basename+"_"]
-	
-	# sample cell dimensions
-	cell_ll = (0.05,-0.20,-0.05)
-	cell_ur = (0.125,0.20,0.05)
-	cellcenter = [(cell_ll[a]+cell_ur[a])*0.5 for a in range(3)]
-	# target B0, mG
-	B0targ = 30.
-	
-	# collect data
-	gdat = []
-	for (r,f) in datlist:
-		fitf = open(f+"/Fields/Fieldstats.txt","r")
-		B = [read_polynomial(fitf) for a in range(3)]
-		# Field average
-		Bavg = [Vol3Avg(Bi,cell_ll,cell_ur) for Bi in B]
-		# Gradient average
-		GradBAvg = [Vol3Avg(Bi,cell_ll,cell_ur) for Bi in GradV(B)]
-		# average gradient in uG/cm
-		GradScaled = [G*0.01*1000*B0targ/Bavg[0] for G in GradBAvg]
-		print r,Bavg,GradScaled
-		gdat.append([r,GradScaled[0],GradScaled[1],GradScaled[2],sum(GradScaled)])
-	gdat.sort()
-	
-	# plot results
-	g=graph.graphxy(width=24,height=16,
-		x=graph.axis.lin(title="Coil Radius [m]"),
-		y=graph.axis.lin(title="Cell Average Gradients [$\\mu$G/cm]"),
-		key = graph.key.key(pos="bl"))
-	g.texrunner.set(lfs='foils17pt')
-	
-	axes = ["x","y","z"]
-	axiscols = {"x":rgb.red,"y":rgb.green,"z":rgb.blue,"S":rgb.black}
-	for (n,a) in enumerate(axes):
-		g.plot(graph.data.points(gdat,x=1,y=2+n,title="$\\langle \\partial B_{%s} / \\partial %s \\rangle$"%(a,a)), [graph.style.line(lineattrs=[axiscols[a],style.linewidth.THick]),] )
-			
-	g.writePDFfile(outdir + "/Plot_%s_Radius.pdf"%basename)
 
-
-def VaryCoilLength(outdir,basename):
+def VaryCoilParam(outdir,basename,varname):
 	
 	datlist = [ (float(f[len(basename):].split("_")[1]), outdir+"/"+f) for f in os.listdir(outdir) if f[:len(basename)+1]==basename+"_"]
 	
 	g=graph.graphxy(width=24,height=16,
-		x=graph.axis.lin(title="Coil Length [m]"),
-		y=graph.axis.lin(title="Cell Average Gradients [$\\mu$G/cm]",min=-7.5,max=7.5),
-		key = graph.key.key(pos="br",columns=2))
+		x=graph.axis.lin(title=varname,min=-.005,max=.005),
+		y=graph.axis.lin(title="Cell Average Gradients [$\\mu$G/cm]",min=-3,max=3),
+		key = graph.key.key(pos="bl",columns=2))
 	g.texrunner.set(lfs='foils17pt')
 	
 	# sample cell dimensions, normal and rotated
@@ -80,6 +40,8 @@ def VaryCoilLength(outdir,basename):
 	for (celln,(cell_ll,cell_ur)) in enumerate(cells):
 	
 		cellcenter = [(cell_ll[a]+cell_ur[a])*0.5 for a in range(3)]
+		print
+		print "*** Cell:",cell_ll,cell_ur
 		
 		# collect data
 		gdat = []
@@ -96,8 +58,8 @@ def VaryCoilLength(outdir,basename):
 			dBxdz = B[0].derivative(longaxis[celln])
 			rms = sqrt(Vol3Avg(dBxdz*dBxdz,cell_ll,cell_ur))*0.01*1000*B0targ/Bavg[0]
 			print r,Bavg,GradScaled,rms
-			if r >= 2:
-				gdat.append([r,GradScaled[0],GradScaled[1],GradScaled[2],rms])
+			#if r>0.3:
+			gdat.append([r,GradScaled[0],GradScaled[1],GradScaled[2],rms])
 		gdat.sort()
 	
 		axiscols = {"x":rgb.red,"y":rgb.green,"z":rgb.blue,"S":rgb.black}
@@ -109,12 +71,18 @@ def VaryCoilLength(outdir,basename):
 		g.plot(graph.data.points(gdat,x=1,y=5,title="${\\langle (\\partial B_x / \\partial %s)^2 \\rangle}^{1/2}$ "%axes[longaxis[celln]]+invlabel),
 					[graph.style.line(lineattrs=[style.linewidth.THick]+invstyle),])
 
-	g.writePDFfile(outdir + "/Plot_%s_Length.pdf"%(basename.split("/")[-1]))
+	g.writePDFfile(outdir + "/Plot_%s.pdf"%(basename.split("/")[-1]))
 
 
 if __name__=="__main__":
 	outdir = os.environ["ROTSHIELD_OUT"]
-	#ShortCoilVaryRadius("ShortCoilBare")
-	#ShortCoilVaryRadius("ShortCoil")
-	VaryCoilLength(outdir+"/Bare_VarLength","CLen")
-	VaryCoilLength(outdir+"/Shielded_VarLength","CLen")
+
+	#VaryCoilParam(outdir+"/Bare_VarLength","CLen","Coil Length [m]")
+	#VaryCoilParam(outdir+"/Shielded_VarLength","CLen","Coil Length [m]")
+	
+	#VaryCoilParam(outdir+"/Bare_L2.5_VarRad","CRad","Coil Radius [m]")
+	#VaryCoilParam(outdir+"/Shielded_L2.5_VarRad","CRad","Coil Radius [m]")
+	
+	#VaryCoilParam(outdir+"/Shielded_L2.5_R.45_VarGap","SGap","Shield-to-coil gap [m]")
+
+	VaryCoilParam(outdir+"/Shielded_L2.5_R.40_VarA","CA","Coil distortion 'a'")

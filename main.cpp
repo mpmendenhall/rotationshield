@@ -80,6 +80,18 @@ void mi_setCoil(std::deque<std::string>&, std::stack<std::string>& stack) {
 	GlobCT->length = streamInteractor::popFloat(stack);
 	GlobCT->ncoils = streamInteractor::popInt(stack);
 }
+// set coil distortion
+void mi_setCoilDistort(std::deque<std::string>&, std::stack<std::string>& stack) {
+	if(!GlobCT) GlobCT = new CosThetaBuilder(0,0,0);
+	float a = streamInteractor::popFloat(stack);
+	int n = streamInteractor::popInt(stack);
+	ShiftPositioner* SP = (ShiftPositioner*)(GlobCT->AP);
+	if(n<=0) SP->shift = VarVec<mdouble>(0);
+	else {
+		while(SP->shift.size()<(unsigned int)n) SP->shift.push_back(0);
+		SP->shift[n-1] = a;
+	}
+}
 
 // set shield parameters
 void mi_setShield(std::deque<std::string>&, std::stack<std::string>& stack) {
@@ -167,6 +179,13 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	setCoil.addArg("half n","15");
 	setCoil.addArg("Length","4.292");
 	setCoil.addArg("Radius","0.61");
+	inputRequester setCoilDistort("Set Coil Distortion Parameter",&mi_setCoilDistort);
+	setCoilDistort.addArg("param","0");
+	setCoilDistort.addArg("value","0");
+	OptionsMenu OMcoil("Coil Options");
+	OMcoil.addChoice(&setCoil,"geom");
+	OMcoil.addChoice(&setCoilDistort,"dist");
+	OMcoil.addChoice(&exitMenu,"x");
 	
 	inputRequester setShield("Set Shield Geometry",&mi_setShield);
 	setShield.addArg("Length","4.692");
@@ -197,7 +216,7 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	OM.addChoice(&ncube,"ncube");
 #endif
 	OM.addChoice(&OMcell,"cell");
-	OM.addChoice(&setCoil,"coil");
+	OM.addChoice(&OMcoil,"coil");
 	OM.addChoice(&OMshield,"shield");
 	OM.addChoice(&OMmeas,"meas");
 	OM.addChoice(&exitMenu,"x");

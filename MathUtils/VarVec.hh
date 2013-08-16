@@ -44,6 +44,8 @@ public:
 	std::vector<T>& getData() { return data; }
 	/// immutable access to the whole data vector
 	const std::vector<T>& getDataC() const { return data; }
+	/// append
+	void push_back(const T& x) { data.push_back(x); }
 	
 	/// size of vector
 	unsigned int size() const { return data.size(); }
