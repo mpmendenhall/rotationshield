@@ -48,7 +48,7 @@ Stringmap fieldCell::getInfo() const {
 //--
 
 nEDM_Geom::nEDM_Geom(const std::string& dir): coil(NULL), shield(NULL), cell(NULL),
-saveGrid(true), ms(new MixedSource()), basedir(dir) {
+saveGrid(true), basedir(dir), ms(new MixedSource()) {
 	ms->retain();
 }
 

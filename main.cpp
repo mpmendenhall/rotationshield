@@ -45,6 +45,89 @@ void mi_ncube(std::deque<std::string>&, std::stack<std::string>&) {
 	}
 }
 
+// Global coil/shield settings
+nEDM_Geom* GlobGM = NULL;
+CosThetaBuilder* GlobCT = NULL;
+coilShield* GlobCS = NULL;
+fieldCell* GlobFC = NULL;
+
+// set cell measurement range
+void mi_setFCrange(std::deque<std::string>&, std::stack<std::string>& stack) {
+	float urz = streamInteractor::popFloat(stack);
+	float ury = streamInteractor::popFloat(stack);
+	float urx = streamInteractor::popFloat(stack);
+	float llz = streamInteractor::popFloat(stack);
+	float lly = streamInteractor::popFloat(stack);
+	float llx = streamInteractor::popFloat(stack);
+	if(!GlobFC) GlobFC = new fieldCell(vec3(),vec3(),5,5,5);
+	GlobFC->ll = vec3(llx,lly,llz);
+	GlobFC->ur = vec3(urx,ury,urz);
+	GlobFC->getInfo().display();
+}
+// set cell gridding
+void mi_setFCgrid(std::deque<std::string>&, std::stack<std::string>& stack) {
+	if(!GlobFC) GlobFC = new fieldCell(vec3(),vec3(),5,5,5);
+	GlobFC->nz = streamInteractor::popInt(stack);
+	GlobFC->ny = streamInteractor::popInt(stack);
+	GlobFC->nx = streamInteractor::popInt(stack);
+	GlobFC->getInfo().display();
+}
+
+// set coil parameters
+void mi_setCoil(std::deque<std::string>&, std::stack<std::string>& stack) {
+	if(!GlobCT) GlobCT = new CosThetaBuilder(0,0,0);
+	GlobCT->radius = streamInteractor::popFloat(stack);
+	GlobCT->length = streamInteractor::popFloat(stack);
+	GlobCT->ncoils = streamInteractor::popInt(stack);
+}
+
+// set shield parameters
+void mi_setShield(std::deque<std::string>&, std::stack<std::string>& stack) {
+	if(!GlobGM) GlobGM = new nEDM_Geom();
+	if(!GlobCS) GlobCS = new coilShield();
+	GlobGM->shield = GlobCS;
+	GlobCS->radius = streamInteractor::popFloat(stack);
+	GlobCS->length = streamInteractor::popFloat(stack);
+}
+// set unshielded
+void mi_unshield(std::deque<std::string>&, std::stack<std::string>& stack) {
+	if(GlobGM) GlobGM->shield = NULL;
+}
+// set shield gridding
+void mi_shieldGrid(std::deque<std::string>&, std::stack<std::string>& stack) {
+	if(!GlobCS) GlobCS = new coilShield();
+	GlobCS->pSegs = streamInteractor::popInt(stack);
+	GlobCS->vSegs = streamInteractor::popInt(stack);
+	GlobCS->cSegs = streamInteractor::popInt(stack);
+}
+
+// set save grid
+void mi_setSaveGrid(std::deque<std::string>&, std::stack<std::string>& stack) {
+	if(!GlobGM) GlobGM = new nEDM_Geom();
+	GlobGM->saveGrid = streamInteractor::popInt(stack);
+}
+
+// take measurement
+void mi_meas(std::deque<std::string>&, std::stack<std::string>& stack) {
+	if(!GlobGM) { GlobGM = new nEDM_Geom(); }
+	GlobGM->basedir = getEnvSafe("ROTSHIELD_OUT","")+"/"+streamInteractor::popString(stack);
+	if(!GlobCT) {
+		printf("Coil not specified! Nothing to measure!\n");
+		return;
+	}
+	if(!GlobFC) {
+		printf("Cell not specified! Nothing to measure!\n");
+		return;
+	}
+	if(!GlobGM->shield) printf("Measuring bare coil\n");
+	else printf("Measuring shielded coil\n");
+	GlobGM->coil = GlobCT;
+	GlobGM->construct();
+	GlobGM->cell = GlobFC;
+	GlobGM->takeSample();
+	printf("Data collection complete.\n");
+}
+
 /// Short ("vertical") coil with re-oriented sample cell
 /// N=30, length=2.m, radius variable
 /// shield radius nominal 10cm outside coil; shield 40cm longer than coil
@@ -53,68 +136,70 @@ void mi_ncube(std::deque<std::string>&, std::stack<std::string>&) {
 ///   B0 = 30mG; <dBi/di> < 10^-7 G/cm
 ///   sqrt(<(dBx/dz)^2>) (z=long direction, x=along polarization)
 ///   cells: | 7.5 | 10 | 7.5 |    --> x
-void mi_ShortCoilOptRad(std::deque<std::string>&, std::stack<std::string>& stack) {
-	float rd = streamInteractor::popFloat(stack);
-	printf("Generating short coil simulation for r=%g m\n",rd);
-	std::string projectpath = getEnvSafe("ROTSHIELD_OUT")+"/ShortCoil_"+dtos(rd);
-	
-	nEDM_Geom GM(projectpath);
-	GM.coil = new CosThetaBuilder(15,rd,2.0);
-	GM.shield = new coilShield();
-	GM.shield->length = GM.coil->length+0.4;
-	GM.shield->radius = GM.coil->radius+0.1;
-	GM.construct();
-	
-	GM.cell = new fieldCell(vec3(0.05,-0.20,-0.05),vec3(0.125,0.20,0.05),9,31,9);
-	GM.saveGrid = false;
-	GM.takeSample();
-	
-	printf("Data collection complete.\n");
-}
-
-
-/// Bare coil, variable N/r/l geometry
-void mi_BareCoil(std::deque<std::string>&, std::stack<std::string>& stack) {
-	float rd = streamInteractor::popFloat(stack);
-	float ln = streamInteractor::popFloat(stack);
-	int hn = streamInteractor::popInt(stack);
-	
-	printf("Generating coil simulation for n=%i, l=%g, r=%g m\n",hn,ln,rd);
-	std::string projectpath = getEnvSafe("ROTSHIELD_OUT")+"/BareCoil_"+itos(hn)+"_"+dtos(ln)+"_"+dtos(rd);
-	
-	nEDM_Geom GM(projectpath);
-	GM.coil = new CosThetaBuilder(hn,rd,ln);
-	GM.construct();
-	GM.cell = new fieldCell(vec3(-0.2,-0.2,-0.2),vec3(0.2,0.2,0.2),41,41,41);
-	GM.saveGrid = false;
-	GM.takeSample();
-	
-	printf("Data collection complete.\n");
-}
 
 
 void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
+
+	GlobFC = new fieldCell(vec3(-.2,-.2,-.2),vec3(.2,.2,.2),11,11,11);
 	
 	inputRequester exitMenu("Exit Menu",&menutils_Exit);
 	inputRequester peek("Show stack",&menutils_PrintStack);
-	
 	inputRequester ncube("Hyercube visualization test",&mi_ncube);
-	
 	inputRequester selfTests("Self test to reproduce known results",&mi_runtests);
 	
-	inputRequester shortCoil("'Vertical' Short coil",&mi_ShortCoilOptRad);
-	shortCoil.addArg("Radius","1.0");
+	inputRequester setFCrange("Set Measurement Range",&mi_setFCrange);
+	setFCrange.addArg("x min","-0.20");
+	setFCrange.addArg("y min","-0.20");
+	setFCrange.addArg("z min","-0.20");
+	setFCrange.addArg("x max","0.20");
+	setFCrange.addArg("y max","0.20");
+	setFCrange.addArg("z max","0.20");
+	inputRequester setFCgrid("Set Measurement Gridding",&mi_setFCgrid);
+	setFCgrid.addArg("nx","5");
+	setFCgrid.addArg("ny","5");
+	setFCgrid.addArg("nz","5");
+	OptionsMenu OMcell("Cell Options");
+	OMcell.addChoice(&setFCrange,"range");
+	OMcell.addChoice(&setFCgrid,"grid");
+	OMcell.addChoice(&exitMenu,"x");
 	
-	inputRequester bareCoil("Generic bare coil field probe",&mi_BareCoil);
-	bareCoil.addArg("half n","15");
-	bareCoil.addArg("Length","4.292");
-	bareCoil.addArg("Radius","0.648");
+	inputRequester setCoil("Set Coil Geometry",&mi_setCoil);
+	setCoil.addArg("half n","15");
+	setCoil.addArg("Length","4.292");
+	setCoil.addArg("Radius","0.648");
+	
+	inputRequester setShield("Set Shield Geometry",&mi_setShield);
+	setShield.addArg("Length","4.292");
+	setShield.addArg("Radius","0.648");
+	inputRequester unsetShield("Remove shield",&mi_unshield);
+	inputRequester setShieldGrid("Set Shield Gridding",&mi_shieldGrid);
+	setShieldGrid.addArg("Fixed Z segs","10");
+	setShieldGrid.addArg("Variable Z segs","20");
+	setShieldGrid.addArg("Phi segs","128");
+	OptionsMenu OMshield("Shield Options");
+	OMshield.addChoice(&setShield,"geom");
+	OMshield.addChoice(&setShieldGrid,"grid");
+	OMshield.addChoice(&unsetShield,"clear");
+	OMshield.addChoice(&exitMenu,"x");
+	
+	inputRequester meas("Coil field measurement",&mi_meas);
+	meas.addArg("Output Directory");
+	inputRequester setSaveGrid("Enable/disable gridded output",&mi_setSaveGrid);
+	setSaveGrid.addArg("Enable","1");
+	OptionsMenu OMmeas("Measurement Routines");
+	OMmeas.addChoice(&meas,"run");
+	OMmeas.addChoice(&setSaveGrid,"svgrd");
+	OMmeas.addChoice(&exitMenu,"x");
 	
 	OptionsMenu OM("Rotation Shield Main Menu");
 	//OM.addChoice(&selfTests,"test");
+#ifdef WITH_OPENGL
 	OM.addChoice(&ncube,"ncube");
-	OM.addChoice(&shortCoil,"short");
-	OM.addChoice(&bareCoil,"bare");
+#endif
+	OM.addChoice(&OMcell,"cell");
+	OM.addChoice(&setCoil,"coil");
+	OM.addChoice(&OMshield,"shield");
+	OM.addChoice(&OMmeas,"meas");
 	OM.addChoice(&exitMenu,"x");
 	OM.addChoice(&peek,"peek",SELECTOR_HIDDEN);
 	std::stack<std::string> stack;

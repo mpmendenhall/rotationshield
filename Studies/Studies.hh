@@ -47,7 +47,7 @@ public:
 class nEDM_Geom {
 public:
 	/// constructor
-	nEDM_Geom(const std::string& dir);
+	nEDM_Geom(const std::string& dir = "");
 	/// destructor
 	virtual ~nEDM_Geom();
 	/// construct coil/shield and calculate
@@ -60,10 +60,11 @@ public:
 	fieldCell* cell;
 	
 	bool saveGrid;			//< whether to save the grid data to file
+	std::string basedir;	//< directory for output
 	
 protected:
 	MixedSource* ms;		//< combined coil+shield field source
-	std::string basedir;	//< directory for output
+	
 };
 
 #endif

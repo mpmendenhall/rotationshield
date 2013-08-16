@@ -75,7 +75,7 @@ public:
 	/// write info to QFile
 	void writeInfo(QFile& qOut) const;
 	
-	const unsigned int ncoils;	//< number of saddle coils per half
+	unsigned int ncoils;		//< number of saddle coils per half
 	float radius;				//< coil radius
 	float length;				//< coil length
 	
