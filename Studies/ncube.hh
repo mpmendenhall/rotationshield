@@ -108,7 +108,10 @@ public:
 
 template<int N>
 void NCube<N>::visualize(NRotator<N>* rotator, bool istop) {
-	if(istop) { vsr::startRecording(true); vsr::clearWindow(); }
+	if(istop) {
+		vsr::startRecording(true);
+		vsr::clearWindow();
+	}
 	
 	NCube<N-1> C;
 	reprojectparams<N> p;

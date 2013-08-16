@@ -1,20 +1,16 @@
 /// file "main.cpp" \brief Menu system for launching various shield simulations
 
-#include <iostream>
-#include <fstream>
 #include <stdlib.h>
 #include <pthread.h>
 #include <time.h>
+#include <unistd.h>
 
-#include "CosThetaBuilder.hh"
-#include "SymmetricSolver.hh"
-#include "PlaneSource.hh"
-#include "ShieldBuilder.hh"
-#include "analysis.hh"
 #include "PathUtils.hh"
+#include "MiscUtils.hh"
 #include "ControlMenu.hh"
 #include "tests.hh"
 #include "Studies.hh"
+#include "ncube.hh"
 
 /// run self-tests
 void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
@@ -22,6 +18,31 @@ void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
 	reference_simpleshield();
 	printf("\n\nReference self-test...\n");
 	reference_sanity_check();
+}
+
+/// hypercube visualization test
+void mi_ncube(std::deque<std::string>&, std::stack<std::string>&) {
+	const unsigned int N = 4;
+	NRotator<N> NR;
+	NCube<N> NC;
+	
+	double ftime = 15.e-3; // frame time in s
+	std::vector<mdouble> vrot;
+	for(unsigned int i=1; i<N; i++)
+		for(unsigned int j=0; j<i; j++)
+			vrot.push_back(randunif(-1.*ftime,1.*ftime));
+	
+	vsr::set_pause();
+	if(vsr::get_pause())
+		printf("Press [ENTER] in visualization window to continue...\n");
+	while(vsr::get_pause()) {
+		unsigned int n=0;
+		for(unsigned int i=1; i<N; i++)
+			for(unsigned int j=0; j<i; j++)
+				NR.rotate(i, j, vrot[n++]);
+		NC.visualize(&NR);
+		usleep(ftime*1.e6);
+	}
 }
 
 /// Short ("vertical") coil with re-oriented sample cell
@@ -45,6 +66,7 @@ void mi_ShortCoilOptRad(std::deque<std::string>&, std::stack<std::string>& stack
 	GM.construct();
 	
 	GM.cell = new fieldCell(vec3(0.05,-0.20,-0.05),vec3(0.125,0.20,0.05),9,31,9);
+	GM.saveGrid = false;
 	GM.takeSample();
 	
 	printf("Data collection complete.\n");
@@ -64,6 +86,7 @@ void mi_BareCoil(std::deque<std::string>&, std::stack<std::string>& stack) {
 	GM.coil = new CosThetaBuilder(hn,rd,ln);
 	GM.construct();
 	GM.cell = new fieldCell(vec3(-0.2,-0.2,-0.2),vec3(0.2,0.2,0.2),41,41,41);
+	GM.saveGrid = false;
 	GM.takeSample();
 	
 	printf("Data collection complete.\n");
@@ -74,6 +97,8 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	
 	inputRequester exitMenu("Exit Menu",&menutils_Exit);
 	inputRequester peek("Show stack",&menutils_PrintStack);
+	
+	inputRequester ncube("Hyercube visualization test",&mi_ncube);
 	
 	inputRequester selfTests("Self test to reproduce known results",&mi_runtests);
 	
@@ -87,6 +112,7 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	
 	OptionsMenu OM("Rotation Shield Main Menu");
 	//OM.addChoice(&selfTests,"test");
+	OM.addChoice(&ncube,"ncube");
 	OM.addChoice(&shortCoil,"short");
 	OM.addChoice(&bareCoil,"bare");
 	OM.addChoice(&exitMenu,"x");
@@ -100,6 +126,7 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 void* menuThread(void* args) {
 	std::deque<std::string>& inArgs = *(std::deque<std::string>*)args;
 	menuSystem(inArgs);
+	vsr::set_kill();
 	return NULL;
 }
 

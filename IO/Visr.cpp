@@ -25,10 +25,15 @@ namespace vsr {
 	float xtrans, ytrans;
 	float ar;
 	bool pause_display;
-
+	bool kill_flag = false;
+	
 	void doGlutLoop() {
 		glutMainLoop();
 	}
+	
+	void set_pause() { pause_display = true; }
+	bool get_pause() { return pause_display; }
+	void set_kill() { kill_flag = true; }
 	
 	void redrawDisplay() {
 		glCallLists(displaySegs.size(),GL_UNSIGNED_INT,&displaySegs.front());
@@ -114,7 +119,7 @@ namespace vsr {
 		if(newseg) commands.clear();
 		//printf("Recording GL commands..."); fflush(stdout);
 		qcmd c(_startRecording);
-		if(newseg) c.v.push_back(1);
+		if(!newseg) c.v.push_back(1);
 		addCmd(c);
 	}
 	
@@ -300,6 +305,7 @@ namespace vsr {
 	}	
 	
 	void redrawIfUnlocked() {
+		if(kill_flag) exit(0);
 		if(pthread_mutex_trylock(&commandLock)) return;
 		//if(commands.size()) printf("Processing %i graphics commands...\n",(int)commands.size());
 		while(commands.size()) {
@@ -390,6 +396,10 @@ namespace vsr {
 	void endLines() {}
 	
 	void doGlutLoop() {}
+	
+	void set_pause() {}
+	bool get_pause() { return false; }
+	void set_kill() {}
 }
 
 #endif

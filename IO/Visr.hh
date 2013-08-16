@@ -25,6 +25,10 @@ namespace vsr {
 	void vertex(vec3 v);
 	void endLines();
 	void doGlutLoop();
+	
+	void set_pause();	//< set the pause flag, cleared when [ENTER] pressed in vis window
+	bool get_pause();	//< get current state of pause flag
+	void set_kill();	//< set the kill flag to end visualization thread
 }
 
 #endif

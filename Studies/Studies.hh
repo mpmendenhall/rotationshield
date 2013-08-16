@@ -59,6 +59,8 @@ public:
 	coilShield* shield;
 	fieldCell* cell;
 	
+	bool saveGrid;			//< whether to save the grid data to file
+	
 protected:
 	MixedSource* ms;		//< combined coil+shield field source
 	std::string basedir;	//< directory for output

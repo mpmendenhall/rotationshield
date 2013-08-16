@@ -47,7 +47,8 @@ Stringmap fieldCell::getInfo() const {
 
 //--
 
-nEDM_Geom::nEDM_Geom(const std::string& dir): coil(NULL), shield(NULL), cell(NULL), ms(new MixedSource()), basedir(dir) {
+nEDM_Geom::nEDM_Geom(const std::string& dir): coil(NULL), shield(NULL), cell(NULL),
+saveGrid(true), ms(new MixedSource()), basedir(dir) {
 	ms->retain();
 }
 
@@ -73,7 +74,8 @@ void nEDM_Geom::takeSample(const std::string& sName) {
 	makePath(fieldspath);
 	std::ofstream fieldsout;
 	std::ofstream statsout;
-	fieldsout.open((fieldspath+"/Fieldmap.txt").c_str());
+	std::ostream nullout(NULL);
+	if(saveGrid) fieldsout.open((fieldspath+"/Fieldmap.txt").c_str());
 	statsout.open((fieldspath+"/Fieldstats.txt").c_str());
 	
 	// save geometry summary info
@@ -89,10 +91,10 @@ void nEDM_Geom::takeSample(const std::string& sName) {
 	// run analyzer
 	FieldAnalyzer FA = FieldAnalyzer(ms);
 	FA.visualizeSurvey(cell->ll,cell->ur,cell->vx,cell->vy,cell->vz);
-	FA.survey(cell->ll,cell->ur,cell->nx,cell->ny,cell->nz,statsout,fieldsout);
+	FA.survey(cell->ll,cell->ur,cell->nx,cell->ny,cell->nz,statsout,saveGrid?fieldsout:nullout);
 
 	// cleanup
-	fieldsout.close();
+	if(saveGrid) fieldsout.close();
 	statsout.close();
 }
 
