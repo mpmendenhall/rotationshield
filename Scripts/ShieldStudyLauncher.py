@@ -15,12 +15,24 @@ def Short_Coil_Series(r0,r1,n):
 	os.system("nice -n 5 parallel -P 6 < shield_simlist.txt")
 	os.system("rm shield_simlist.txt")
 
+def Bare_Coil_Optlength(r0,r1,n):
+	"""Run simulation series for shielded short coil, varying radius"""
+	pcmd = "cd ..; ./RotationShield bare 15 %f 0.648 x\n"
+	fsimlist = open("shield_simlist.txt","w")
+	for r in [ r0+i*(r1-r0)/(n-1) for i in range(n)]:
+		fsimlist.write(pcmd%r)
+	fsimlist.close()
+	os.system("cat shield_simlist.txt")
+	os.system("nice -n 5 parallel -P 6 < shield_simlist.txt")
+	os.system("rm shield_simlist.txt")
+
 	
 if __name__ == "__main__":
 	
 	parser = OptionParser()
 	parser.add_option("-k", "--kill", dest="kill", action="store_true", default=False, help="kill running replays")
 	parser.add_option("-s", "--short", dest="short", action="store_true", default=False, help="short shield radius sims")
+	parser.add_option("-b", "--bare", dest="bare", action="store_true", default=False, help="bare shield length sims")
 	parser.add_option("--xmin", type="float", dest="xmin", default=0.5)
 	parser.add_option("--xmax", type="float", dest="xmax", default=1.5)
 	parser.add_option("--nsteps", type="int", dest="nsteps", default=12, help="Number of steps in scan")
@@ -38,6 +50,10 @@ if __name__ == "__main__":
 	
 	if options.short:
 		Short_Coil_Series(options.xmin,options.xmax,options.nsteps)
+		exit(0)
+
+	if options.bare:
+		Bare_Coil_Optlength(options.xmin,options.xmax,options.nsteps)
 		exit(0)
 
 	print "No option specified. Try --help for listing."
