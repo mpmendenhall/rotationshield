@@ -23,7 +23,7 @@ void coilShield::construct(MixedSource& ms, CosThetaBuilder* ct) const {
 		fe.addsource(vec2(ct->length/2.,ct->radius),1.0);
 	}
 	ShieldBuilder* G = new ShieldBuilder(pSegs);
-	G->makeOptCyl(cSegs, vSegs, radius, -length/2., length/2., new PlaneSource(Plane(),mu) );
+	G->makeOptCyl(cSegs, vSegs, radius, -length/2., length/2., new PlaneSource(Plane(),mu), &fe);
 	SymmetricSolver* sp = new SymmetricSolver(G);
 	
 	sp->solve();
