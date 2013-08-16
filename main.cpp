@@ -239,7 +239,7 @@ int main(int argc, char *argv[]) {
 	for(int i=1; i<argc; i++)
 		args.push_back(argv[i]);
 #ifdef WITH_OPENGL
-	vsr::initWindow();
+	vsr::initWindow("RotationShield Visualizer");
 	pthread_t thread;
 	pthread_create( &thread, NULL, &menuThread, &args );
 	vsr::doGlutLoop();

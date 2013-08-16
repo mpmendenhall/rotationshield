@@ -33,7 +33,7 @@ public:
 class fieldCell {
 public:
 	/// constructor
-	fieldCell(vec3 l, vec3 u, unsigned int n1, unsigned int n2, unsigned int n3): ll(l), ur(u), nx(n1), ny(n2), nz(n3), vx(3), vy(3), vz(3) {}
+	fieldCell(vec3 l, vec3 u, unsigned int n1, unsigned int n2, unsigned int n3): ll(l), ur(u), nx(n1), ny(n2), nz(n3), vx(5), vy(5), vz(5) {}
 	/// cell info as Stringmap
 	Stringmap getInfo() const;
 	

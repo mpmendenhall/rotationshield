@@ -48,15 +48,16 @@ Stringmap fieldCell::getInfo() const {
 //--
 
 nEDM_Geom::nEDM_Geom(const std::string& dir): coil(NULL), shield(NULL), cell(NULL),
-saveGrid(true), basedir(dir), ms(new MixedSource()) {
-	ms->retain();
-}
+saveGrid(true), basedir(dir), ms(NULL) { }
 
 nEDM_Geom::~nEDM_Geom() {
-	ms->release();
+	if(ms) ms->release();
 }
 		
 void nEDM_Geom::construct() {
+	if(ms) ms->release();
+	ms = new MixedSource();
+	ms->retain();
 	assert(coil);
 	coil->buildCoil(*ms);
 	ms->visualize();
@@ -68,6 +69,10 @@ void nEDM_Geom::construct() {
 
 void nEDM_Geom::takeSample(const std::string& sName) {
 	assert(cell);
+	if(!ms) {
+		printf("No field sources specified!\n");
+		return;
+	}
 	
 	// set up files
 	std::string fieldspath = basedir+"/"+sName;
