@@ -16,7 +16,7 @@ public:
 	/// get wire angle
 	virtual mdouble angle(unsigned int i, unsigned int ncoils) const = 0;
 	/// get information in Stringmap form
-	Stringmap getInfo() const { return Stringmap(); }
+	virtual Stringmap getInfo() const = 0;
 };
 
 /// position cos theta using fourier-series offsets
@@ -27,7 +27,8 @@ public:
 	/// get wire angle
 	virtual mdouble angle(unsigned int i, unsigned int ncoils) const;
 	/// get information in Stringmap form
-	Stringmap getInfo() const;
+	virtual Stringmap getInfo() const;
+	
 	VarVec<mdouble> shift; //< shifting parameters
 };
 
