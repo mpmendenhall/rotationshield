@@ -1,27 +1,10 @@
 #ifndef COSTHETABUILDER_HH
 #define COSTHETABUILDER_HH 1
 
-
 #include "MixedSource.hh"
 #include "MiscUtils.hh"
 #include "QFile.hh"
 #include <vector>
-
-/// Cos theta coil with fourier-series of wire shifts from normal
-mdouble shiftPositioner(unsigned int i, unsigned int ncoils, void* params);
-/// Cos theta coil positioner using "k" parameter
-mdouble alarconKPositioner(unsigned int i, unsigned int ncoils, void* params);
-
-vec3 simpletrans(int N, int i, int a1, int a2, int a3, void* params);
-
-struct doubleTrans {
-	vec3 trans1;
-	vec3 trans2;
-};
-
-/// different translation for +z,-z ends
-vec3 fancytrans(int N, int i, int a1, int a2, int a3, void* params);
-
 
 /// base class for positioning wires
 class AnglePositioner {

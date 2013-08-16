@@ -16,24 +16,14 @@ Stringmap ShiftPositioner::getInfo() const {
 	return m;
 }
 
-mdouble shiftPositioner(unsigned int i, unsigned int ncoils, void* params) {
-	i = i%ncoils;
-	mdouble x0 = (0.5+i)/(mdouble)ncoils;
-	mdouble x = x0;
-	VarVec<mdouble>* shift = (VarVec<mdouble>*)params;
-	if(shift)
-		for(unsigned int k=0; k<shift->size(); k++) x += (*shift)[k]*sin(PI*(mdouble)(k+1)*x0);
-	mdouble y = sqrt(1-x*x);
-	return atan2(y,x);
-}
-
+/*
 mdouble alarconKPositioner(unsigned int i, unsigned int ncoils, void* params) {	
 	i = i%ncoils;
 	mdouble k = *(mdouble*)params;
 	mdouble x0 = (0.5+i)/(mdouble)ncoils;
 	return atan2(sqrt(1/(x0*x0)-1),(1-k)*(1-k));
 }
-
+*/
 
 //--------------------------------------------------------------------
 
