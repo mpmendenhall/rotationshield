@@ -134,7 +134,7 @@ void mi_meas(std::deque<std::string>&, std::stack<std::string>& stack) {
 /// cell dimensions y=40cm, x=7.5cm, z=10cm, inner edge 5cm from center in x (field) direction
 /// Want:
 ///   B0 = 30mG; <dBi/di> < 10^-7 G/cm
-///   sqrt(<(dBx/dz)^2>) (z=long direction, x=along polarization)
+///   sqrt(<(dBx/dz)^2>) (z=long direction, x=along field) small
 ///   cells: | 7.5 | 10 | 7.5 |    --> x
 
 
@@ -166,11 +166,11 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	inputRequester setCoil("Set Coil Geometry",&mi_setCoil);
 	setCoil.addArg("half n","15");
 	setCoil.addArg("Length","4.292");
-	setCoil.addArg("Radius","0.648");
+	setCoil.addArg("Radius","0.61");
 	
 	inputRequester setShield("Set Shield Geometry",&mi_setShield);
-	setShield.addArg("Length","4.292");
-	setShield.addArg("Radius","0.648");
+	setShield.addArg("Length","4.692");
+	setShield.addArg("Radius","0.68");
 	inputRequester unsetShield("Remove shield",&mi_unshield);
 	inputRequester setShieldGrid("Set Shield Gridding",&mi_shieldGrid);
 	setShieldGrid.addArg("Fixed Z segs","10");

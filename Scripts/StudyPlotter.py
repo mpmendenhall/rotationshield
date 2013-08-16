@@ -39,8 +39,8 @@ def ShortCoilVaryRadius(basename):
 		Bavg = [Vol3Avg(Bi,cell_ll,cell_ur) for Bi in B]
 		# Gradient average
 		GradBAvg = [Vol3Avg(Bi,cell_ll,cell_ur) for Bi in GradV(B)]
-		# average gradient in mG/cm
-		GradScaled = [G*0.01*B0targ/Bavg[0] for G in GradBAvg]
+		# average gradient in uG/cm
+		GradScaled = [G*0.01*1000*B0targ/Bavg[0] for G in GradBAvg]
 		print r,Bavg,GradScaled
 		gdat.append([r,GradScaled[0],GradScaled[1],GradScaled[2],sum(GradScaled)])
 	gdat.sort()
@@ -48,7 +48,7 @@ def ShortCoilVaryRadius(basename):
 	# plot results
 	g=graph.graphxy(width=24,height=16,
 		x=graph.axis.lin(title="Coil Radius [m]"),
-		y=graph.axis.lin(title="Cell Average Gradients [mG/cm]"),
+		y=graph.axis.lin(title="Cell Average Gradients [$\\mu$G/cm]"),
 		key = graph.key.key(pos="bl"))
 	g.texrunner.set(lfs='foils17pt')
 	
@@ -60,18 +60,20 @@ def ShortCoilVaryRadius(basename):
 	g.writePDFfile(outdir + "/Plot_%s_Radius.pdf"%basename)
 
 
-def BareCoilVaryLength(basename):
-	outdir = os.environ["ROTSHIELD_OUT"]
-	datlist = [ (float(f.split("_")[2]), outdir+"/"+f) for f in os.listdir(outdir) if f[:len(basename)+1]==basename+"_"]
+def VaryCoilLength(outdir,basename):
+	
+	datlist = [ (float(f[len(basename):].split("_")[1]), outdir+"/"+f) for f in os.listdir(outdir) if f[:len(basename)+1]==basename+"_"]
 	
 	g=graph.graphxy(width=24,height=16,
 		x=graph.axis.lin(title="Coil Length [m]"),
-		y=graph.axis.lin(title="Cell Average Gradients [mG/cm]"),
-		key = graph.key.key(pos="br"))
+		y=graph.axis.lin(title="Cell Average Gradients [$\\mu$G/cm]",min=-7.5,max=7.5),
+		key = graph.key.key(pos="br",columns=2))
 	g.texrunner.set(lfs='foils17pt')
 	
 	# sample cell dimensions, normal and rotated
 	cells = [ [(0.05,-0.05,-0.20),(0.125,0.05,0.20)], [(0.05,-0.20,-0.05),(0.125,0.20,0.05)] ]
+	longaxis = [2,1]
+	axes = ["x","y","z"]
 	# target B0, mG
 	B0targ = 30.
 		
@@ -88,25 +90,31 @@ def BareCoilVaryLength(basename):
 			Bavg = [Vol3Avg(Bi,cell_ll,cell_ur) for Bi in B]
 			# Gradient average
 			GradBAvg = [Vol3Avg(Bi,cell_ll,cell_ur) for Bi in GradV(B)]
-			# average gradient in mG/cm
-			GradScaled = [G*0.01*B0targ/Bavg[0] for G in GradBAvg]
-			print r,Bavg,GradScaled
+			# average gradient in uG/cm
+			GradScaled = [G*0.01*1000*B0targ/Bavg[0] for G in GradBAvg]
+			# sqrt(<dBz/dx^2>) in uG/cm
+			dBxdz = B[0].derivative(longaxis[celln])
+			rms = sqrt(Vol3Avg(dBxdz*dBxdz,cell_ll,cell_ur))*0.01*1000*B0targ/Bavg[0]
+			print r,Bavg,GradScaled,rms
 			if r >= 2:
-				gdat.append([r,GradScaled[0],GradScaled[1],GradScaled[2],sum(GradScaled)])
+				gdat.append([r,GradScaled[0],GradScaled[1],GradScaled[2],rms])
 		gdat.sort()
 	
-		axes = ["x","y","z"]
 		axiscols = {"x":rgb.red,"y":rgb.green,"z":rgb.blue,"S":rgb.black}
 		invstyle = [[],[style.linestyle.dashed]][celln]
 		invlabel = ["cell along axis","cell rotated"][celln]
 		for (n,a) in enumerate(axes):
 			g.plot(graph.data.points(gdat,x=1,y=2+n,title="$\\langle \\partial B_{%s} / \\partial %s \\rangle$ "%(a,a)+invlabel),
 					[graph.style.line(lineattrs=[axiscols[a],style.linewidth.THick]+invstyle),])
-				
-	g.writePDFfile(outdir + "/Plot_%s_Length.pdf"%basename)
+		g.plot(graph.data.points(gdat,x=1,y=5,title="${\\langle (\\partial B_x / \\partial %s)^2 \\rangle}^{1/2}$ "%axes[longaxis[celln]]+invlabel),
+					[graph.style.line(lineattrs=[style.linewidth.THick]+invstyle),])
+
+	g.writePDFfile(outdir + "/Plot_%s_Length.pdf"%(basename.split("/")[-1]))
 
 
 if __name__=="__main__":
+	outdir = os.environ["ROTSHIELD_OUT"]
 	#ShortCoilVaryRadius("ShortCoilBare")
 	#ShortCoilVaryRadius("ShortCoil")
-	BareCoilVaryLength("BareCoil_15")
+	VaryCoilLength(outdir+"/Bare_VarLength","CLen")
+	VaryCoilLength(outdir+"/Shielded_VarLength","CLen")

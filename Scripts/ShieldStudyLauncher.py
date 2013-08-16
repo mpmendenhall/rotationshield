@@ -4,35 +4,35 @@ import os
 import time
 from optparse import OptionParser
 
-def Short_Coil_Series(r0,r1,n):
-	"""Run simulation series for shielded short coil, varying radius"""
-	pcmd = "cd ..; ./RotationShield short %f x\n"
+def Bare_Coil_Optlength(r0,r1,n):
+	"""Run simulation series for bare coil, varying length"""
+	pcmd = "cd ..; ./RotationShield cell range 0 -0.20 -0.20 0.20 0.20 0.20 grid 6 11 11 x coil 15 %f 0.61 meas svgrd 0 run %s x x\n"
 	fsimlist = open("shield_simlist.txt","w")
 	for r in [ r0+i*(r1-r0)/(n-1) for i in range(n)]:
-		fsimlist.write(pcmd%r)
+		fsimlist.write(pcmd%(r,"Bare_VarLength/CLen_%f_m"%r))
 	fsimlist.close()
 	os.system("cat shield_simlist.txt")
 	os.system("nice -n 5 parallel -P 6 < shield_simlist.txt")
 	os.system("rm shield_simlist.txt")
 
-def Bare_Coil_Optlength(r0,r1,n):
-	"""Run simulation series for shielded short coil, varying radius"""
-	pcmd = "cd ..; ./RotationShield bare 15 %f 0.648 x\n"
+def Shielded_Coil_OptLength(r0,r1,n):
+	"""Run simulation series for shielded coil, varying length"""
+	pcmd = "cd ..; ./RotationShield cell range 0 -0.20 -0.20 0.20 0.20 0.20 grid 6 11 11 x coil 15 %f 0.61 shield geom %f 0.68 x meas svgrd 0 run %s x x\n"
 	fsimlist = open("shield_simlist.txt","w")
 	for r in [ r0+i*(r1-r0)/(n-1) for i in range(n)]:
-		fsimlist.write(pcmd%r)
+		fsimlist.write(pcmd%(r,r+0.4,"Shielded_VarLength/CLen_%f_m"%r))
 	fsimlist.close()
 	os.system("cat shield_simlist.txt")
 	os.system("nice -n 5 parallel -P 6 < shield_simlist.txt")
-	os.system("rm shield_simlist.txt")
+	os.system("rm shield_simlist.txt")	
 
 	
 if __name__ == "__main__":
 	
 	parser = OptionParser()
 	parser.add_option("-k", "--kill", dest="kill", action="store_true", default=False, help="kill running replays")
-	parser.add_option("-s", "--short", dest="short", action="store_true", default=False, help="short shield radius sims")
-	parser.add_option("-b", "--bare", dest="bare", action="store_true", default=False, help="bare shield length sims")
+	parser.add_option("--shlen", dest="shlen", action="store_true", default=False, help="variable length shielded coil")
+	parser.add_option("--brlen", dest="brlen", action="store_true", default=False, help="variable length bare coil")
 	parser.add_option("--xmin", type="float", dest="xmin", default=0.5)
 	parser.add_option("--xmax", type="float", dest="xmax", default=1.5)
 	parser.add_option("--nsteps", type="int", dest="nsteps", default=12, help="Number of steps in scan")
@@ -48,11 +48,11 @@ if __name__ == "__main__":
 	#	print "Already running! I die!"
 	#	exit(1)
 	
-	if options.short:
-		Short_Coil_Series(options.xmin,options.xmax,options.nsteps)
+	if options.shlen:
+		Shielded_Coil_OptLength(options.xmin,options.xmax,options.nsteps)
 		exit(0)
 
-	if options.bare:
+	if options.brlen:
 		Bare_Coil_Optlength(options.xmin,options.xmax,options.nsteps)
 		exit(0)
 
