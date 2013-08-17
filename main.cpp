@@ -227,7 +227,6 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	OMmeas.addChoice(&exitMenu,"x");
 	
 	OptionsMenu OM("Rotation Shield Main Menu");
-	OM.addChoice(&selfTests,"test");
 #ifdef WITH_OPENGL
 	OM.addChoice(&ncube,"ncube");
 #endif
@@ -237,6 +236,7 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	OM.addChoice(&OMmeas,"meas");
 	OM.addChoice(&exitMenu,"x");
 	OM.addChoice(&peek,"peek",SELECTOR_HIDDEN);
+	OM.addChoice(&selfTests,"test",SELECTOR_HIDDEN);
 	std::stack<std::string> stack;
 	OM.doIt(args,stack);
 	

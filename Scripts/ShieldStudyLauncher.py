@@ -6,7 +6,7 @@ from optparse import OptionParser
 
 def Bare_Coil_OptLength(r0,r1,n):
 	"""Run simulation series for bare coil, varying length"""
-	pcmd = "cd ..; ./RotationShield cell range 0 -0.20 -0.20 0.20 0.20 0.20 grid 6 11 11 x coil geom 15 %f 0.61 x meas svgrd 0 run %s x x\n"
+	pcmd = "cd ..; ./RotationShield cell range 0 -0.20 -0.20 0.20 0.20 0.20 grid 7 11 11 x coil geom 15 %f 0.61 x meas svgrd 0 run %s x x\n"
 	fsimlist = open("shield_simlist.txt","w")
 	for r in [ r0+i*(r1-r0)/(n-1) for i in range(n)]:
 		fsimlist.write(pcmd%(r,"Bare_VarLength/CLen_%f_m"%r))
@@ -17,7 +17,7 @@ def Bare_Coil_OptLength(r0,r1,n):
 
 def Shielded_Coil_OptLength(r0,r1,n):
 	"""Run simulation series for shielded coil, varying length"""
-	pcmd = "cd ..; ./RotationShield cell range 0 -0.20 -0.20 0.20 0.20 0.20 grid 6 11 11 x coil geom 15 %f 0.61 x shield geom %f 0.68 x meas svgrd 0 run %s x x\n"
+	pcmd = "cd ..; ./RotationShield cell range 0 -0.20 -0.20 0.20 0.20 0.20 grid 7 11 11 x coil geom 15 %f 0.61 x shield geom %f 0.68 x meas svgrd 0 run %s x x\n"
 	fsimlist = open("shield_simlist.txt","w")
 	for r in [ r0+i*(r1-r0)/(n-1) for i in range(n)]:
 		fsimlist.write(pcmd%(r,r+0.4,"Shielded_VarLength/CLen_%f_m"%r))
@@ -28,7 +28,7 @@ def Shielded_Coil_OptLength(r0,r1,n):
 
 def Bare_Coil_OptRad(r0,r1,n):
 	"""Run simulation series for bare coil, varying length"""
-	pcmd = "cd ..; ./RotationShield cell range 0 -0.20 -0.20 0.175 0.20 0.20 grid 6 11 11 x coil geom 15 2.5 x %f meas svgrd 0 run %s x x\n"
+	pcmd = "cd ..; ./RotationShield cell range 0 -0.20 -0.20 0.175 0.20 0.20 grid 7 11 11 x coil geom 15 2.5 x %f meas svgrd 0 run %s x x\n"
 	fsimlist = open("shield_simlist.txt","w")
 	for r in [ r0+i*(r1-r0)/(n-1) for i in range(n)]:
 		fsimlist.write(pcmd%(r,"Bare_L2.5_VarRad/CRad_%f_m"%r))
@@ -39,7 +39,7 @@ def Bare_Coil_OptRad(r0,r1,n):
 
 def Shielded_Coil_OptRad(r0,r1,n):
 	"""Run simulation series for shielded coil, varying length"""
-	pcmd = "cd ..; ./RotationShield cell range 0 -0.20 -0.20 0.175 0.20 0.20 grid 6 11 11 x coil geom 15 2.5 %f x shield geom 2.9 %f x meas svgrd 0 run %s x x\n"
+	pcmd = "cd ..; ./RotationShield cell range 0 -0.20 -0.20 0.175 0.20 0.20 grid 7 11 11 x coil geom 15 2.5 %f x shield geom 2.9 %f x meas svgrd 0 run %s x x\n"
 	fsimlist = open("shield_simlist.txt","w")
 	for r in [ r0+i*(r1-r0)/(n-1) for i in range(n)]:
 		fsimlist.write(pcmd%(r,r+0.07,"Shielded_L2.5_VarRad/CRad_%f_m"%r))
@@ -50,7 +50,7 @@ def Shielded_Coil_OptRad(r0,r1,n):
 
 def Shielded_Coil_OptA(r0,r1,n):
 	"""Run simulation series for shielded coil, varying distortion parameter 'a'"""
-	pcmd = "cd ..; ./RotationShield cell range 0 -0.20 -0.20 0.175 0.20 0.20 grid 6 11 11 x coil geom 15 2.5 0.40 dist 1 %f x shield geom 2.9 0.47 x meas svgrd 0 run %s x x\n"
+	pcmd = "cd ..; ./RotationShield cell range 0 -0.20 -0.20 0.175 0.20 0.20 grid 7 11 11 x coil geom 15 2.5 0.40 dist 1 %f x shield geom 2.9 0.47 x meas svgrd 0 run %s x x\n"
 	fsimlist = open("shield_simlist.txt","w")
 	for r in [ r0+i*(r1-r0)/(n-1) for i in range(n)]:
 		fsimlist.write(pcmd%(r,"Shielded_L2.5_R.40_VarA/CA_%f"%r))
@@ -61,7 +61,7 @@ def Shielded_Coil_OptA(r0,r1,n):
 
 def Shielded_Coil_OptGap(r0,r1,n):
 	"""Run simulation series for shielded coil, varying length"""
-	pcmd = "cd ..; ./RotationShield cell range 0 -0.20 -0.20 0.175 0.20 0.20 grid 6 11 11 x coil geom 15 2.5 0.45 x shield geom 2.9 %f x meas svgrd 0 run %s x x\n"
+	pcmd = "cd ..; ./RotationShield cell range 0 -0.20 -0.20 0.175 0.20 0.20 grid 7 11 11 x coil geom 15 2.5 0.45 x shield geom 2.9 %f x meas svgrd 0 run %s x x\n"
 	fsimlist = open("shield_simlist.txt","w")
 	for r in [ r0+i*(r1-r0)/(n-1) for i in range(n)]:
 		fsimlist.write(pcmd%(0.45+r,"Shielded_L2.5_R.45_VarGap/SGap_%f_m"%r))

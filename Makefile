@@ -44,7 +44,7 @@ CPPFLAGS = -g $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -Wall -Wuninitialized \
 
 ifdef ROTSHIELD_VIS
 	CPPFLAGS += -DWITH_OPENGL $(GL_INCLUDES) 
-	LDFLAGS += $(GL_LINKER_ARGS)
+	LDFLAGS += $(GL_LINKER_ARGS) -lpthread
 endif
 
 #############
