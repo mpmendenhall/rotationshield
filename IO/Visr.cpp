@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <cassert>
 #include <string>
+#include <unistd.h>
 
 #ifdef WITH_OPENGL
 #include <GL/freeglut.h>
@@ -117,7 +118,6 @@ namespace vsr {
 	void startRecording(bool newseg) {
 		pthread_mutex_lock(&commandLock);
 		if(newseg) commands.clear();
-		//printf("Recording GL commands..."); fflush(stdout);
 		qcmd c(_startRecording);
 		if(!newseg) c.v.push_back(1);
 		addCmd(c);
@@ -132,7 +132,6 @@ namespace vsr {
 	}
 	void stopRecording() {
 		addCmd(qcmd(_stopRecording));	
-		//printf("Recording complete (%i commands).\n",(int)commands.size());
 		pthread_mutex_unlock(&commandLock);
 	}	
 
@@ -307,7 +306,6 @@ namespace vsr {
 	void redrawIfUnlocked() {
 		if(kill_flag) exit(0);
 		if(pthread_mutex_trylock(&commandLock)) return;
-		//if(commands.size()) printf("Processing %i graphics commands...\n",(int)commands.size());
 		while(commands.size()) {
 			void (*f)(std::vector<float>&) = commands.front().fcn;
 			if(f)
@@ -316,6 +314,7 @@ namespace vsr {
 		}
 		redrawDisplay();
 		pthread_mutex_unlock(&commandLock);
+		usleep(10000);
 	}
 	
 	void keypress(unsigned char key, int x, int y) {

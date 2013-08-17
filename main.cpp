@@ -20,29 +20,44 @@ void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
 	reference_sanity_check();
 }
 
-/// hypercube visualization test
-void mi_ncube(std::deque<std::string>&, std::stack<std::string>&) {
-	const unsigned int N = 4;
+template<unsigned int N>
+void hypercube_rotator() {
 	NRotator<N> NR;
 	NCube<N> NC;
 	
-	double ftime = 15.e-3; // frame time in s
+	double ftime = 15.e-3; // min frame time in s
+	srand(time(NULL));
 	std::vector<mdouble> vrot;
 	for(unsigned int i=1; i<N; i++)
 		for(unsigned int j=0; j<i; j++)
-			vrot.push_back(randunif(-1.*ftime,1.*ftime));
+			vrot.push_back(randunif(-2./sqrt(N),2./sqrt(N)));
 	
 	vsr::set_pause();
 	if(vsr::get_pause())
 		printf("Press [ENTER] in visualization window to continue...\n");
+		
+	clock_t prevTime = clock();
 	while(vsr::get_pause()) {
+		clock_t timeNow = clock();
+		double dtime = double(timeNow-prevTime)/double(CLOCKS_PER_SEC);
+		prevTime = timeNow;
 		unsigned int n=0;
 		for(unsigned int i=1; i<N; i++)
 			for(unsigned int j=0; j<i; j++)
-				NR.rotate(i, j, vrot[n++]);
+				NR.rotate(i, j, vrot[n++]*dtime);
 		NC.visualize(&NR);
-		usleep(ftime*1.e6);
+		if(dtime>=0 && dtime<ftime)
+			usleep((ftime-dtime)*1.e6);
 	}
+}
+
+/// hypercube visualization test
+void mi_ncube(std::deque<std::string>&, std::stack<std::string>& stack) {
+	int n = streamInteractor::popInt(stack);
+	if(n==3) hypercube_rotator<3>();
+	else if(n==4) hypercube_rotator<4>();
+	else if(n==5) hypercube_rotator<5>();
+	else printf("Only 3 to 5 dimensions allowed.\n");
 }
 
 // Global coil/shield settings
@@ -157,6 +172,7 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	inputRequester exitMenu("Exit Menu",&menutils_Exit);
 	inputRequester peek("Show stack",&menutils_PrintStack);
 	inputRequester ncube("Hyercube visualization test",&mi_ncube);
+	ncube.addArg("n dim","3");
 	inputRequester selfTests("Self test to reproduce known results",&mi_runtests);
 	
 	inputRequester setFCrange("Set Measurement Range",&mi_setFCrange);
