@@ -6,6 +6,7 @@
 #  Contents:     Makefile for RotationShield
 #
 #####################################################################
+# export ROTSHIELD_VIS=1; make clean; make -j8; mv RotationShield RotationShieldVis; export ROTSHIELD_VIS=; make clean; make -j8
 
 #############
 # Some things you may need to change:
@@ -17,7 +18,7 @@ OS_DIR = /usr/
 
 ifdef ROTSHIELD_MACOS
 	OS_DIR = /sw/
-	GL_PATH = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/X11
+	GL_PATH = /usr/X11
 	GL_INCLUDES = -I/sw/include/ -I$(GL_PATH)/include/
 	GL_LINKER_ARGS = $(GL_PATH)/lib/libGL.dylib /sw/lib/libglut.dylib
 else
@@ -38,14 +39,13 @@ BASE_LIB_DIRS  = -L$(OS_DIR)/lib
 # optmization
 GCC_OPTIMIZATION_LEVEL = 3
 
-CPPFLAGS = -g $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) \
-		-Wall -Wuninitialized -I. -IMathUtils -IFieldSource -ISolver -IBuilder -IStudies -IIO $(BASE_INCLUDE_DIRS)
+CPPFLAGS = -g $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -Wall -Wuninitialized \
+	-I. -IMathUtils -IFieldSource -ISolver -IBuilder -IStudies -IIO $(BASE_INCLUDE_DIRS)
 
 ifdef ROTSHIELD_VIS
 	CPPFLAGS += -DWITH_OPENGL $(GL_INCLUDES) 
 	LDFLAGS += $(GL_LINKER_ARGS)
 endif
-
 
 #############
 # Everything below here "should" work without modification
