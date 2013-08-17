@@ -3,8 +3,7 @@
 
 #include "MiscUtils.hh"
 #include "InteractionSolver.hh"
-#include "CLHEP/Matrix/Matrix.h"
-#include "CLHEP/Matrix/Vector.h"
+#include "gsl/gsl_matrix.h"
 
 /// The class where everything else is pulled together to solve the shield boundary-value problem.
 
@@ -20,9 +19,9 @@
 class GenericSolver: public InteractionSolver {
 public:
 	/// Constructor; uses ShieldBuilder * g to describe the shield geometry
-	GenericSolver(): InteractionSolver() {}
+	GenericSolver();
 	/// Destructor
-	virtual ~GenericSolver() {}
+	virtual ~GenericSolver();
 	/// Solves the boundary value problem for the shield's geometry, producing #the_GF
 	virtual void solve(bool checkinversion = false);
 	/// Calculate the shield's #finalState in response to the #incidentState
@@ -33,7 +32,7 @@ protected:
 	/// Assembles the interaction matrix
 	void buildInteractionMatrix();
 	
-	CLHEP::HepMatrix the_GF; //< The inverted interaction matrix, i.e. the Green's Function for the system
+	gsl_matrix* the_GF; //< The inverted interaction matrix, i.e. the Green's Function for the system
 };
 
 #endif

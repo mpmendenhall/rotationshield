@@ -13,7 +13,7 @@ from EDM_IO import *
 
 def Vol3Avg(P,ll,ur):
 	"Volume average of a polynomial"
-	return P.average(ll[0],ur[0]).average(ll[1],ur[1]).average(ll[2],ur[2])
+	return P.average(0,ll[0],ur[0]).average(0,ll[1],ur[1]).average(0,ll[2],ur[2])
 
 def GradV(V):
 	"Gradient of polynomial vector"
@@ -25,8 +25,8 @@ def VaryCoilParam(outdir,basename,varname):
 	datlist = [ (float(f[len(basename):].split("_")[1]), outdir+"/"+f) for f in os.listdir(outdir) if f[:len(basename)+1]==basename+"_"]
 	
 	g=graph.graphxy(width=24,height=16,
-		x=graph.axis.lin(title=varname,min=-.005,max=.005),
-		y=graph.axis.lin(title="Cell Average Gradients [$\\mu$G/cm]",min=-3,max=3),
+		x=graph.axis.lin(title=varname),
+		y=graph.axis.lin(title="Cell Average Gradients [$\\mu$G/cm]",min=-10,max=10),
 		key = graph.key.key(pos="bl",columns=2))
 	g.texrunner.set(lfs='foils17pt')
 	
@@ -57,9 +57,9 @@ def VaryCoilParam(outdir,basename,varname):
 			# sqrt(<dBz/dx^2>) in uG/cm
 			dBxdz = B[0].derivative(longaxis[celln])
 			rms = sqrt(Vol3Avg(dBxdz*dBxdz,cell_ll,cell_ur))*0.01*1000*B0targ/Bavg[0]
-			print r,Bavg,GradScaled,rms
-			#if r>0.3:
-			gdat.append([r,GradScaled[0],GradScaled[1],GradScaled[2],rms])
+			print r,"B0 =",Bavg,"\tBgrad =",GradScaled,"\tRMS =",rms
+			if r>0.3:
+				gdat.append([r,GradScaled[0],GradScaled[1],GradScaled[2],rms])
 		gdat.sort()
 	
 		axiscols = {"x":rgb.red,"y":rgb.green,"z":rgb.blue,"S":rgb.black}
@@ -81,8 +81,8 @@ if __name__=="__main__":
 	#VaryCoilParam(outdir+"/Shielded_VarLength","CLen","Coil Length [m]")
 	
 	#VaryCoilParam(outdir+"/Bare_L2.5_VarRad","CRad","Coil Radius [m]")
-	#VaryCoilParam(outdir+"/Shielded_L2.5_VarRad","CRad","Coil Radius [m]")
+	VaryCoilParam(outdir+"/Shielded_L2.5_VarRad","CRad","Coil Radius [m]")
 	
 	#VaryCoilParam(outdir+"/Shielded_L2.5_R.45_VarGap","SGap","Shield-to-coil gap [m]")
 
-	VaryCoilParam(outdir+"/Shielded_L2.5_R.40_VarA","CA","Coil distortion 'a'")
+	#VaryCoilParam(outdir+"/Shielded_L2.5_R.40_VarA","CA","Coil distortion `a'")

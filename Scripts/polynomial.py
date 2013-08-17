@@ -19,22 +19,34 @@ def basisv(n,m):
 # polynomial, represented by a dictionary with tuples of exponents as the keys
 # mapped to the coefficient of the term
 class polynomial:
-
-	coeffs = {}
-	varnames = ( "x","y","z","t", "w","v", "u", "a", "b", "c" )
+	"""Class for manipulating polynomials in N variables"""
 	
-	def __init__(self):
+	def __init__(self,N):
+		self.N = N
+		self.C0 = (0,)*self.N
 		self.coeffs = {}
+		self.varnames = ( "x","y","z","t", "w","v", "u", "a", "b", "c" )
 		
 	def __add__(self,other):
+		"""Add polynomials"""
 		p = self.copy()
-		for k in other.coeffs.keys():
-			p.coeffs[k] = p.coeffs.get(k,0) + other.coeffs[k]
+		if isinstance(other,polynomial):
+			assert other.N == self.N
+			for k in other.coeffs.keys():
+				p.coeffs[k] = p.coeffs.get(k,0) + other.coeffs[k]
+		else:
+			if other:
+				if self.coeffs.has_key(self.C0):
+					self.coeffs[self.C0] += other
+				else:
+					self.coeffs[self.C0] = other
 		return p
 	
 	def __mul__(self,other):
-		p = polynomial()
+		"""Multiply polynomial or scalar type"""
+		p = polynomial(self.N)
 		if isinstance(other,polynomial):
+			assert other.N == self.N
 			for k1 in self.coeffs.keys():
 				for k2 in other.coeffs.keys():
 					k3 = tuple([k1[i]+k2[i] for i in range(len(k1))])
@@ -45,46 +57,43 @@ class polynomial:
 		return p
 		
 	def __neg__(self):
-		p = polynomial()
+		"""Negate polynomial"""
+		p = polynomial(self.N)
 		for k in self.coeffs.keys():
 			p.coeffs[k] = -self.coeffs[k]
 		return p
 		
 	def __sub__(self,other):
+		"""Subtract polynomials"""
 		return self + (-other)
-	
-	def nvars(self):
-		return len(self.coeffs.keys()[0]);
 		
-	def addConst(self,c):
-		self.coeffs[(0,)*self.nvars()] += c
-		return self
-		
-	def canonical_polyquadratic_vars(self,n):
-		l = [(0,)*n,]
-		for i in range(n):
-			t = [0,]*n
-			t[i] += 1
-			l += [tuple(t),]
-		for i in range(n):
-			for j in range(i+1):
-				t = [0,]*n
-				t[i] += 1
-				t[j] += 1
-				l += [tuple(t),]
-		return l
+	#def canonical_polyquadratic_vars(self,n):
+	#	"""Quadratic polynomial in n variables"""
+	#	l = [(0,)*n,]
+	#	for i in range(n):
+	#		t = [0,]*n
+	#		t[i] += 1
+	#		l += [tuple(t),]
+	#	for i in range(n):
+	#		for j in range(i+1):
+	#			t = [0,]*n
+	#			t[i] += 1
+	#			t[j] += 1
+	#			l += [tuple(t),]
+	#	return l
 	
-	def build_polyquadratic(self,n,coefflist = None):
-		l = self.canonical_polyquadratic_vars(n)
-		self.coeffs = {}
-		for i in range(len(l)):
-			if coefflist:
-				self.coeffs[l[i]] = float(coefflist[i])
-			else:
-				self.coeffs[l[i]] = 1.0
-		return self
+	#def build_polyquadratic(self,n,coefflist = None):
+	#	l = self.canonical_polyquadratic_vars(n)
+	#	self.coeffs = {}
+	#	for i in range(len(l)):
+	#		if coefflist:
+	#			self.coeffs[l[i]] = float(coefflist[i])
+	#		else:
+	#			self.coeffs[l[i]] = 1.0
+	#	return self
 
 	def eval(self,varvals):
+		"""Evaluate at given variable values"""
 		s = 0
 		for k in self.coeffs.keys():
 			ss = self.coeffs[k]
@@ -94,22 +103,27 @@ class polynomial:
 		return s
 	
 	def evalTerms(self,varvals):
+		"""Evaluate term-by-term; useful for linear fits"""
 		return [ product([varvals[n]**v for (n,v) in enumerate(k)])*self.coeffs[k] for k in self.coeffs.keys() ]
 	
 	def rescale(self,scalefactors):
+		"""Scale each variable by given scale factor x->s*x"""
 		for k in self.coeffs.keys():
 			self.coeffs[k] *= product([ scalefactors[n]**p for (n,p) in enumerate(k) ])
 	
-	def evalOne(self,xval):
-		p = polynomial()
+	def evalOne(self,n,xval):
+		"""Evaluate out one variable at given value; return scalar if is scalar"""
+		p = polynomial(self.N-1)
 		for k in self.coeffs.keys():
-			p.coeffs[k[1:]] = p.coeffs.get(k[1:],0) + self.coeffs[k]*(xval**k[0])
-		if () in p.coeffs.keys():
-			return p.coeffs[()]
+			nkey = k[:n]+k[n+1:]
+			p.coeffs[nkey] = p.coeffs.get(nkey,0) + self.coeffs[k]*(xval**k[n])
+		if p.N == 0:
+			return p.coeffs.get((),0)
 		return p
 		
 	def derivative(self,n):
-		p = polynomial()
+		"""Derivative over variable n"""
+		p = polynomial(self.N)
 		for k in self.coeffs.keys():
 			if k[n] == 0:
 				continue
@@ -119,23 +133,27 @@ class polynomial:
 		return p
 	
 	def indefIntegral(self,n):
-		p = polynomial()
+		"""Indefinite integral in variable n"""
+		p = polynomial(self.N)
 		for k in self.coeffs.keys():
 			c = self.coeffs[k]/(1.0+k[n])
 			kn = list(k); kn[n] += 1; kn = tuple(kn);
 			p.coeffs[kn] = p.coeffs.get(kn,0) + c
 		return p
 		
-	def integral(self,a,b,n=0):
+	def integral(self,n,a,b):
+		"""Definite integral integrating out variable n"""
 		p = self.indefIntegral(n)
-		return p.evalOne(b) - p.evalOne(a)
+		return p.evalOne(n,b) - p.evalOne(n,a)
 		
-	def average(self,a,b,n=0):
-		return self.integral(a,b,n)*(1.0/(b-a))
+	def average(self,n,a,b):
+		"""Average over range in variable b"""
+		return self.integral(n,a,b)*(1.0/(b-a))
 		
 		
 	def copy(self):
-		p = polynomial()
+		"""Copy into another polynomial"""
+		p = polynomial(self.N)
 		p.coeffs = self.coeffs.copy()
 		p.varnames = self.varnames
 		return p
@@ -145,9 +163,8 @@ class polynomial:
 		return array(linalg.solve(lhs,rhs).transpose())[0]
 		
 	def quadratic_derivs_matrix(self):
-		n = self.nvars()
-		lhs = matrix([ [ self.derivative(dv).coeffs[basisv(n,v)] for v in range(n) ] for dv in range(n) ])
-		rhs = matrix([ self.derivative(dv).coeffs[(0,)*n] for dv in range(n) ]).transpose()
+		lhs = matrix([ [ self.derivative(dv).coeffs[basisv(self.N,v)] for v in range(self.N) ] for dv in range(self.N) ])
+		rhs = matrix([ self.derivative(dv).coeffs[(0,)*self.N] for dv in range(self.N) ]).transpose()
 		return (lhs, rhs)
 	
 	def max_error_bounds(self):
@@ -162,6 +179,7 @@ class polynomial:
 			self.coeffs = { (1,0):1, (0,1):2, (1,1):3 }
 			
 	def tostring(self):
+		"""Display as a string"""
 		s = ""
 		ks = self.coeffs.keys()
 		ks.sort()

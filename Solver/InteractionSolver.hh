@@ -2,8 +2,6 @@
 #define INTERACTIONSOLVER_HH 1
 
 #include "ReactiveElement.hh"
-#include "CLHEP/Matrix/Matrix.h"
-#include "CLHEP/Matrix/Vector.h"
 #include "MiscUtils.hh"
 #include <stdlib.h>
 #include <math.h>

@@ -19,7 +19,7 @@ def read_polynomial(fin):
 	while len(l) and l[0] != ' ':
 		l = fin.readline()
 	
-	p = polynomial()
+	p = polynomial(3)
 	while len(l) and l[0] == ' ':
 		t = [ float(x) for x in l.split() ]
 		p.coeffs[ tuple(t[1:]) ] = t[0]

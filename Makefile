@@ -31,7 +31,7 @@ endif
 CC = cc
 CXX = g++
 
-# include directories for GSL, CLHEP, FFTW, etc.
+# include directories for GSL, FFTW, etc.
 BASE_INCLUDE_DIRS  = -I$(OS_DIR)/include
 # lib dir flags for GSL, FFTW, etc.
 BASE_LIB_DIRS  = -L$(OS_DIR)/lib
@@ -69,7 +69,7 @@ obj_Studies = tests.o Studies.o
 objects = $(obj_IO) $(obj_MathUtils) $(obj_FieldSource) $(obj_Solver) $(obj_Builder) $(obj_Studies)
 	
 RotationShield : main.cpp $(objects)
-	$(CXX) main.cpp $(objects) -o RotationShield $(CPPFLAGS) $(LDFLAGS) $(BASE_LIB_DIRS) -lCLHEP -lgsl -lfftw3 -lgslcblas
+	$(CXX) main.cpp $(objects) -o RotationShield $(CPPFLAGS) $(LDFLAGS) $(BASE_LIB_DIRS) -lgsl -lfftw3 -lgslcblas
 	
 
 #

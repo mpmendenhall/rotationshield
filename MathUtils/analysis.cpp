@@ -19,9 +19,9 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, int nX, int nY, int nZ, std::ostrea
 	mdouble avgBx1 = 0;
 	
 	// set up results tables
-	CLHEP::HepMatrix coords(nX*nY*nZ,3);
-	CLHEP::HepVector bfield[3];
-	for(int i=0; i<3; i++) bfield[i] = CLHEP::HepVector(nX*nY*nZ);
+	gsl_matrix* coords = gsl_matrix_alloc(nX*nY*nZ,3);
+	gsl_vector* bfield[3];
+	for(int i=0; i<3; i++) bfield[i] = gsl_vector_alloc(nX*nY*nZ);
 	
 	// scan over survey points
 	bsXYZ = vec3(); bssXYZ = vec3();
@@ -37,16 +37,16 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, int nX, int nY, int nZ, std::ostrea
 			{
 				x = ll+n*dx;
 				b = FS->fieldAt(x);
-				for(int i=0; i<3; i++) bfield[i][c] = b[i];
+				for(int i=0; i<3; i++) gsl_vector_set(bfield[i],c,b[i]);
 				
 				bsZ += b*simpsonCoeff(n[2],nZ);
 				bssZ += b*b*simpsonCoeff(n[2],nZ);
 				
 				for(int i=0; i<3; i++) datsout << std::setw(16) << x[i] << " ";
-				for(int i=0; i<3; i++) datsout << std::setw(20) << std::setprecision(12) << bfield[i][c] << " ";
+				for(int i=0; i<3; i++) datsout << std::setw(20) << std::setprecision(12) << gsl_vector_get(bfield[i],c) << " ";
 				datsout << std::endl;
 				
-				for(int i=0; i<3; i++) coords[c][i] = x[i];
+				for(int i=0; i<3; i++) gsl_matrix_set(coords,c,i,x[i]);
 				
 				c++;
 			}
@@ -62,6 +62,7 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, int nX, int nY, int nZ, std::ostrea
 	
 	
 	// summary data and field fit
+	mdouble bRMS = sqrt(bssXYZ.sum());
 	statsout << "#Field Shape" << std::endl;
 	statsout << "#<B> = (" << bsXYZ[0] << " " << bsXYZ[1] << " " << bsXYZ[2] << ")\n";
 	statsout << "#<B^2> = (" << bssXYZ[0] << " " << bssXYZ[1] << " " << bssXYZ[2] << ")\n";
@@ -70,19 +71,23 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, int nX, int nY, int nZ, std::ostrea
 	mdouble resids;
 	char axisnames[] = "xyz";
 	
-	const unsigned int polOrder = 5;
+	unsigned int polOrder = 4;
+	if(nX*nY*nZ >= 56) polOrder = 5;
+	//if(nX*nY*nZ >= 84) polOrder = 6; // don't do this... seems numerically unstable
 	Polynomial<3,mdouble> p = Polynomial<3,mdouble>::lowerTriangleTerms(polOrder);
 	for(int i=0; i<3; i++) {
 		resids = polynomialFit(coords, bfield[i], p);
+		gsl_vector_free(bfield[i]);
 		statsout << "#" << polOrder << "th order polynomial (" << p.terms.size() << " terms) fit to B" << axisnames[i] << " centered at < 0 0 0 >, rms residual = " << resids << std::endl;
 		Polynomial<3,mdouble> p2 = p;
-		p2.prune(1e-12*fabs(p(vec3())));
+		p2.prune(1e-9*bRMS);
 		p2.tableForm(statsout);
 		//statsout << "#4th order Polynomial for B" << axisnames[i] << " recentered at " << (ll+ur)*0.5 << std::endl;
 		//p2 = p.recentered((ll+ur)*0.5);
 		//p2.prune(1e-9);
 		//p2.tableForm(statsout);
 	}
+	gsl_matrix_free(coords);
 	
 }
 

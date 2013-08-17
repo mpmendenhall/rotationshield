@@ -5,17 +5,19 @@
 #include "Vec.hh"
 #include "Vec_Null.hh"
 
-#include "CLHEP/Matrix/Matrix.h"
-#include "CLHEP/Matrix/Vector.h"
+#include "gsl/gsl_vector.h"
+#include "gsl/gsl_matrix.h"
+#include "gsl/gsl_blas.h"
+#include <cassert>
 
 /// N-dimensional rotation matrix
 template<int N>
 class NRotator {
 public:
 	/// constructor
-	NRotator(): M(N,N) { for(int i=0; i<N; i++) M[i][i] = 1.0; }
+	NRotator();
 	/// destructor
-	~NRotator() {}
+	~NRotator() { gsl_matrix_free(M); }
 	
 	/// rotate by theta in the i-j plane
 	void rotate(int i, int j, mdouble th);
@@ -23,21 +25,31 @@ public:
 	Vec<N,mdouble> apply(const Vec<N,mdouble>& v) const;
 	
 private:
-	CLHEP::HepMatrix M; //< the rotation matrix
+	gsl_matrix* M; //< the rotation matrix
 };
 
 template<int N>
+NRotator<N>::NRotator() {
+	M = gsl_matrix_calloc(N,N);
+	for(int i=0; i<N; i++) gsl_matrix_set(M,i,i,1.0);
+}
+
+template<int N>
 void NRotator<N>::rotate(int i, int j, mdouble th) {
-	CLHEP::HepMatrix R(N,N);
-	for(int n=0; n<N; n++) R[n][n] = 1.0;
+	gsl_matrix* R = gsl_matrix_calloc(N,N);
+	for(int n=0; n<N; n++) gsl_matrix_set(R,n,n,1.0);
 	mdouble c = cos(th);
 	mdouble s = sin(th);
-	R[i][i] = c;
-	R[i][j] = -s;
-	R[j][i] = s;
-	R[j][j] = c;
+	gsl_matrix_set(R,i,i,c);
+	gsl_matrix_set(R,i,j,-s);
+	gsl_matrix_set(R,j,i,s);
+	gsl_matrix_set(R,j,j,c);
 	
-	M = R*M;
+	gsl_matrix* RM = gsl_matrix_alloc(N,N);
+	assert(!gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1., R, M, 0., RM));
+	gsl_matrix_free(R);
+	gsl_matrix_free(M);
+	M = RM;
 }
 
 template<int N>
@@ -45,7 +57,7 @@ Vec<N,mdouble> NRotator<N>::apply(const Vec<N,mdouble>& v) const{
 	Vec<N,mdouble> r = Vec<N,mdouble>();
 	for(int i=0; i<N; i++)
 		for(int j=0; j<N; j++)
-			r[i] += M[i][j]*v[j];
+			r[i] += gsl_matrix_get(M,i,j)*v[j];
 	return r;
 }
 

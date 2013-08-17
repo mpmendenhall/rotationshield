@@ -100,7 +100,7 @@ const Monomial<N,T,P> Monomial<N,T,P>::operator-() const {
 template<unsigned int N, typename T, typename P>
 const Monomial<N,T,P> Monomial<N,T,P>::inverse() const {
 	Monomial<N,T,P> u = *this;
-	u.val = 1/val;
+	u.val = 1./val;
 	u.dimensions = -u.dimensions;
 	return u;
 }
@@ -108,7 +108,7 @@ const Monomial<N,T,P> Monomial<N,T,P>::inverse() const {
 template<unsigned int N, typename T, typename P>
 T Monomial<N,T,P>::operator()(const Vec<N,T>& v) const {
 	T s = val;
-	for(P i=0; i<N; i++)
+	for(unsigned int i=0; i<N; i++)
 		s *= pow(v[i],dimensions[i]);
 	return s;
 }
@@ -233,7 +233,7 @@ std::ostream& Monomial<N,T,P>::latexForm(std::ostream& o) const {
 
 template<unsigned int N, typename T, typename P>
 std::ostream& Monomial<N,T,P>::tableForm(std::ostream& o) const {
-	o << std::setw(16) << val << "\t";
+	o << std::setw(20) << std::setprecision(10) << val << "\t";
 	for(P i=0; i<N; i++)
 		o << " " << std::setw(0) << dimensions[i];
 	return o;
