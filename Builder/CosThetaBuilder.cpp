@@ -1,11 +1,12 @@
 #include "CosThetaBuilder.hh"
 #include "strutils.hh"
+#include <math.h>
 
 mdouble ShiftPositioner::angle(unsigned int i, unsigned int ncoils) const {
 	i = i%ncoils;
 	mdouble x0 = (0.5+i)/(mdouble)ncoils;
 	mdouble x = x0;
-	for(unsigned int k=0; k<shift.size(); k++) x += shift[k]*sin(PI*(mdouble)(k+1)*x0);
+	for(unsigned int k=0; k<shift.size(); k++) x += shift[k]*sin(M_PI*(mdouble)(k+1)*x0);
 	mdouble y = sqrt(1-x*x);
 	return atan2(y,x);
 }

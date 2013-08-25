@@ -1,5 +1,6 @@
 #include "LineSource.hh"
 #include "gsl/gsl_sf_ellint.h"
+#include <math.h>
 
 vec3 LineSource::fieldAt(const vec3& v) const
 {
@@ -11,7 +12,7 @@ vec3 LineSource::fieldAt(const vec3& v) const
 	vec3 b = cross(dv1,l.dv);
 	mdouble m2 = b.mag2();
 	if(!m2) return b;
-	b *= j*(dv2.dot(l.dv)/dv2.mag() - dv1.dot(l.dv)/dv1.mag())/(4.0*PI*m2);
+	b *= j*(dv2.dot(l.dv)/dv2.mag() - dv1.dot(l.dv)/dv1.mag())/(4.0*M_PI*m2);
 	return b;	
 }
 
@@ -55,7 +56,7 @@ vec3 LineSource::fieldOverLine(Line L) const
 		if(aa == 0) { return vec3(); }
 		mdouble b = relDirection*(sqrt(aa+x4*x4)+sqrt(aa+(x2-x3)*(x2-x3))-sqrt(aa+x3*x3)-sqrt(aa+(x2-x4)*(x2-x4)))/sqrt(aa);
 		vec3 d = cross(l.dv,v);
-		return d*(j*b/(4.0*PI*d.mag()*L.len));
+		return d*(j*b/(4.0*M_PI*d.mag()*L.len));
 	} else if(fabs(relDirection)<1e-8)
 	{
 		//         y2
@@ -79,7 +80,7 @@ vec3 LineSource::fieldOverLine(Line L) const
 		mdouble c12 = sqrt(aa+x1*x1+y2*y2);
 		mdouble c21 = sqrt(aa+x2*x2+y1*y1);
 		mdouble c22 = sqrt(aa+x2*x2+y2*y2);
-		mdouble perp = j/(8*PI*L.len)*log( (x1+c12)*(x2-c22)*(x1-c11)*(x2+c21) / 
+		mdouble perp = j/(8*M_PI*L.len)*log( (x1+c12)*(x2-c22)*(x1-c11)*(x2+c21) /
 										  ((x1-c12)*(x2+c22)*(x1+c11)*(x2-c21)) );
 		
 		// parallel component
@@ -87,7 +88,7 @@ vec3 LineSource::fieldOverLine(Line L) const
 		mdouble z12 = x1*y2/(a*c12);
 		mdouble z21 = x2*y1/(a*c21);
 		mdouble z22 = x2*y2/(a*c22);
-		mdouble par = j/(4*PI*L.len)*(atan(z22)-atan(z21)+atan(z11)-atan(z12));
+		mdouble par = j/(4*M_PI*L.len)*(atan(z22)-atan(z21)+atan(z11)-atan(z12));
 		
 		return z*perp + L.dv*par;
 	}
@@ -120,7 +121,7 @@ vec2 LineSource::surfaceField(Plane p) const {
 		mdouble y2 = y0 + 0.5*p.wx;
 		vec2 r; r[1] = 0;
 		r[0] = -relDirection*( sF3(aa+(x2-x3)*(x2-x3),aa,y1,y2) - sF3(aa+x3*x3,aa,y1,y2)
-							  +sF3(aa+x4*x4,aa,y1,y2) - sF3(aa+(x2-x4)*(x2-x4),aa,y1,y2) )*fabs(a)*j/(4.0*PI*p.area);
+							  +sF3(aa+x4*x4,aa,y1,y2) - sF3(aa+(x2-x4)*(x2-x4),aa,y1,y2) )*fabs(a)*j/(4.0*M_PI*p.area);
 		return r;
 	}
 }

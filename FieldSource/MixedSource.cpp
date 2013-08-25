@@ -30,14 +30,14 @@ void MixedSource::arc(vec3 start, vec3 end, mdouble j, int nsegs) {
 	mdouble z = start[2];
 	mdouble th0 = atan2(start[1],start[0]);
 	mdouble th1 = atan2(end[1],end[0]);
-	if(th1-th0>PI) th0 += 2*PI;
-	if(th0-th1>PI) th1 += 2*PI;
+	if(th1-th0>M_PI) th0 += 2*M_PI;
+	if(th0-th1>M_PI) th1 += 2*M_PI;
 	if(th0 > th1)
 	{
 		mdouble tmp = th1; th1 = th0; th0 = tmp;
 		j = -j;
 	}
-	int nsteps = int((th1-th0)/(2.0*PI/mdouble(nsegs))+1);
+	int nsteps = int((th1-th0)/(2.0*M_PI/mdouble(nsegs))+1);
 	mdouble th = th0;
 	vec3 v1,v2; v1[2] = v2[2] = z;
 	v1[0] = r*cos(th); v1[1] = r*sin(th);
@@ -54,7 +54,7 @@ void MixedSource::loop(mdouble z, mdouble r, mdouble j, int nsides) {
 	vec3 v0,v1;
 	v0[2] = v1[2] = z;
 	v0[0] = r; v0[1] = 0;
-	ScanRange sr(0,2*PI,nsides);
+	ScanRange sr(0,2*M_PI,nsides);
 	mdouble th = sr.next();
 	v0[0] = r*cos(th); v0[1] = r*sin(th);
 	for(th = sr.next(); sr.goOn(); th=sr.next())

@@ -1,4 +1,5 @@
 #include "InfinitePlaneSource.hh"
+#include <math.h>
 
 mmat InfinitePlaneSource::fieldAtComponents(vec3 p0) const {
 	
@@ -10,10 +11,10 @@ mmat InfinitePlaneSource::fieldAtComponents(vec3 p0) const {
 	mdouble x2 = x0+0.5*p.wx;
 	
 	// parallel components
-	mdouble par = (atan(x2/a)-atan(x1/a))/(2*PI);
+	mdouble par = (atan(x2/a)-atan(x1/a))/(2*M_PI);
 	
 	// perpendicular component
-	mdouble perp = (log((x2*x2+aa)/(x1*x1+aa)))/(4*PI);
+	mdouble perp = (log((x2*x2+aa)/(x1*x1+aa)))/(4*M_PI);
 	
 	// filter out NANs
 	if(!(perp == perp)) perp = 0;

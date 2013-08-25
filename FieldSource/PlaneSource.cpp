@@ -1,4 +1,5 @@
 #include "PlaneSource.hh"
+#include <math.h>
 
 mmat PlaneSource::fieldAtComponents(vec3 p0) const {
 	
@@ -17,9 +18,9 @@ mmat PlaneSource::fieldAtComponents(vec3 p0) const {
 	mdouble c12 = sqrt(aa+x1*x1+y2*y2);
 	mdouble c21 = sqrt(aa+x2*x2+y1*y1);
 	mdouble c22 = sqrt(aa+x2*x2+y2*y2);
-	mdouble perp1 = -1.0/(8*PI)*log( (x1+c12)*(x2-c22)*(x1-c11)*(x2+c21) / 
+	mdouble perp1 = -1.0/(8*M_PI)*log( (x1+c12)*(x2-c22)*(x1-c11)*(x2+c21) /
 									((x1-c12)*(x2+c22)*(x1+c11)*(x2-c21)) );
-	mdouble perp2 = 1.0/(8*PI)*log( (y2+c12)*(y2-c22)*(y1-c11)*(y1+c21) / 
+	mdouble perp2 = 1.0/(8*M_PI)*log( (y2+c12)*(y2-c22)*(y1-c11)*(y1+c21) /
 								   ((y2-c12)*(y2+c22)*(y1+c11)*(y1-c21)) );
 	
 	// parallel component
@@ -27,7 +28,7 @@ mmat PlaneSource::fieldAtComponents(vec3 p0) const {
 	mdouble z12 = x1*y2/(a*c12);
 	mdouble z21 = x2*y1/(a*c21);
 	mdouble z22 = x2*y2/(a*c22);
-	mdouble par = 1.0/(4*PI)*(atan(z22)-atan(z21)+atan(z11)-atan(z12));
+	mdouble par = 1.0/(4*M_PI)*(atan(z22)-atan(z21)+atan(z11)-atan(z12));
 	
 	// filter out NANs
 	if(!(perp1 == perp1)) perp1 = 0;

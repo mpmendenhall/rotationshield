@@ -1,4 +1,5 @@
 #include "ShieldBuilder.hh"
+#include <math.h>
 
 vec2 FieldEstimator2D::estimateAt(const vec2& v) const {
 	vec2 est = vec2();
@@ -75,7 +76,7 @@ void ShieldBuilder::OptCone(unsigned int nZ0, unsigned int nZ1, vec2 s, vec2 e, 
 	
 	annulusSpec a;
 	a.theta0 = 0;
-	a.dTheta = 2*PI/mdouble(nTheta);
+	a.dTheta = 2*M_PI/mdouble(nTheta);
 	
 	base->retain();
 	for(unsigned int z=0; z<nZ; z++) {

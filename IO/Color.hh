@@ -2,6 +2,7 @@
 #define COLOR_HH 1
 
 #include "Vec.hh"
+#include <math.h>
 
 template<typename T>
 Vec<3,T> rgb2hsv(Vec<3,T> rgb) {
@@ -22,9 +23,9 @@ Vec<3,T> rgb2hsv(Vec<3,T> rgb) {
 		hsv[0] = 2 + (rgb[2] - rgb[0]) / d;
 	else
 		hsv[0] = 4 + (rgb[0] - rgb[1]) / d;
-	hsv[0] *= PI/3.0;
+	hsv[0] *= M_PI/3.0;
 	if(hsv[0] < 0)
-		hsv[0] += 2*PI;
+		hsv[0] += 2*M_PI;
 	
 	return hsv;
 }
@@ -36,8 +37,8 @@ Vec<3,T> hsv2rgb(Vec<3,T> hsv) {
 		rgb[0]=rgb[1]=rgb[2]=hsv[2];
 	else
 	{
-		if(hsv[0] < 0) hsv[0] += 2*PI;
-		double var_h = hsv[0]*3.0/PI;
+		if(hsv[0] < 0) hsv[0] += 2*M_PI;
+		double var_h = hsv[0]*3.0/M_PI;
 		if(var_h == 6) var_h = 0;
 		int var_i = floor(var_h);
 		double var_1 = hsv[2] * ( 1 - hsv[1] );

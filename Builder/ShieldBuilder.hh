@@ -10,13 +10,14 @@
 #include <iostream>
 #include <vector>
 #include <cassert>
+#include <math.h>
 
 /// segment of a shield, generates a ring of PlanarElements
 class ShieldSegment: public RefCounter {
 public:
 	ShieldSegment(unsigned int n, PlanarElement* b): nTheta(n), base(b) { base->retain(); }
 	~ShieldSegment() { base->release(); }
-	PlanarElement* genElement(unsigned int n) { return base->replicateRotated(2.0*n*PI/mdouble(nTheta)); }
+	PlanarElement* genElement(unsigned int n) { return base->replicateRotated(2.0*n*M_PI/mdouble(nTheta)); }
 	const unsigned int nTheta;
 protected:
 	

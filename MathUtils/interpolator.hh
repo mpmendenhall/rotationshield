@@ -3,6 +3,7 @@
 /// \file "interpolator.hh" \brief Adaptive mesh interpolator
 
 #include "Visr.hh"
+#include <math.h>
 
 template<class V>
 class TopMesh;
@@ -607,7 +608,7 @@ class TubeMesh: public TopMesh<V>
 public:
 	/// Constructor
 	TubeMesh(int NX, int NY, mdouble Y0, mdouble Y1, V (*ff)(mdouble, mdouble), InterpoBasis<V>* B, mdouble relerr, mdouble abserr):
-	TopMesh<V>(NX, NY+2, -PI, Y0-(Y1-Y0)/mdouble(NY), PI, Y1+(Y1-Y0)/mdouble(NY), ff, B, relerr, abserr, true)
+	TopMesh<V>(NX, NY+2, -M_PI, Y0-(Y1-Y0)/mdouble(NY), M_PI, Y1+(Y1-Y0)/mdouble(NY), ff, B, relerr, abserr, true)
 	{
 		for(int i=0; i<this->nx; i++)
 		{

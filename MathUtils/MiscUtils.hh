@@ -5,11 +5,9 @@
 
 #include <cassert>
 #include <string>
+#include <math.h>
 #include "Vec.hh"
 #include "Matrix.hh"
-
-/// numerical approximation for \f$ \pi \f$
-#define PI 3.14159265358979323846264338327950288419716939937510
 
 typedef double mdouble; //< Sets precision at which most calculations are carried out
 
@@ -25,7 +23,7 @@ inline float max(float a, float b) { return (b<a)?a:b; }
 inline float min(float a, float b) { return (a<b)?a:b; }
 
 /// normalize an angle to [t0,t0+2*PI)
-float normalizeAngle(float a, float theta0 = -PI);
+float normalizeAngle(float a, float theta0 = -M_PI);
 
 /// Return a random number, uniformly distributed over interval [a,b]
 /**	\param a lower bound of interval
