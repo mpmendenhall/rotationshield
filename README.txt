@@ -23,3 +23,6 @@ bare coil:
 
 shielded coil:
 ./RotationShield coil geom 15 2.5 0.40 x shield geom 2.9 0.47 grid 10 20 128 x meas svgrd 0 run foo x
+
+shielded with superconducting endcaps:
+./RotationShield coil geom 15 2.5 0.40 x shield geom 2.9 0.47 grid 10 20 128 ecap 6 0.25 10000 x meas svgrd 0 run foo x

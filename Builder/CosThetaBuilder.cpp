@@ -52,7 +52,14 @@ void CosThetaBuilder::writeInfo(QFile& qOut) const {
 void CosThetaBuilder::buildCoil(MixedSource& M) {
 	buildEndpoints();
 	buildSides(M);
-	buildLineCaps(M);
+	if(myCap==CAP_LINE)
+		buildLineCaps(M);
+	else if(myCap==CAP_STRAIGHT)
+		buildStraightCaps(M);
+	else if(myCap==CAP_ARC)
+		buildArcCaps(M,nArc);
+	else
+		assert(false);
 }
 
 vec3 CosThetaBuilder::getEndp(unsigned int n, bool xside, bool yside, bool zside) {

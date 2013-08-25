@@ -15,7 +15,7 @@
 class coilShield {
 public:
 	/// constructor
-	coilShield(): length(0), radius(0), mu(10000.), cSegs(10), vSegs(20), pSegs(128) {}
+	coilShield(): length(0), radius(0), mu(10000.), cSegs(10), vSegs(20), pSegs(128), endcap_ir(0), endcap_mu(10000), eSegs(0) {}
 	/// shield info as Stringmap
 	Stringmap getInfo() const;
 	/// construct into mixed source
@@ -27,6 +27,9 @@ public:
 	unsigned int cSegs;		//< constant-width z segments
 	unsigned int vSegs;		//< variable z segments
 	unsigned int pSegs;		//< phi segments
+	mdouble endcap_ir;		//< inner radius for (optional) superconducting endcap
+	mdouble endcap_mu;		//< permeability for endcap
+	unsigned int eSegs;		//< endcap segments
 };
 
 /// Data-sampling cell

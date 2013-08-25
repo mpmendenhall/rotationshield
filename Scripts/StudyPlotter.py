@@ -26,8 +26,8 @@ def VaryCoilParam(outdir,basename,varname):
 	
 	g=graph.graphxy(width=24,height=16,
 		x=graph.axis.lin(title=varname),
-		y=graph.axis.lin(title="Cell Average Gradients [$\\mu$G/cm]",min=-10,max=10),
-		key = graph.key.key(pos="bl",columns=2))
+		y=graph.axis.lin(title="Cell Average Gradients [$\\mu$G/cm]"), #,min=-7.5,max=7.5),
+		key = graph.key.key(pos="tr",columns=2))
 	g.texrunner.set(lfs='foils17pt')
 	
 	# sample cell dimensions, normal and rotated
@@ -58,10 +58,10 @@ def VaryCoilParam(outdir,basename,varname):
 			dBxdz = B[0].derivative(longaxis[celln])
 			rms = sqrt(Vol3Avg(dBxdz*dBxdz,cell_ll,cell_ur))*0.01*1000*B0targ/Bavg[0]
 			print r,"B0 =",Bavg,"\tBgrad =",GradScaled,"\tRMS =",rms
-			if r>0.3:
-				gdat.append([r,GradScaled[0],GradScaled[1],GradScaled[2],rms])
+			gdat.append([r,GradScaled[0],GradScaled[1],GradScaled[2],rms])
 		gdat.sort()
 	
+		g.plot(graph.data.function("y(x)=0",title=None),[graph.style.line(lineattrs=[style.linestyle.dotted,style.linewidth.Thick])])
 		axiscols = {"x":rgb.red,"y":rgb.green,"z":rgb.blue,"S":rgb.black}
 		invstyle = [[],[style.linestyle.dashed]][celln]
 		invlabel = ["cell along axis","cell rotated"][celln]
@@ -77,12 +77,6 @@ def VaryCoilParam(outdir,basename,varname):
 if __name__=="__main__":
 	outdir = os.environ["ROTSHIELD_OUT"]
 
-	#VaryCoilParam(outdir+"/Bare_VarLength","CLen","Coil Length [m]")
-	#VaryCoilParam(outdir+"/Shielded_VarLength","CLen","Coil Length [m]")
-	
-	#VaryCoilParam(outdir+"/Bare_L2.5_VarRad","CRad","Coil Radius [m]")
-	VaryCoilParam(outdir+"/Shielded_L2.5_VarRad","CRad","Coil Radius [m]")
-	
-	#VaryCoilParam(outdir+"/Shielded_L2.5_R.45_VarGap","SGap","Shield-to-coil gap [m]")
-
-	#VaryCoilParam(outdir+"/Shielded_L2.5_R.40_VarA","CA","Coil distortion `a'")
+	#VaryCoilParam(outdir+"ShCoil_ECDist","X","Endcap distance [m]")
+	#VaryCoilParam(outdir+"ShCoil_ECRad","X","Endcap inner radius [m]")
+	VaryCoilParam(outdir+"Super_Len","X","Coil length [m]")

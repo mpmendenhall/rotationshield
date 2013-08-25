@@ -127,6 +127,13 @@ void mi_shieldGrid(std::deque<std::string>&, std::stack<std::string>& stack) {
 	GlobCS->vSegs = streamInteractor::popInt(stack);
 	GlobCS->cSegs = streamInteractor::popInt(stack);
 }
+// set shield endcaps
+void mi_endcap(std::deque<std::string>&, std::stack<std::string>& stack) {
+	if(!GlobCS) GlobCS = new coilShield();
+	GlobCS->endcap_mu = streamInteractor::popFloat(stack);
+	GlobCS->endcap_ir = streamInteractor::popFloat(stack);
+	GlobCS->eSegs = streamInteractor::popInt(stack);
+}
 
 // set save grid
 void mi_setSaveGrid(std::deque<std::string>&, std::stack<std::string>& stack) {
@@ -170,7 +177,6 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	GlobFC = new fieldCell(vec3(-.2,-.2,-.2),vec3(.2,.2,.2),11,11,11);
 	
 	inputRequester exitMenu("Exit Menu",&menutils_Exit);
-	inputRequester peek("Show stack",&menutils_PrintStack);
 	inputRequester ncube("Hyercube visualization test",&mi_ncube);
 	ncube.addArg("n dim","3");
 	inputRequester selfTests("Self test to reproduce known results",&mi_runtests);
@@ -211,10 +217,15 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	setShieldGrid.addArg("Fixed Z segs","10");
 	setShieldGrid.addArg("Variable Z segs","20");
 	setShieldGrid.addArg("Phi segs","128");
+	inputRequester setEndcap("Set shield endcaps",&mi_endcap);
+	setEndcap.addArg("N segments","10");
+	setEndcap.addArg("Inner radius","0");
+	setEndcap.addArg("mu","0");
 	OptionsMenu OMshield("Shield Options");
 	OMshield.addChoice(&setShield,"geom");
 	OMshield.addChoice(&setShieldGrid,"grid");
 	OMshield.addChoice(&unsetShield,"clear");
+	OMshield.addChoice(&setEndcap,"ecap");
 	OMshield.addChoice(&exitMenu,"x");
 	
 	inputRequester meas("Coil field measurement",&mi_meas);
@@ -235,7 +246,6 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	OM.addChoice(&OMshield,"shield");
 	OM.addChoice(&OMmeas,"meas");
 	OM.addChoice(&exitMenu,"x");
-	OM.addChoice(&peek,"peek",SELECTOR_HIDDEN);
 	OM.addChoice(&selfTests,"test",SELECTOR_HIDDEN);
 	std::stack<std::string> stack;
 	OM.doIt(args,stack);

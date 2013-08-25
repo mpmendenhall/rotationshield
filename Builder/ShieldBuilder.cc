@@ -13,6 +13,16 @@ vec2 FieldEstimator2D::estimateAt(const vec2& v) const {
 	return est;
 }
 
+vec2 FieldEstimator2D::derivAt(const vec2& v, const vec2& dx) const {
+	return (estimateAt(v+dx*0.5)-estimateAt(v-dx*0.5))/dx.mag();
+}
+
+vec2 FieldEstimator2Dfrom3D::estimateAt(const vec2& v) const {
+	vec3 F = myFS->fieldAt(vec3(v[1],0,v[0]));
+	return vec2(F[2],F[0]);
+}
+
+//------------------------------------------------------
 
 void ShieldBuilder::OptCone(unsigned int nZ0, unsigned int nZ1, vec2 s, vec2 e, PlanarElement* base, FieldEstimator2D* fes ) {
 	
@@ -25,10 +35,12 @@ void ShieldBuilder::OptCone(unsigned int nZ0, unsigned int nZ1, vec2 s, vec2 e, 
 	//cumulative field strength across length
 	mdouble fstr[ngridpts];
 	fstr[0]=0;
+	vec2 dv = (e-s)*1./ngridpts;
 	if(fes && nZ1) {
 		for(unsigned int i=1; i<ngridpts; i++) {
 			float l = (float(i)-0.5)/(ngridpts-1.0);
-			fstr[i] = fstr[i-1] + fes->estimateAt(s*(1-l)+e*l).mag();
+			//fstr[i] = fstr[i-1] + fes->estimateAt(s*(1-l)+e*l).mag(); 		// bunch up at high fields
+			fstr[i] = fstr[i-1] + fabs(fes->derivAt(s*(1-l)+e*l,dv).dot(dv));	// bunch up at high field derivatives along sampling
 		}
 	} else {
 		for(unsigned int i=0; i<ngridpts; i++)

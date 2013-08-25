@@ -13,17 +13,32 @@ Stringmap coilShield::getInfo() const {
 	m.insert("vSegs",itos(vSegs));
 	m.insert("pSegs",itos(pSegs));
 	m.insert("mu",mu);
+	if(eSegs) {
+		m.insert("endcap_segs",itos(eSegs));
+		m.insert("endcap_ir",endcap_ir);
+		m.insert("endcap_mu",endcap_mu);
+	}
 	return m;
 }
 
 void coilShield::construct(MixedSource& ms, CosThetaBuilder* ct) const {
-	FieldEstimator2D fe = FieldEstimator2D();
-	if(ct) {
-		fe.addsource(vec2(-ct->length/2.,ct->radius),1.0);
-		fe.addsource(vec2(ct->length/2.,ct->radius),1.0);
-	}
+	//FieldEstimator2D fe = FieldEstimator2D();
+	//if(ct) {
+	//	fe.addsource(vec2(-ct->length/2.,ct->radius),1.0);
+	//	fe.addsource(vec2(ct->length/2.,ct->radius),1.0);
+	//}
+	
+	FieldEstimator2Dfrom3D fe(&ms);
+	
+	
 	ShieldBuilder* G = new ShieldBuilder(pSegs);
 	G->makeOptCyl(cSegs, vSegs, radius, -length/2., length/2., new PlaneSource(Plane(),mu), &fe);
+	if(eSegs) {
+		for(int z=-1; z<=1; z+=2) {
+			G->OptCone(eSegs/3, eSegs-(eSegs/3), vec2(z*length/2.,z<0?endcap_ir:radius), vec2(z*length/2.,z<0?radius:endcap_ir), new PlaneSource(Plane(),endcap_mu), &fe);
+		}
+	}
+	
 	SymmetricSolver* sp = new SymmetricSolver(G);
 	
 	sp->solve();
@@ -59,6 +74,7 @@ void nEDM_Geom::construct() {
 	ms = new MixedSource();
 	ms->retain();
 	assert(coil);
+	coil->myCap = CosThetaBuilder::CAP_ARC;
 	coil->buildCoil(*ms);
 	ms->visualize();
 	if(shield) {

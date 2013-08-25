@@ -68,7 +68,7 @@ public:
 	/// constructor
 	CosThetaBuilder(unsigned int n, mdouble r, mdouble l,
 					AnglePositioner* ap = new ShiftPositioner(), EndTranslator* et = NULL):
-	ncoils(n), radius(r), length(l), AP(ap), ET(et)  {}
+	ncoils(n), radius(r), length(l), AP(ap), ET(et), myCap(CAP_LINE), nArc(100)  {}
 	
 	/// build coil into MixedSource
 	void buildCoil(MixedSource& M);
@@ -85,16 +85,26 @@ public:
 	/// get specified wire end position
 	vec3 getEndp(unsigned int n, bool xside, bool yside, bool zside);
 	
+	enum capType {
+		CAP_LINE,		//< line segments between endpoints
+		CAP_STRAIGHT,	//< rectangular coils straight across ends
+		CAP_ARC			//< curved arcs between endpoints
+	};
+	capType myCap;
+	unsigned int nArc;
+	
 protected:
 	
 	std::vector<vec3> endp;
 	
 	void buildEndpoints();
-	void buildSides(MixedSource& M);	
+	void buildSides(MixedSource& M);
+		
 	void buildArcCaps(MixedSource& M,unsigned int nseg=1);	
 	void buildLineCaps(MixedSource& M);	
 	void buildStraightCaps(MixedSource& M);	
-	void buildMixedCaps(MixedSource& M, float rinner);	
+	
+	void buildMixedCaps(MixedSource& M, float rinner);
 };
 
 #endif
