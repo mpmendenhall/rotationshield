@@ -10,12 +10,12 @@ def product(l):
 		p *= i
 	return p
 	
-def basisv(n,m):
+def basisv(n,m=-1):
 	l = [0,]*n
-	l[m] = 1
+	if m>0:
+		l[m] = 1
 	return tuple(l)
-
-
+		
 # polynomial, represented by a dictionary with tuples of exponents as the keys
 # mapped to the coefficient of the term
 class polynomial:
@@ -66,33 +66,8 @@ class polynomial:
 	def __sub__(self,other):
 		"""Subtract polynomials"""
 		return self + (-other)
-		
-	#def canonical_polyquadratic_vars(self,n):
-	#	"""Quadratic polynomial in n variables"""
-	#	l = [(0,)*n,]
-	#	for i in range(n):
-	#		t = [0,]*n
-	#		t[i] += 1
-	#		l += [tuple(t),]
-	#	for i in range(n):
-	#		for j in range(i+1):
-	#			t = [0,]*n
-	#			t[i] += 1
-	#			t[j] += 1
-	#			l += [tuple(t),]
-	#	return l
-	
-	#def build_polyquadratic(self,n,coefflist = None):
-	#	l = self.canonical_polyquadratic_vars(n)
-	#	self.coeffs = {}
-	#	for i in range(len(l)):
-	#		if coefflist:
-	#			self.coeffs[l[i]] = float(coefflist[i])
-	#		else:
-	#			self.coeffs[l[i]] = 1.0
-	#	return self
 
-	def eval(self,varvals):
+	def __call__(self,varvals):
 		"""Evaluate at given variable values"""
 		s = 0
 		for k in self.coeffs.keys():
@@ -101,6 +76,18 @@ class polynomial:
 				ss *= varvals[i]**k[i]
 			s += ss
 		return s
+	
+	
+	def getTerms(self,unityCoeffs=True):
+		"""Get each term, optionally with coefficients set to unity"""
+		ks = self.coeffs.keys()
+		ks.sort()
+		Ts = []
+		for k in ks:
+			P = polynomial(self.N)
+			P.coeffs[k] = 1 if unityCoeffs else self.coeffs[k]
+			Ts.append(P)
+		return Ts
 	
 	def evalTerms(self,varvals):
 		"""Evaluate term-by-term; useful for linear fits"""
@@ -158,25 +145,24 @@ class polynomial:
 		p.varnames = self.varnames
 		return p
 		
+	def quadratic_derivs_matrix(self):
+		"""Matrix and vector to solve for minima of quadratic, LHS*x0 = RHS. Note, LHS is symmetric, hence diagonalizable with orthogonal basis."""
+		lhs = matrix([ [ self.derivative(dv).coeffs[basisv(self.N,v)] for v in range(self.N) ] for dv in range(self.N) ])
+		rhs = matrix([ self.derivative(dv).coeffs[self.C0] for dv in range(self.N) ]).transpose()
+		return (lhs, rhs)
+	
 	def quadratic_extrema(self):
+		"""Extremum location for multi-quadratic polynomial"""
 		lhs,rhs = self.quadratic_derivs_matrix()
 		return array(linalg.solve(lhs,rhs).transpose())[0]
 		
-	def quadratic_derivs_matrix(self):
-		lhs = matrix([ [ self.derivative(dv).coeffs[basisv(self.N,v)] for v in range(self.N) ] for dv in range(self.N) ])
-		rhs = matrix([ self.derivative(dv).coeffs[(0,)*self.N] for dv in range(self.N) ]).transpose()
-		return (lhs, rhs)
-	
 	def max_error_bounds(self):
 		P = self.copy()
 		P.coeffs[(0,)*self.nvars()] = 0
 		for i in range(self.nvars()):
 			P.coeffs[basisv(self.nvars(),i)] = 0
 		m = linalg.pinv(P.quadratic_derivs_matrix()[0])
-		return [ m[r,r]/sqrt(2*P.eval( [ -x for x in m.transpose()[r].tolist()[0] ] )) for r in range(self.nvars()) ]
-	
-	def testpoly(self):
-			self.coeffs = { (1,0):1, (0,1):2, (1,1):3 }
+		return [ m[r,r]/sqrt(2*P( [ -x for x in m.transpose()[r].tolist()[0] ] )) for r in range(self.nvars()) ]
 			
 	def tostring(self):
 		"""Display as a string"""
@@ -195,3 +181,20 @@ class polynomial:
 					s += "^%i"%k[i]
 					
 		return s[1:]
+
+
+def lowTriangTerms(nVars, order):
+	"""Polynomial of sepcified order and number of variables, e.g. (2,2) -> x^2+xy+y^2+x+y+1"""
+	assert order>=0
+	if order==0:
+		P=polynomial(nVars)
+		P.coeffs[P.C0] = 0
+		return P
+	P = lowTriangTerms(nVars,order-1)
+	for n in range(nVars):
+		Q = polynomial(nVars)
+		Q.coeffs[basisv(nVars,n)] = 0
+		P = P+P*Q
+	return P
+
+

@@ -5,6 +5,7 @@
 import os
 import time
 from optparse import OptionParser
+from random import shuffle
 
 class StudySetup:
 	def __init__(self,nm,r):
@@ -29,12 +30,15 @@ class StudySetup:
 		self.logdir = "%s/%s/Logs"%(os.environ["ROTSHIELD_OUT"],nm)
 		os.system("mkdir -p "+self.logdir)
 		
-	def set_csgeom(self,clen,crad,dlen,drad):
+	def set_csgeom(self,clen,crad,dlen=None,drad=None):
 		"""Set coil and shield geometry, given coil length/radius and deltas for the shield"""
 		self.clen = clen
-		self.shieldL = clen+2*dlen
 		self.crad = crad
-		self.shieldR = crad+drad
+		if dlen and drad:
+			self.shieldL = clen+2*dlen
+			self.shieldR = crad+drad
+		else:
+			self.shieldL = self.shieldR
 		
 	def make_cmd(self):
 		runcmd = "meas svgrd 0 run %s"%self.outfl
@@ -47,15 +51,39 @@ class StudySetup:
 		if self.ecapS:
 			shieldcmd += " ecap %i %f %f"%(self.ecapS,self.ecapR,self.ecapMu)
 			
-		return "cd ..; ./RotationShield %s x  %s x  %s x  %s x x >> %s/L%f.txt\n"%(self.cellcmd,coilcmd,shieldcmd,runcmd,self.logdir,self.r)
+		return "cd ..; ./RotationShield %s x  %s x  %s x  %s x x > %s/L%f.txt 2>&1\n"%(self.cellcmd,coilcmd,shieldcmd,runcmd,self.logdir,self.r)
 
 
-def ShCoil_ECDist(r0,r1,n):
-	"""Shielded coil endcap distance"""
+#####
+#####
+#####
+
+def unifrange(xmin,xmax,npts,shuff=False):
+	"""Uniformly spaced points, possibly shuffled to random order"""
+	l = [ xmin + float(i)/float(npts-1)*(xmax-xmin) for i in range(npts)]
+	if shuff:
+		shuffle(l)
+	return l
+
+def Bare_Misc(r0,r1,n):
 	fsimlist = open("shield_simlist.txt","w")
-	for r in [ r0+i*(r1-r0)/(n-1) for i in range(n)]:
-		S = StudySetup("ShCoil_ECDist",r)
-		S.set_csgeom(2.5,0.61,2*r,0.07)
+	for r in unifrange(r0,r1,n,True):
+		S = StudySetup("Bare_A-.0021_VarL",r)
+		S.set_csgeom(r,0.61)
+		S.dist = [-0.0021]
+		fsimlist.write(S.make_cmd())
+	fsimlist.close()
+	os.system("cat shield_simlist.txt")
+	os.system("nice -n 5 parallel -P 6 < shield_simlist.txt")
+	os.system("rm shield_simlist.txt")
+
+def Shield_Misc(r0,r1,n):
+	fsimlist = open("shield_simlist.txt","w")
+	for r in unifrange(r0,r1,n,True):
+		S = StudySetup("ShCoilEC_L",r)
+		#S.set_csgeom(2.5,0.61,.007,0.07)
+		#S.dist = [-.0075,0,-.075,0,r]
+		S.set_csgeom(r,0.61,0.007,0.07)
 		S.dist = [-0.00475]
 		S.ecapS = 15
 		S.ecapR = 0.10
@@ -66,62 +94,16 @@ def ShCoil_ECDist(r0,r1,n):
 	os.system("rm shield_simlist.txt")
 
 
-def ShCoil_ECRad(r0,r1,n):
-	"""Shielded coil endcap distance"""
-	fsimlist = open("shield_simlist.txt","w")
-	for r in [ r0+i*(r1-r0)/(n-1) for i in range(n)]:
-		S = StudySetup("ShCoil_ECRad",r)
-		S.set_csgeom(2.5,0.61,.007,0.07)
-		S.dist = [-0.00475]
-		S.ecapS = 15
-		S.ecapR = r
-		fsimlist.write(S.make_cmd())
-	fsimlist.close()
-	os.system("cat shield_simlist.txt")
-	os.system("nice -n 5 parallel -P 6 < shield_simlist.txt")
-	os.system("rm shield_simlist.txt")
-
-def ShCoilEC_A(r0,r1,n):
-	"""Shielded coil endcap distance"""
-	fsimlist = open("shield_simlist.txt","w")
-	for r in [ r0+i*(r1-r0)/(n-1) for i in range(n)]:
-		S = StudySetup("ShCoilEC_A",r)
-		S.set_csgeom(2.5,0.61,.007,0.07)
-		S.dist = [r,]
-		S.ecapS = 15
-		S.ecapR = 0.10
-		fsimlist.write(S.make_cmd())
-	fsimlist.close()
-	os.system("cat shield_simlist.txt")
-	os.system("nice -n 5 parallel -P 6 < shield_simlist.txt")
-	os.system("rm shield_simlist.txt")
-
-def SuperShield_Len(r0,r1,n):
-	fsimlist = open("shield_simlist.txt","w")
-	for r in [ r0+i*(r1-r0)/(n-1) for i in range(n)]:
-		S = StudySetup("Super_Len",r)
-		S.set_csgeom(r,0.61,.007,0.07)
-		S.dist = [-0.00475,]
-		S.ecapS = 15
-		S.ecapR = 0.10
-		fsimlist.write(S.make_cmd())
-	fsimlist.close()
-	os.system("cat shield_simlist.txt")
-	os.system("nice -n 5 parallel -P 6 < shield_simlist.txt")
-	os.system("rm shield_simlist.txt")
-
-
-
-
-#
-#
-#
+#####
+#####
+#####
 
 if __name__ == "__main__":
 	
 	parser = OptionParser()
 	parser.add_option("-k", "--kill", dest="kill", action="store_true", default=False, help="kill running replays")
 	parser.add_option("--misc", dest="misc", action="store_true", default=False, help="perform misc study specified in script")
+	parser.add_option("--bare", dest="bare", action="store_true", default=False, help="perform bare coil study")
 	parser.add_option("--xmin", type="float", dest="xmin", default=0.5)
 	parser.add_option("--xmax", type="float", dest="xmax", default=1.5)
 	parser.add_option("--nsteps", type="int", dest="nsteps", default=12, help="Number of steps in scan")
@@ -133,12 +115,12 @@ if __name__ == "__main__":
 		os.system("killall -9 ShieldStudyLauncher.py")
 		exit(0)
 	
-	#if len(os.popen("ps -a | grep ShieldStudyLauncher").readlines()) > 1:
-	#	print "Already running! I die!"
-	#	exit(1)
-	
 	if options.misc:
-		SuperShield_Len(options.xmin,options.xmax,options.nsteps)
+		Shield_Misc(options.xmin,options.xmax,options.nsteps)
+		exit(0)
+	
+	if options.bare:
+		Bare_Misc(options.xmin,options.xmax,options.nsteps)
 		exit(0)
 	
 	print "No option specified. Try --help for listing."

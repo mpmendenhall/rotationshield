@@ -27,8 +27,7 @@ vec2 FieldEstimator2Dfrom3D::estimateAt(const vec2& v) const {
 
 void ShieldBuilder::OptCone(unsigned int nZ0, unsigned int nZ1, vec2 s, vec2 e, PlanarElement* base, FieldEstimator2D* fes ) {
 	
-	printf("Optimizing shield grid with %i fixed segments, %i varying segments\n",nZ0,nZ1);
-	if(fes) printf("Field estimator provided.\n");
+	//printf("Optimizing shield grid with %i fixed segments, %i varying segments\n",nZ0,nZ1);
 	
 	const unsigned int ngridpts = 2001;
 	const unsigned int nZ = nZ0+nZ1;
@@ -48,7 +47,7 @@ void ShieldBuilder::OptCone(unsigned int nZ0, unsigned int nZ1, vec2 s, vec2 e, 
 			fstr[i] = i;
 	}
 	
-	printf("Average field %g\n",fstr[ngridpts-1]/(ngridpts-1));
+	//printf("Average field %g\n",fstr[ngridpts-1]/(ngridpts-1));
 	
 	mdouble slope = 0;
 	if(nZ1)

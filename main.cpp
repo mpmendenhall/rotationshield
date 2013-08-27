@@ -77,7 +77,6 @@ void mi_setFCrange(std::deque<std::string>&, std::stack<std::string>& stack) {
 	if(!GlobFC) GlobFC = new fieldCell(vec3(),vec3(),5,5,5);
 	GlobFC->ll = vec3(llx,lly,llz);
 	GlobFC->ur = vec3(urx,ury,urz);
-	GlobFC->getInfo().display();
 }
 // set cell gridding
 void mi_setFCgrid(std::deque<std::string>&, std::stack<std::string>& stack) {
@@ -85,7 +84,6 @@ void mi_setFCgrid(std::deque<std::string>&, std::stack<std::string>& stack) {
 	GlobFC->nz = streamInteractor::popInt(stack);
 	GlobFC->ny = streamInteractor::popInt(stack);
 	GlobFC->nx = streamInteractor::popInt(stack);
-	GlobFC->getInfo().display();
 }
 
 // set coil parameters
