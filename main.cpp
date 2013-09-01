@@ -60,6 +60,16 @@ void mi_ncube(std::deque<std::string>&, std::stack<std::string>& stack) {
 	else printf("Only 3 to 5 dimensions allowed.\n");
 }
 
+void mi_clearcolor(std::deque<std::string>&, std::stack<std::string>& stack) {
+	float b = streamInteractor::popFloat(stack);
+	float g = streamInteractor::popFloat(stack);
+	float r = streamInteractor::popFloat(stack);
+	vsr::setClearColor(r,g,b);
+	vsr::startRecording();
+	vsr::clearWindow();
+	vsr::stopRecording();
+}
+
 // Global coil/shield settings
 nEDM_Geom* GlobGM = NULL;
 CosThetaBuilder* GlobCT = NULL;
@@ -177,6 +187,10 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	inputRequester exitMenu("Exit Menu",&menutils_Exit);
 	inputRequester ncube("Hyercube visualization test",&mi_ncube);
 	ncube.addArg("n dim","3");
+	inputRequester setClearColor("Set visualization background color",&mi_clearcolor);
+	setClearColor.addArg("r","0.0");
+	setClearColor.addArg("g","0.0");
+	setClearColor.addArg("b","0.0");
 	inputRequester selfTests("Self test to reproduce known results",&mi_runtests);
 	
 	inputRequester setFCrange("Set Measurement Range",&mi_setFCrange);
@@ -238,6 +252,7 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	OptionsMenu OM("Rotation Shield Main Menu");
 #ifdef WITH_OPENGL
 	OM.addChoice(&ncube,"ncube");
+	OM.addChoice(&setClearColor,"bg");
 #endif
 	OM.addChoice(&OMcell,"cell");
 	OM.addChoice(&OMcoil,"coil");

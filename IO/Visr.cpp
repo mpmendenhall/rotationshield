@@ -27,6 +27,7 @@ namespace vsr {
 	float ar;
 	bool pause_display;
 	bool kill_flag = false;
+	float bgR, bgG, bgB, bgA;
 	
 	void doGlutLoop() {
 		glutMainLoop();
@@ -75,9 +76,15 @@ namespace vsr {
 		c.v.push_back(a);
 		addCmd(c);
 	}
+	void setClearColor(float r, float g, float b, float a) {
+		bgR = r;
+		bgG = g;
+		bgB = b;
+		bgA = a;
+	}
 	
 	void _clearWindow(std::vector<float>&) {
-		glClearColor(1.0, 1.0, 1.0, 0.0);
+		glClearColor(bgR, bgG, bgB, bgA);
 		glClearDepth(100.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
@@ -282,6 +289,7 @@ namespace vsr {
 		glutIdleFunc(&redrawIfUnlocked);
 				
 		resetViewTransformation();
+		setClearColor(1.0,1.0,1.0,0.0);
 		startRecording(true);
 		//printf("Drawing initial teapot...\n");
 		clearWindow();
@@ -383,6 +391,7 @@ namespace vsr {
 	void startRecording(bool newseg) {}
 	void stopRecording() {}
 	void pause() {}
+	void setClearColor(float r, float g, float b, float a) {}
 	void setColor(float r, float g, float b, float a) {}
 	void line(vec3 s, vec3 e) {}
 	void plane(vec3 o, vec3 dx, vec3 dy) {}

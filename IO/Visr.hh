@@ -24,6 +24,8 @@ namespace vsr {
 	
 	/// clear window to blank screen
 	void clearWindow();
+	/// set background clear color
+	void setClearColor(float r, float g, float b, float a=0);
 	/// set color for subsequent draws
 	void setColor(float r, float g, float b, float a = 1);
 	/// draw specified line
