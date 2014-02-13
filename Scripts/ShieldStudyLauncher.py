@@ -49,7 +49,7 @@ class StudySetup:
 		if self.shieldR and self.shieldL:
 			shieldcmd += " geom %f %f"%(self.shieldL,self.shieldR)
 		if self.ecapS:
-			shieldcmd += " ecap %i %f %f"%(self.ecapS,self.ecapR,self.ecapMu)
+			shieldcmd += " ecap %i %f %f both"%(self.ecapS,self.ecapR,self.ecapMu)
 			
 		return "cd ..; ./RotationShield %s x  %s x  %s x  %s x x > %s/L%f.txt 2>&1\n"%(self.cellcmd,coilcmd,shieldcmd,runcmd,self.logdir,self.r)
 

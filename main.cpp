@@ -138,10 +138,32 @@ void mi_shieldGrid(std::deque<std::string>&, std::stack<std::string>& stack) {
 // set shield endcaps
 void mi_endcap(std::deque<std::string>&, std::stack<std::string>& stack) {
 	if(!GlobCS) GlobCS = new coilShield();
-	GlobCS->endcap_mu = streamInteractor::popFloat(stack);
-	GlobCS->endcap_ir = streamInteractor::popFloat(stack);
-	GlobCS->eSegs = streamInteractor::popInt(stack);
+	std::string end = streamInteractor::popString(stack);
+	float emu = streamInteractor::popFloat(stack);
+	float eir = streamInteractor::popFloat(stack);
+	float eSegs = streamInteractor::popFloat(stack);
+	for(int i=0; i<2; i++) {
+		if(i==0 && end=="pos") continue;
+		if(i==1 && end=="neg") continue;
+		GlobCS->endcap_mu[i] = emu;
+		GlobCS->endcap_ir[i] = eir;
+		GlobCS->eSegs[i] = eSegs;
+	}
 }
+// modify endcap parameters
+void mi_mod_endcap(std::deque<std::string>&, std::stack<std::string>& stack) {
+	if(!GlobCS) GlobCS = new coilShield();
+	std::string end = streamInteractor::popString(stack);
+	float dor = streamInteractor::popFloat(stack);
+	float dz = streamInteractor::popFloat(stack);
+	for(int i=0; i<2; i++) {
+		if(i==0 && end=="pos") continue;
+		if(i==1 && end=="neg") continue;
+		GlobCS->endcap_delta_or[i] = dor;
+		GlobCS->endcap_delta_z[i] = dz;
+	}
+}
+
 
 // set save grid
 void mi_setSaveGrid(std::deque<std::string>&, std::stack<std::string>& stack) {
@@ -229,15 +251,28 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	setShieldGrid.addArg("Fixed Z segs","10");
 	setShieldGrid.addArg("Variable Z segs","20");
 	setShieldGrid.addArg("Phi segs","128");
+	
+	NameSelector selectEndcapEnd("Endcap side");
+	selectEndcapEnd.addChoice("negative","neg");
+	selectEndcapEnd.addChoice("positive","pos");
+	selectEndcapEnd.addChoice("both","both");
+	selectEndcapEnd.setDefault("both");
 	inputRequester setEndcap("Set shield endcaps",&mi_endcap);
 	setEndcap.addArg("N segments","10");
 	setEndcap.addArg("Inner radius","0");
 	setEndcap.addArg("mu","0");
+	setEndcap.addArg(&selectEndcapEnd);
+	inputRequester modEndcap("Modify shield endcaps",&mi_mod_endcap);
+	modEndcap.addArg("z offset","0");
+	modEndcap.addArg("outer radius offset","0");
+	modEndcap.addArg(&selectEndcapEnd);
+	
 	OptionsMenu OMshield("Shield Options");
 	OMshield.addChoice(&setShield,"geom");
 	OMshield.addChoice(&setShieldGrid,"grid");
 	OMshield.addChoice(&unsetShield,"clear");
 	OMshield.addChoice(&setEndcap,"ecap");
+	OMshield.addChoice(&modEndcap,"mcap");
 	OMshield.addChoice(&exitMenu,"x");
 	
 	inputRequester meas("Coil field measurement",&mi_meas);

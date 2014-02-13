@@ -5,6 +5,14 @@
 
 //--
 
+coilShield::coilShield(): length(0), radius(0), mu(10000.), cSegs(10), vSegs(20), pSegs(128) {
+	for(unsigned int i=0; i<2; i++) {
+		endcap_delta_z[i] = endcap_delta_or[i] = endcap_ir[i] = 0;
+		endcap_mu[i] = 10000;
+		eSegs[i] = 0;
+	}
+}
+
 Stringmap coilShield::getInfo() const {
 	Stringmap m;
 	m.insert("length",length);
@@ -13,30 +21,33 @@ Stringmap coilShield::getInfo() const {
 	m.insert("vSegs",itos(vSegs));
 	m.insert("pSegs",itos(pSegs));
 	m.insert("mu",mu);
-	if(eSegs) {
-		m.insert("endcap_segs",itos(eSegs));
-		m.insert("endcap_ir",endcap_ir);
-		m.insert("endcap_mu",endcap_mu);
+	for(int i=0; i<2; i++) {
+		if(eSegs[i]) {
+			m.insert("endcap_segs_"+itos(i),itos(eSegs[i]));
+			m.insert("endcap_ir_"+itos(i),endcap_ir[i]);
+			m.insert("endcap_delta_or_"+itos(i),endcap_delta_or[i]);
+			m.insert("endcap_delta_z_"+itos(i),endcap_delta_z[i]);
+			m.insert("endcap_mu_"+itos(i),endcap_mu[i]);
+		}
 	}
 	return m;
 }
 
 void coilShield::construct(MixedSource& ms, CosThetaBuilder* ct) const {
-	//FieldEstimator2D fe = FieldEstimator2D();
-	//if(ct) {
-	//	fe.addsource(vec2(-ct->length/2.,ct->radius),1.0);
-	//	fe.addsource(vec2(ct->length/2.,ct->radius),1.0);
-	//}
 	
 	FieldEstimator2Dfrom3D fe(&ms);
 	
-	
 	ShieldBuilder* G = new ShieldBuilder(pSegs);
 	G->makeOptCyl(cSegs, vSegs, radius, -length/2., length/2., new PlaneSource(Plane(),mu), &fe);
-	if(eSegs) {
-		for(int z=-1; z<=1; z+=2) {
-			G->OptCone(eSegs/3, eSegs-(eSegs/3), vec2(z*length/2.,z<0?endcap_ir:radius), vec2(z*length/2.,z<0?radius:endcap_ir), new PlaneSource(Plane(),endcap_mu), &fe);
-		}
+	
+	for(int i=0; i<2; i++) {
+		if(!eSegs[i]) continue;
+		int z = 2*i-1;
+		float halfz = z*(length + endcap_delta_z[i])/2;
+		G->OptCone(eSegs[i]/3, eSegs[i]-(eSegs[i]/3),
+					vec2(halfz, z<0? endcap_ir[i] : radius+endcap_delta_or[i]),
+					vec2(halfz, z<0? radius+endcap_delta_or[i] : endcap_ir[i]),
+					new PlaneSource(Plane(),endcap_mu[i]), &fe);
 	}
 	
 	SymmetricSolver* sp = new SymmetricSolver(G);
