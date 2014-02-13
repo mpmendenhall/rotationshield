@@ -96,24 +96,33 @@ def VaryCoilParam(outdir,basename,varname):
 
 #
 #
-def FieldPlotter(basedir):
+def FieldPlotter(basedir, b0Targ=30):
 
 	# load data
 	BC = BCell(basedir+"/Fields/Fieldstats.txt")
-	BC.ll,BC.ur = (0.05,-0.20,-0.05),(0.125,0.20,0.05)
+	
+	BC.ll,BC.ur = (0.05,-0.20,-0.05),(0.125,0.20,0.05) # nominal measurement cell
+	BC.ll,BC.ur = (-0.15,-0.15,-0.4),(0.15,0.15,0.4) # half-scale measurement region
+	
 	BC.m2cm()
-	Bavg = BC.normB0(30.)
+	Bavg = BC.normB0(b0Targ)
 	
 	# Bx0 slice along fixed xi,xj, varying xk="z"
-	x0,xi,xj,xk = 0,0,2,1
+	
+	#x0,xi,xj,xk = 0,0,2,1	# B_x along y
+	x0,xi,xj,xk = 0,0,1,2	# B_x along z
+	
+	#x0,xi,xj,xk = 1,0,1,2
+	
 	#x0,xi,xj,xk = 1,0,2,1
+	
 	nptsi,nptsj,nptsk = 3,3,50
 	istyles = [[rgb.red],[rgb.green],[rgb.blue]]
 	jstyles = [[style.linestyle.dotted,style.linewidth.THick],[style.linestyle.solid,style.linewidth.THick],[style.linestyle.dashed,style.linewidth.Thick]]
 	
 	g=graph.graphxy(width=24,height=16,
 		x=graph.axis.lin(title="$%s$ position [cm]"%axes[xk]),
-		y=graph.axis.lin(title="$B_{%s}$ [mG]"%axes[x0]),
+		y=graph.axis.lin(title="$B_{%s}$ [mG]"%axes[x0],min=29.9,max=30.1),
 		key = graph.key.key(pos="bc",columns=3))
 	g.texrunner.set(lfs='foils17pt')
 
@@ -131,15 +140,21 @@ def FieldPlotter(basedir):
 
 	g.writePDFfile(basedir + "/Field_B%s_%s.pdf"%(axes[x0],axes[xk]))
 
+	return Bavg
+
 
 if __name__=="__main__":
 	outdir = os.environ["ROTSHIELD_OUT"]
 
-	VaryCoilParam(outdir+"ShCoilEC_L","X","Coil length [m]")
+	#VaryCoilParam(outdir+"ShCoilEC_L","X","Coil length [m]")
 	#VaryCoilParam(outdir+"Bare_2.4m_OptA","X","Distortion parameter `$a$'")
 	
 	#FieldPlotter(outdir+"Super_A3/X_-0.100000")
 	#FieldPlotter(outdir+"Super_Asearch_4/X_0.018000")
 	#FieldPlotter(outdir+"EC_VarRad/X_0.050000")
+	
+	print FieldPlotter(outdir+"halfscale_open_end/")
+	print FieldPlotter(outdir+"halfscale_sc_end/",30*2.76465874521/2.76559952922)
+
 
 
