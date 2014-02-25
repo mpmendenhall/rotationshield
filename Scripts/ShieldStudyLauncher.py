@@ -9,24 +9,29 @@ from random import shuffle
 
 class StudySetup:
 	def __init__(self,nm,r):
-		self.N = 15
-		self.r = r
+	
+		self.r = r						# parameter being varied
+	
+		self.N = 15						# number of loops in half of cos theta coil
+		self.crad = 0.61				# coil radius
+		self.clen = 2.5					# coil length
+		self.dist = []					# coil distortion parameters
 		
-		self.crad = 0.61
-		self.shieldR = 0.68
-		self.clen = 2.5
-		self.shieldL = 2.7
-		
-		self.cellcmd = "cell range 0 -0.20 -0.20 0.20 0.20 0.20 grid 7 11 11"
-		self.name = nm
-		self.outfl = (nm+"/X_%f")%r
-		self.dist = []
-		self.shieldR = self.shieldL = 0
-		self.ecapS = 0
-		self.ecapR = 0
-		self.ecapMu = 0
+		self.shieldR = 0				# shield radius (nominal 0.68; 0 = no shield)
+		self.shieldL = 0				# shield length (nominal 2.7; 0 = no shield)
+		self.sGrid = (10,20,128)		# shield gridding fixed,variable,phi (10,20,128)
 		
 		
+		self.ecapS = [0,0]				# number of endcap segments (0 = no endcaps)
+		self.ecapR = [0,0]				# endcap hole radius
+		self.ecapMu = [0,0]				# endcap mu (0 = superconductor)
+		self.ecapCone = [0,0]			# endcap cone offset
+		
+		self.measCell = [(0,-.2,-.2),(.2,.2,.2)]	# measurement range
+		self.measGrid = (7,11,11)					# measurement grid
+
+		self.name = nm					# output directory name
+		self.outfl = (nm+"/X_%f")%r		# individual output file name
 		self.logdir = "%s/%s/Logs"%(os.environ["ROTSHIELD_OUT"],nm)
 		os.system("mkdir -p "+self.logdir)
 		
@@ -38,21 +43,50 @@ class StudySetup:
 			self.shieldL = clen+2*dlen
 			self.shieldR = crad+drad
 		else:
-			self.shieldL = self.shieldR
-		
+			self.shieldL = self.shieldR = 0
+
+	def set_ecaps(self,nSeg,r0,mu,end=None):
+		if end is None:
+			self.set_ecaps(nSeg,r0,mu,0)
+			self.set_ecaps(nSeg,r0,mu,1)
+		else:
+			self.ecapS[end] = nSeg
+			self.ecapR[end] = r0
+			self.ecapMu[end] = mu
+
 	def make_cmd(self):
 		runcmd = "meas svgrd 0 run %s"%self.outfl
+		
 		coilcmd = "coil geom %i %f %f"%(self.N,self.clen,self.crad)
 		for (n,x) in enumerate(self.dist):
 			coilcmd += " dist %i %f"%(n+1,x)
+		
 		shieldcmd = "shield"
 		if self.shieldR and self.shieldL:
 			shieldcmd += " geom %f %f"%(self.shieldL,self.shieldR)
-		if self.ecapS:
-			shieldcmd += " ecap %i %f %f both"%(self.ecapS,self.ecapR,self.ecapMu)
-			
-		return "cd ..; ./RotationShield %s x  %s x  %s x  %s x x > %s/L%f.txt 2>&1\n"%(self.cellcmd,coilcmd,shieldcmd,runcmd,self.logdir,self.r)
+			shieldcmd += " grid %i %i %i"%self.sGrid
+		for end in [0,1]:
+			ename = ["neg","pos"][end]
+			if self.ecapS[end] and self.ecapR[end] != self.shieldR:
+				shieldcmd += " ecap %i %f %f %s"%(self.ecapS[end],self.ecapR[end],self.ecapMu[end],ename)
+			if self.ecapCone[end]:
+				shieldcmd += " cone %f %s"%(self.ecapCone[end],ename)
+					
+		cellcmd = "cell range %f %f %f"%self.measCell[0]
+		cellcmd += " %f %f %f"%self.measCell[1]
+		cellcmd += " grid %i %i %i"%self.measGrid
+				
+		return "cd ..; ./RotationShield %s x  %s x  %s x  %s x x > %s/L%f.txt 2>&1\n"%(cellcmd, coilcmd, shieldcmd, runcmd, self.logdir, self.r)
 
+
+class StudyScan:
+	def __init__(self):
+		self.fsimlist = open("shield_simlist.txt","w")
+	def run(self):
+		self.fsimlist.close()
+		os.system("cat shield_simlist.txt")
+		os.system("nice -n 5 parallel < shield_simlist.txt")
+		os.system("rm shield_simlist.txt")
 
 #####
 #####
@@ -60,6 +94,8 @@ class StudySetup:
 
 def unifrange(xmin,xmax,npts,shuff=False):
 	"""Uniformly spaced points, possibly shuffled to random order"""
+	if npts == 1:
+		return [0.5*(xmin+xmax),]
 	l = [ xmin + float(i)/float(npts-1)*(xmax-xmin) for i in range(npts)]
 	if shuff:
 		shuffle(l)

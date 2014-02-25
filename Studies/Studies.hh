@@ -29,11 +29,12 @@ public:
 	unsigned int pSegs;		//< phi segments
 	
 	// optional endcap on each side
-	mdouble endcap_ir[2];		//< inner radius for (optional) superconducting endcap
-	mdouble endcap_delta_or[2];	//< difference between endcap outer radius and main shield
-	mdouble endcap_delta_z[2];	//< endcap offset from end of main shield
-	mdouble endcap_mu[2];		//< permeability for endcap
-	unsigned int eSegs[2];		//< endcap segments
+	mdouble endcap_ir[2];			//< inner radius for (optional) superconducting endcap
+	mdouble endcap_delta_or[2];		//< difference between endcap outer radius and main shield
+	mdouble endcap_delta_z[2];		//< endcap offset from end of main shield
+	mdouble endcap_delta_cone[2];	//< endcap inner radius cone offset
+	mdouble endcap_mu[2];			//< permeability for endcap
+	unsigned int eSegs[2];			//< endcap segments
 };
 
 /// Data-sampling cell

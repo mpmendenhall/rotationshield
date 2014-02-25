@@ -7,7 +7,7 @@
 
 coilShield::coilShield(): length(0), radius(0), mu(10000.), cSegs(10), vSegs(20), pSegs(128) {
 	for(unsigned int i=0; i<2; i++) {
-		endcap_delta_z[i] = endcap_delta_or[i] = endcap_ir[i] = 0;
+		endcap_delta_z[i] = endcap_delta_or[i] = endcap_ir[i] = endcap_delta_cone[i] = 0;
 		endcap_mu[i] = 10000;
 		eSegs[i] = 0;
 	}
@@ -44,9 +44,12 @@ void coilShield::construct(MixedSource& ms, CosThetaBuilder* ct) const {
 		if(!eSegs[i]) continue;
 		int z = 2*i-1;
 		float halfz = z*(length + endcap_delta_z[i])/2;
-		G->OptCone(eSegs[i]/3, eSegs[i]-(eSegs[i]/3),
-					vec2(halfz, z<0? endcap_ir[i] : radius+endcap_delta_or[i]),
-					vec2(halfz, z<0? radius+endcap_delta_or[i] : endcap_ir[i]),
+		int nfixed = (2*eSegs[i])/3;
+		
+		vec2 v1(halfz + z*endcap_delta_cone[i], endcap_ir[i]);
+		vec2 v2(halfz, radius+endcap_delta_or[i]);
+		
+		G->OptCone(nfixed, eSegs[i]-nfixed, z<0? v1:v2, z<0? v2:v1,
 					new PlaneSource(Plane(),endcap_mu[i]), &fe);
 	}
 	

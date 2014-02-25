@@ -163,6 +163,17 @@ void mi_mod_endcap(std::deque<std::string>&, std::stack<std::string>& stack) {
 		GlobCS->endcap_delta_z[i] = dz;
 	}
 }
+// modify endcap for conical shape (offset inner radius)
+void mi_cone_endcap(std::deque<std::string>&, std::stack<std::string>& stack) {
+	if(!GlobCS) GlobCS = new coilShield();
+	std::string end = streamInteractor::popString(stack);
+	float dz = streamInteractor::popFloat(stack);
+	for(int i=0; i<2; i++) {
+		if(i==0 && end=="pos") continue;
+		if(i==1 && end=="neg") continue;
+		GlobCS->endcap_delta_cone[i] = dz;
+	}
+}
 
 
 // set save grid
@@ -266,6 +277,9 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	modEndcap.addArg("z offset","0");
 	modEndcap.addArg("outer radius offset","0");
 	modEndcap.addArg(&selectEndcapEnd);
+	inputRequester coneEndcap("Endcap cone dz offset",&mi_cone_endcap);
+	coneEndcap.addArg("z offset","0");
+	coneEndcap.addArg(&selectEndcapEnd);
 	
 	OptionsMenu OMshield("Shield Options");
 	OMshield.addChoice(&setShield,"geom");
@@ -273,6 +287,7 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	OMshield.addChoice(&unsetShield,"clear");
 	OMshield.addChoice(&setEndcap,"ecap");
 	OMshield.addChoice(&modEndcap,"mcap");
+	OMshield.addChoice(&coneEndcap,"cone");
 	OMshield.addChoice(&exitMenu,"x");
 	
 	inputRequester meas("Coil field measurement",&mi_meas);
