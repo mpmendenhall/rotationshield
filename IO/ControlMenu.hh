@@ -43,8 +43,8 @@ public:
 	namedInteractor(std::string nm): name(nm) {}
 	/// get my name/description
 	virtual std::string getDescription() { return name; }
-protected:
-	std::string name;
+
+	std::string name;	//< name for this interactor
 };
 
 

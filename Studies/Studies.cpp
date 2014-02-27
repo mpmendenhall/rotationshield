@@ -3,54 +3,51 @@
 #include "PathUtils.hh"
 #include <cassert>
 
-//--
-
-coilShield::coilShield(): length(0), radius(0), mu(10000.), cSegs(10), vSegs(20), pSegs(128) {
+shieldSection::shieldSection(): mu(10000) {
+	endpts[0] = GEOMREF_NEGRADIUS;
+	endpts[1] = GEOMREF_POSRADIUS;
 	for(unsigned int i=0; i<2; i++) {
-		endcap_delta_z[i] = endcap_delta_or[i] = endcap_ir[i] = endcap_delta_cone[i] = 0;
-		endcap_mu[i] = 10000;
-		eSegs[i] = 0;
+		endoff[i] = vec2(0,0);
 	}
 }
 
-Stringmap coilShield::getInfo() const {
+Stringmap shieldSection::getInfo() const {
 	Stringmap m;
-	m.insert("length",length);
-	m.insert("radius",radius);
 	m.insert("cSegs",itos(cSegs));
 	m.insert("vSegs",itos(vSegs));
-	m.insert("pSegs",itos(pSegs));
 	m.insert("mu",mu);
 	for(int i=0; i<2; i++) {
-		if(eSegs[i]) {
-			m.insert("endcap_segs_"+itos(i),itos(eSegs[i]));
-			m.insert("endcap_ir_"+itos(i),endcap_ir[i]);
-			m.insert("endcap_delta_or_"+itos(i),endcap_delta_or[i]);
-			m.insert("endcap_delta_z_"+itos(i),endcap_delta_z[i]);
-			m.insert("endcap_mu_"+itos(i),endcap_mu[i]);
-		}
+		m.insert("ref_"+itos(i),endpts[i]);
+		m.insert("off_dz_"+itos(i),endoff[i][0]);
+		m.insert("off_dr_"+itos(i),endoff[i][1]);
 	}
 	return m;
 }
 
-void coilShield::construct(MixedSource& ms, CosThetaBuilder* ct) const {
+vec2 shieldFrame::refPt(GeomRefPt p) const {
+	if(p==GEOMREF_ORIGIN) return vec2(0,0);
+	if(p==GEOMREF_CENTER) return vec2(0,0);
+	if(p==GEOMREF_NEGAXIS) return vec2(-0.5*length,0);
+	if(p==GEOMREF_POSAXIS) return vec2(0.5*length,0);
+	if(p==GEOMREF_NEGRADIUS) return vec2(-0.5*length,radius);
+	if(p==GEOMREF_POSRADIUS) return vec2(0.5*length,radius);
+	assert(false);
+	return vec2(0,0);
+}
 	
+void shieldFrame::construct(MixedSource& ms, CosThetaBuilder* ct) const {
+
+	if(!mySections.size() || !pSegs) return;
+
 	FieldEstimator2Dfrom3D fe(&ms);
 	
 	ShieldBuilder* G = new ShieldBuilder(pSegs);
-	G->makeOptCyl(cSegs, vSegs, radius, -length/2., length/2., new PlaneSource(Plane(),mu), &fe);
 	
-	for(int i=0; i<2; i++) {
-		if(!eSegs[i]) continue;
-		int z = 2*i-1;
-		float halfz = z*(length + endcap_delta_z[i])/2;
-		int nfixed = (2*eSegs[i])/3;
-		
-		vec2 v1(halfz + z*endcap_delta_cone[i], endcap_ir[i]);
-		vec2 v2(halfz, radius+endcap_delta_or[i]);
-		
-		G->OptCone(nfixed, eSegs[i]-nfixed, z<0? v1:v2, z<0? v2:v1,
-					new PlaneSource(Plane(),endcap_mu[i]), &fe);
+	for(std::vector<shieldSection>::const_iterator it = mySections.begin(); it != mySections.end(); it++) {
+		G->OptCone(it->cSegs, it->vSegs,
+					refPt(it->endpts[0])+it->endoff[0],
+					refPt(it->endpts[1])+it->endoff[1],
+					new PlaneSource(Plane(),it->mu), &fe);
 	}
 	
 	SymmetricSolver* sp = new SymmetricSolver(G);
@@ -60,6 +57,14 @@ void coilShield::construct(MixedSource& ms, CosThetaBuilder* ct) const {
 	sp->calculateResult();
 	
 	ms.addsource(sp);
+}
+
+Stringmap shieldFrame::getInfo() const {
+	Stringmap m;
+	m.insert("pSegs",itos(pSegs));
+	m.insert("length",length);
+	m.insert("radius",radius);
+	return m;
 }
 
 //--
@@ -76,7 +81,7 @@ Stringmap fieldCell::getInfo() const {
 
 //--
 
-nEDM_Geom::nEDM_Geom(const std::string& dir): coil(NULL), shield(NULL), cell(NULL),
+nEDM_Geom::nEDM_Geom(const std::string& dir): coil(0,0,0), cell(vec3(-.2,-.2,-.2),vec3(.2,.2,.2),11,11,11),
 saveGrid(true), basedir(dir), ms(NULL) { }
 
 nEDM_Geom::~nEDM_Geom() {
@@ -87,18 +92,15 @@ void nEDM_Geom::construct() {
 	if(ms) ms->release();
 	ms = new MixedSource();
 	ms->retain();
-	assert(coil);
-	coil->myCap = CosThetaBuilder::CAP_ARC;
-	coil->buildCoil(*ms);
+	coil.buildCoil(*ms);
 	ms->visualize();
-	if(shield) {
-		shield->construct(*ms,coil);
+	if(shield.mySections.size()) {
+		shield.construct(*ms,&coil);
 		ms->visualize();
 	}
 }
 
 void nEDM_Geom::takeSample(const std::string& sName) {
-	assert(cell);
 	if(!ms) {
 		printf("No field sources specified!\n");
 		return;
@@ -115,18 +117,17 @@ void nEDM_Geom::takeSample(const std::string& sName) {
 	
 	// save geometry summary info
 	QFile qOut;
-	if(coil)
-		coil->writeInfo(qOut);
-	if(shield)
-		qOut.insert("shield",shield->getInfo());
-	if(cell)
-		qOut.insert("cell",cell->getInfo());
+	coil.writeInfo(qOut);
+	qOut.insert("shield",shield.getInfo());
+	for(std::vector<shieldSection>::iterator it = shield.mySections.begin(); it != shield.mySections.end(); it++)
+		qOut.insert("section",it->getInfo());
+	qOut.insert("cell",cell.getInfo());
 	qOut.commit(fieldspath+"/GeomInfo.txt");
 	
 	// run analyzer
 	FieldAnalyzer FA = FieldAnalyzer(ms);
-	FA.visualizeSurvey(cell->ll,cell->ur,cell->vx,cell->vy,cell->vz);
-	FA.survey(cell->ll,cell->ur,cell->nx,cell->ny,cell->nz,statsout,saveGrid?fieldsout:nullout);
+	FA.visualizeSurvey(cell.ll,cell.ur,cell.vx,cell.vy,cell.vz);
+	FA.survey(cell.ll,cell.ur,cell.nx,cell.ny,cell.nz,statsout,saveGrid?fieldsout:nullout);
 
 	// cleanup
 	if(saveGrid) fieldsout.close();

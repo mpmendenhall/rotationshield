@@ -68,7 +68,7 @@ public:
 	/// constructor
 	CosThetaBuilder(unsigned int n, mdouble r, mdouble l,
 					AnglePositioner* ap = new ShiftPositioner(), EndTranslator* et = NULL):
-	ncoils(n), radius(r), length(l), AP(ap), ET(et), myCap(CAP_LINE), nArc(100)  {}
+	ncoils(n), radius(r), length(l), AP(ap), ET(et), nArc(100)  { myCap[0] = myCap[1] = CAP_LINE; }
 	
 	/// build coil into MixedSource
 	void buildCoil(MixedSource& M);
@@ -88,9 +88,10 @@ public:
 	enum capType {
 		CAP_LINE,		//< line segments between endpoints
 		CAP_STRAIGHT,	//< rectangular coils straight across ends
-		CAP_ARC			//< curved arcs between endpoints
+		CAP_ARC,		//< curved arcs between endpoints
+		CAP_NONE		//< no endcap wires constructed
 	};
-	capType myCap;
+	capType myCap[2];	//< how to construct endcaps on each side
 	unsigned int nArc;
 	
 protected:
@@ -100,9 +101,9 @@ protected:
 	void buildEndpoints();
 	void buildSides(MixedSource& M);
 		
-	void buildArcCaps(MixedSource& M,unsigned int nseg=1);	
-	void buildLineCaps(MixedSource& M);	
-	void buildStraightCaps(MixedSource& M);	
+	void buildArcCap(MixedSource& M, unsigned int zside, unsigned int nseg=1);
+	void buildLineCap(MixedSource& M, unsigned int zside);
+	void buildStraightCap(MixedSource& M, unsigned int zside);
 	
 	void buildMixedCaps(MixedSource& M, float rinner);
 };

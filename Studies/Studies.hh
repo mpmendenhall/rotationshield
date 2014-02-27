@@ -10,31 +10,50 @@
 #include "ShieldBuilder.hh"
 #include "analysis.hh"
 #include "QFile.hh"
+#include <vector>
 
-/// Generic shield for cos theta coil
-class coilShield {
+/// geometry reference points for shield segments
+enum GeomRefPt {
+	GEOMREF_ORIGIN,		//< absolute origin
+	GEOMREF_CENTER,		//< center of frame
+	GEOMREF_NEGAXIS,	//< negative z, r = 0
+	GEOMREF_NEGRADIUS,	//< negative z, r = r0
+	GEOMREF_POSRADIUS,	//< positive z, r = r0
+	GEOMREF_POSAXIS		//< positive z, r = r0
+};
+
+/// section of a shield
+class shieldSection {
 public:
 	/// constructor
-	coilShield();
+	shieldSection();
 	/// shield info as Stringmap
 	Stringmap getInfo() const;
-	/// construct into mixed source
-	void construct(MixedSource& ms, CosThetaBuilder* ct) const;
 	
-	mdouble length;			//< shield length
-	mdouble radius;			//< shield radius
-	double mu;				//< material relative permeability
+	mdouble mu;				//< material relative permeability
 	unsigned int cSegs;		//< constant-width z segments
 	unsigned int vSegs;		//< variable z segments
-	unsigned int pSegs;		//< phi segments
+	GeomRefPt endpts[2];	//< endpoint reference locations
+	vec2 endoff[2];			//< endpoint offsets from reference locations
+};
+
+/// Shield surface framework, defining reference points around which surface segments are built
+class shieldFrame {
+public:
+	/// constructor
+	shieldFrame(): pSegs(0), length(0), radius(0) {}
 	
-	// optional endcap on each side
-	mdouble endcap_ir[2];			//< inner radius for (optional) superconducting endcap
-	mdouble endcap_delta_or[2];		//< difference between endcap outer radius and main shield
-	mdouble endcap_delta_z[2];		//< endcap offset from end of main shield
-	mdouble endcap_delta_cone[2];	//< endcap inner radius cone offset
-	mdouble endcap_mu[2];			//< permeability for endcap
-	unsigned int eSegs[2];			//< endcap segments
+	unsigned int pSegs;						//< phi segments
+	mdouble length;							//< shield length
+	mdouble radius;							//< shield radius
+	std::vector<shieldSection> mySections;	//< sections of shield
+	
+	/// return reference point location
+	vec2 refPt(GeomRefPt p) const;
+	/// construct into mixed source
+	void construct(MixedSource& ms, CosThetaBuilder* ct) const;
+	/// shield info as Stringmap
+	Stringmap getInfo() const;
 };
 
 /// Data-sampling cell
@@ -63,9 +82,9 @@ public:
 	/// sample fields
 	void takeSample(const std::string& sName="Fields");
 	
-	CosThetaBuilder* coil;
-	coilShield* shield;
-	fieldCell* cell;
+	CosThetaBuilder coil;	//< coil providing measured field
+	shieldFrame shield;		//< shielding around coil
+	fieldCell cell;			//< measurement cell
 	
 	bool saveGrid;			//< whether to save the grid data to file
 	std::string basedir;	//< directory for output

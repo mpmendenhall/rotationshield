@@ -53,14 +53,16 @@ void CosThetaBuilder::writeInfo(QFile& qOut) const {
 void CosThetaBuilder::buildCoil(MixedSource& M) {
 	buildEndpoints();
 	buildSides(M);
-	if(myCap==CAP_LINE)
-		buildLineCaps(M);
-	else if(myCap==CAP_STRAIGHT)
-		buildStraightCaps(M);
-	else if(myCap==CAP_ARC)
-		buildArcCaps(M,nArc);
-	else
-		assert(false);
+	for(unsigned int zside=0; zside<2; zside++) {
+		if(myCap[zside]==CAP_LINE)
+			buildLineCap(M,zside);
+		else if(myCap[zside]==CAP_STRAIGHT)
+			buildStraightCap(M,zside);
+		else if(myCap[zside]==CAP_ARC)
+			buildArcCap(M,zside,nArc);
+		else if(myCap[zside]==CAP_NONE) {}
+		else assert(false);
+	}
 }
 
 vec3 CosThetaBuilder::getEndp(unsigned int n, bool xside, bool yside, bool zside) {
@@ -97,51 +99,40 @@ void CosThetaBuilder::buildSides(MixedSource& M) {
 				M.addsource(new LineSource(getEndp(i,xside,yside,!yside),getEndp(i,xside,yside,yside),1.0/mdouble(ncoils)));
 }
 
-void CosThetaBuilder::buildArcCaps(MixedSource& M,unsigned int nseg) {
+void CosThetaBuilder::buildArcCap(MixedSource& M, unsigned int zside, unsigned int nseg) {
 	
 	for(unsigned int xside = 0; xside < 2; xside++) {
-		for(unsigned int zside = 0; zside < 2; zside++) {
-			
-			for(unsigned int yside = 0; yside < 2; yside++) {
-				for(unsigned int i=0; i<ncoils-1; i++) {
-					if(yside == zside)
-						M.arc(getEndp(i,xside,yside,zside),getEndp(i+1,xside,yside,zside),(i+1)/mdouble(ncoils),nseg);
-					else
-						M.arc(getEndp(i+1,xside,yside,zside),getEndp(i,xside,yside,zside),(i+1)/mdouble(ncoils),nseg);
-				}
+		for(unsigned int yside = 0; yside < 2; yside++) {
+			for(unsigned int i=0; i<ncoils-1; i++) {
+				if(yside == zside)
+					M.arc(getEndp(i,xside,yside,zside),getEndp(i+1,xside,yside,zside),(i+1)/mdouble(ncoils),nseg);
+				else
+					M.arc(getEndp(i+1,xside,yside,zside),getEndp(i,xside,yside,zside),(i+1)/mdouble(ncoils),nseg);
 			}
-			
-			M.arc(getEndp(ncoils-1,xside,zside,zside),getEndp(ncoils-1,xside,!zside,zside),1.0,nseg);
 		}
+		M.arc(getEndp(ncoils-1,xside,zside,zside),getEndp(ncoils-1,xside,!zside,zside),1.0,nseg);
 	}
-	
 }
 
-void CosThetaBuilder::buildLineCaps(MixedSource& M) {
+void CosThetaBuilder::buildLineCap(MixedSource& M, unsigned int zside) {
 	
 	for(unsigned int xside = 0; xside < 2; xside++) {
-		for(unsigned int zside = 0; zside < 2; zside++) {
-			
-			for(unsigned int yside = 0; yside < 2; yside++) {
-				for(unsigned int i=0; i<ncoils-1; i++) {
-					if(yside == zside)
-						M.addsource( new LineSource(getEndp(i,xside,yside,zside),getEndp(i+1,xside,yside,zside),(i+1)/mdouble(ncoils)) );
-					else
-						M.addsource( new LineSource(getEndp(i+1,xside,yside,zside),getEndp(i,xside,yside,zside),(i+1)/mdouble(ncoils)) );
-				}
+		for(unsigned int yside = 0; yside < 2; yside++) {
+			for(unsigned int i=0; i<ncoils-1; i++) {
+				if(yside == zside)
+					M.addsource( new LineSource(getEndp(i,xside,yside,zside),getEndp(i+1,xside,yside,zside),(i+1)/mdouble(ncoils)) );
+				else
+					M.addsource( new LineSource(getEndp(i+1,xside,yside,zside),getEndp(i,xside,yside,zside),(i+1)/mdouble(ncoils)) );
 			}
-			
-			M.addsource( new LineSource( getEndp(ncoils-1,xside,zside,zside),getEndp(ncoils-1,xside,!zside,zside),1.0) );
 		}
+		M.addsource( new LineSource( getEndp(ncoils-1,xside,zside,zside),getEndp(ncoils-1,xside,!zside,zside),1.0) );
 	}
-	
 }
 
-void CosThetaBuilder::buildStraightCaps(MixedSource& M) {
+void CosThetaBuilder::buildStraightCap(MixedSource& M, unsigned int zside) {
 	for(unsigned int xside = 0; xside < 2; xside++)
-		for(unsigned int zside = 0; zside < 2; zside++)
-			for(unsigned int i=0; i<ncoils; i++)
-				M.addsource(new LineSource(getEndp(i,xside,zside,zside),getEndp(i,xside,!zside,zside),1.0/mdouble(ncoils)));
+		for(unsigned int i=0; i<ncoils; i++)
+			M.addsource(new LineSource(getEndp(i,xside,zside,zside),getEndp(i,xside,!zside,zside),1.0/mdouble(ncoils)));
 }
 
 void CosThetaBuilder::buildMixedCaps(MixedSource& M, float rinner) {

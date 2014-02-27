@@ -70,11 +70,10 @@ void mi_clearcolor(std::deque<std::string>&, std::stack<std::string>& stack) {
 	vsr::stopRecording();
 }
 
+
+
 // Global coil/shield settings
-nEDM_Geom* GlobGM = NULL;
-CosThetaBuilder* GlobCT = NULL;
-coilShield* GlobCS = NULL;
-fieldCell* GlobFC = NULL;
+nEDM_Geom GlobGM;
 
 // set cell measurement range
 void mi_setFCrange(std::deque<std::string>&, std::stack<std::string>& stack) {
@@ -84,122 +83,96 @@ void mi_setFCrange(std::deque<std::string>&, std::stack<std::string>& stack) {
 	float llz = streamInteractor::popFloat(stack);
 	float lly = streamInteractor::popFloat(stack);
 	float llx = streamInteractor::popFloat(stack);
-	if(!GlobFC) GlobFC = new fieldCell(vec3(),vec3(),5,5,5);
-	GlobFC->ll = vec3(llx,lly,llz);
-	GlobFC->ur = vec3(urx,ury,urz);
+	GlobGM.cell.ll = vec3(llx,lly,llz);
+	GlobGM.cell.ur = vec3(urx,ury,urz);
 }
 // set cell gridding
 void mi_setFCgrid(std::deque<std::string>&, std::stack<std::string>& stack) {
-	if(!GlobFC) GlobFC = new fieldCell(vec3(),vec3(),5,5,5);
-	GlobFC->nz = streamInteractor::popInt(stack);
-	GlobFC->ny = streamInteractor::popInt(stack);
-	GlobFC->nx = streamInteractor::popInt(stack);
+	GlobGM.cell.nz = streamInteractor::popInt(stack);
+	GlobGM.cell.ny = streamInteractor::popInt(stack);
+	GlobGM.cell.nx = streamInteractor::popInt(stack);
 }
 
 // set coil parameters
 void mi_setCoil(std::deque<std::string>&, std::stack<std::string>& stack) {
-	if(!GlobCT) GlobCT = new CosThetaBuilder(0,0,0);
-	GlobCT->radius = streamInteractor::popFloat(stack);
-	GlobCT->length = streamInteractor::popFloat(stack);
-	GlobCT->ncoils = streamInteractor::popInt(stack);
+	GlobGM.coil.radius = streamInteractor::popFloat(stack);
+	GlobGM.coil.length = streamInteractor::popFloat(stack);
+	GlobGM.coil.ncoils = streamInteractor::popInt(stack);
 }
 // set coil distortion
 void mi_setCoilDistort(std::deque<std::string>&, std::stack<std::string>& stack) {
-	if(!GlobCT) GlobCT = new CosThetaBuilder(0,0,0);
 	float a = streamInteractor::popFloat(stack);
 	int n = streamInteractor::popInt(stack);
-	ShiftPositioner* SP = (ShiftPositioner*)(GlobCT->AP);
+	ShiftPositioner* SP = (ShiftPositioner*)(GlobGM.coil.AP);
 	if(n<=0) SP->shift = VarVec<mdouble>(0);
 	else {
 		while(SP->shift.size()<(unsigned int)n) SP->shift.push_back(0);
 		SP->shift[n-1] = a;
 	}
 }
+// set coil end
+void mi_setCoilEnd(std::deque<std::string>&, std::stack<std::string>& stack) {
+	std::string side = streamInteractor::popString(stack);
+	std::string endtp = streamInteractor::popString(stack);
+	for(unsigned int zside = 0; zside<2; zside++) {
+		if((side=="neg" && zside==0) || (side=="pos" && zside==1)) continue;
+		if(endtp=="arc") GlobGM.coil.myCap[zside] = CosThetaBuilder::CAP_ARC;
+		if(endtp=="line") GlobGM.coil.myCap[zside] = CosThetaBuilder::CAP_LINE;
+		if(endtp=="none") GlobGM.coil.myCap[zside] = CosThetaBuilder::CAP_NONE;
+	}
+}
 
-// set shield parameters
+// set shield frame parameters
 void mi_setShield(std::deque<std::string>&, std::stack<std::string>& stack) {
-	if(!GlobGM) GlobGM = new nEDM_Geom();
-	if(!GlobCS) GlobCS = new coilShield();
-	GlobGM->shield = GlobCS;
-	GlobCS->radius = streamInteractor::popFloat(stack);
-	GlobCS->length = streamInteractor::popFloat(stack);
-}
-// set unshielded
-void mi_unshield(std::deque<std::string>&, std::stack<std::string>& stack) {
-	if(GlobGM) GlobGM->shield = NULL;
-}
-// set shield gridding
-void mi_shieldGrid(std::deque<std::string>&, std::stack<std::string>& stack) {
-	if(!GlobCS) GlobCS = new coilShield();
-	GlobCS->pSegs = streamInteractor::popInt(stack);
-	GlobCS->vSegs = streamInteractor::popInt(stack);
-	GlobCS->cSegs = streamInteractor::popInt(stack);
-}
-// set shield endcaps
-void mi_endcap(std::deque<std::string>&, std::stack<std::string>& stack) {
-	if(!GlobCS) GlobCS = new coilShield();
-	std::string end = streamInteractor::popString(stack);
-	float emu = streamInteractor::popFloat(stack);
-	float eir = streamInteractor::popFloat(stack);
-	float eSegs = streamInteractor::popFloat(stack);
-	for(int i=0; i<2; i++) {
-		if(i==0 && end=="pos") continue;
-		if(i==1 && end=="neg") continue;
-		GlobCS->endcap_mu[i] = emu;
-		GlobCS->endcap_ir[i] = eir;
-		GlobCS->eSegs[i] = eSegs;
-	}
-}
-// modify endcap parameters
-void mi_mod_endcap(std::deque<std::string>&, std::stack<std::string>& stack) {
-	if(!GlobCS) GlobCS = new coilShield();
-	std::string end = streamInteractor::popString(stack);
-	float dor = streamInteractor::popFloat(stack);
-	float dz = streamInteractor::popFloat(stack);
-	for(int i=0; i<2; i++) {
-		if(i==0 && end=="pos") continue;
-		if(i==1 && end=="neg") continue;
-		GlobCS->endcap_delta_or[i] = dor;
-		GlobCS->endcap_delta_z[i] = dz;
-	}
-}
-// modify endcap for conical shape (offset inner radius)
-void mi_cone_endcap(std::deque<std::string>&, std::stack<std::string>& stack) {
-	if(!GlobCS) GlobCS = new coilShield();
-	std::string end = streamInteractor::popString(stack);
-	float dz = streamInteractor::popFloat(stack);
-	for(int i=0; i<2; i++) {
-		if(i==0 && end=="pos") continue;
-		if(i==1 && end=="neg") continue;
-		GlobCS->endcap_delta_cone[i] = dz;
-	}
+	GlobGM.shield.pSegs = streamInteractor::popInt(stack);
+	GlobGM.shield.radius = streamInteractor::popFloat(stack);
+	GlobGM.shield.length = streamInteractor::popFloat(stack);
 }
 
+GeomRefPt refPtByName(const std::string& s) {
+	if(s=="nax") return GEOMREF_NEGAXIS;
+	if(s=="pax") return GEOMREF_POSAXIS;
+	if(s=="nrd") return GEOMREF_NEGRADIUS;
+	if(s=="prd") return GEOMREF_POSRADIUS;
+	if(s=="c") return GEOMREF_CENTER;
+	return GEOMREF_ORIGIN;
+}
+
+// build new shield section
+void mi_newShieldSection(std::deque<std::string>&, std::stack<std::string>& stack) {
+	GlobGM.shield.mySections.push_back(shieldSection());
+	GlobGM.shield.mySections.back().endpts[1] = refPtByName(streamInteractor::popString(stack));
+	GlobGM.shield.mySections.back().endpts[0] = refPtByName(streamInteractor::popString(stack));
+	GlobGM.shield.mySections.back().vSegs = streamInteractor::popInt(stack);
+	GlobGM.shield.mySections.back().cSegs = streamInteractor::popInt(stack);
+	GlobGM.shield.mySections.back().mu = streamInteractor::popFloat(stack);
+}
+
+// modify section offset
+void mi_shieldOffsets(std::deque<std::string>&, std::stack<std::string>& stack) {
+	assert(GlobGM.shield.mySections.size());
+	GlobGM.shield.mySections.back().endoff[1][1] = streamInteractor::popFloat(stack);
+	GlobGM.shield.mySections.back().endoff[1][0] = streamInteractor::popFloat(stack);
+	GlobGM.shield.mySections.back().endoff[0][1] = streamInteractor::popFloat(stack);
+	GlobGM.shield.mySections.back().endoff[0][0] = streamInteractor::popFloat(stack);
+}
 
 // set save grid
 void mi_setSaveGrid(std::deque<std::string>&, std::stack<std::string>& stack) {
-	if(!GlobGM) GlobGM = new nEDM_Geom();
-	GlobGM->saveGrid = streamInteractor::popInt(stack);
+	GlobGM.saveGrid = streamInteractor::popInt(stack);
 }
 
 // take measurement
 void mi_meas(std::deque<std::string>&, std::stack<std::string>& stack) {
-	if(!GlobGM) { GlobGM = new nEDM_Geom(); }
-	GlobGM->basedir = getEnvSafe("ROTSHIELD_OUT","")+"/"+streamInteractor::popString(stack);
-	if(!GlobCT) {
+	GlobGM.basedir = getEnvSafe("ROTSHIELD_OUT","")+"/"+streamInteractor::popString(stack);
+	if(!GlobGM.coil.ncoils) {
 		printf("Coil not specified! Nothing to measure!\n");
 		return;
 	}
-	if(!GlobFC) {
-		printf("Cell not specified! Nothing to measure!\n");
-		return;
-	}
-	if(!GlobGM->shield) printf("Measuring bare coil\n");
+	if(!GlobGM.shield.mySections.size()) printf("Measuring bare coil\n");
 	else printf("Measuring shielded coil\n");
-	GlobGM->coil = GlobCT;
-	GlobGM->construct();
-	GlobGM->cell = GlobFC;
-	GlobGM->takeSample();
+	GlobGM.construct();
+	GlobGM.takeSample();
 	printf("Data collection complete.\n");
 }
 
@@ -214,8 +187,6 @@ void mi_meas(std::deque<std::string>&, std::stack<std::string>& stack) {
 
 
 void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
-
-	GlobFC = new fieldCell(vec3(-.2,-.2,-.2),vec3(.2,.2,.2),11,11,11);
 	
 	inputRequester exitMenu("Exit Menu",&menutils_Exit);
 	inputRequester ncube("Hyercube visualization test",&mi_ncube);
@@ -242,6 +213,7 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	OMcell.addChoice(&setFCgrid,"grid");
 	OMcell.addChoice(&exitMenu,"x");
 	
+		
 	inputRequester setCoil("Set Coil Geometry",&mi_setCoil);
 	setCoil.addArg("half n","15");
 	setCoil.addArg("Length","4.292");
@@ -249,45 +221,57 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	inputRequester setCoilDistort("Set Coil Distortion Parameter",&mi_setCoilDistort);
 	setCoilDistort.addArg("param","0");
 	setCoilDistort.addArg("value","0");
+	NameSelector selectCoilEnd("Coil end wire shape");
+	selectCoilEnd.addChoice("smooth arc","arc");
+	selectCoilEnd.addChoice("straight line","line");
+	selectCoilEnd.addChoice("no end wires","none");
+	selectCoilEnd.setDefault("arc");
+	NameSelector selectSide("z side");
+	selectSide.addChoice("negative","neg");
+	selectSide.addChoice("positive","pos");
+	selectSide.addChoice("both","both");
+	selectSide.setDefault("both");
+	inputRequester setCoilEnd("End wires",&mi_setCoilEnd);
+	setCoilEnd.addArg(&selectCoilEnd);
+	setCoilEnd.addArg(&selectSide);
 	OptionsMenu OMcoil("Coil Options");
 	OMcoil.addChoice(&setCoil,"geom");
 	OMcoil.addChoice(&setCoilDistort,"dist");
+	OMcoil.addChoice(&setCoilEnd,"end");
 	OMcoil.addChoice(&exitMenu,"x");
 	
-	inputRequester setShield("Set Shield Geometry",&mi_setShield);
-	setShield.addArg("Length","4.692");
-	setShield.addArg("Radius","0.68");
-	inputRequester unsetShield("Remove shield",&mi_unshield);
-	inputRequester setShieldGrid("Set Shield Gridding",&mi_shieldGrid);
-	setShieldGrid.addArg("Fixed Z segs","10");
-	setShieldGrid.addArg("Variable Z segs","20");
-	setShieldGrid.addArg("Phi segs","128");
+	inputRequester setShield("Set frame geometry",&mi_setShield);
+	setShield.addArg("length");
+	setShield.addArg("radius");
+	setShield.addArg("phi grid segments","128");
 	
-	NameSelector selectEndcapEnd("Endcap side");
-	selectEndcapEnd.addChoice("negative","neg");
-	selectEndcapEnd.addChoice("positive","pos");
-	selectEndcapEnd.addChoice("both","both");
-	selectEndcapEnd.setDefault("both");
-	inputRequester setEndcap("Set shield endcaps",&mi_endcap);
-	setEndcap.addArg("N segments","10");
-	setEndcap.addArg("Inner radius","0");
-	setEndcap.addArg("mu","0");
-	setEndcap.addArg(&selectEndcapEnd);
-	inputRequester modEndcap("Modify shield endcaps",&mi_mod_endcap);
-	modEndcap.addArg("z offset","0");
-	modEndcap.addArg("outer radius offset","0");
-	modEndcap.addArg(&selectEndcapEnd);
-	inputRequester coneEndcap("Endcap cone dz offset",&mi_cone_endcap);
-	coneEndcap.addArg("z offset","0");
-	coneEndcap.addArg(&selectEndcapEnd);
+	NameSelector selectRefPt("Start reference point");
+	selectRefPt.addChoice("negative axis","nax");
+	selectRefPt.addChoice("positive axis","pax");
+	selectRefPt.addChoice("negative radius","nrd");
+	selectRefPt.addChoice("positive radius","prd");
+	selectRefPt.addChoice("center","c");
+	selectRefPt.setDefault("nrd");
+	NameSelector selectEndRefPt = selectRefPt;
+	selectEndRefPt.name = "End reference point";
+	selectEndRefPt.setDefault("prd");
+	inputRequester addShieldSect("Add section",&mi_newShieldSection);
+	addShieldSect.addArg("mu","10000");
+	addShieldSect.addArg("Constant Z segs","10");
+	addShieldSect.addArg("Variable Z segs","20");
+	addShieldSect.addArg(&selectRefPt);
+	addShieldSect.addArg(&selectEndRefPt);
+	
+	inputRequester modShieldOffset("Modify section geometry",&mi_shieldOffsets);
+	modShieldOffset.addArg("start dz","0");
+	modShieldOffset.addArg("start dr","0");
+	modShieldOffset.addArg("end dz","0");
+	modShieldOffset.addArg("end dr","0");
 	
 	OptionsMenu OMshield("Shield Options");
 	OMshield.addChoice(&setShield,"geom");
-	OMshield.addChoice(&setShieldGrid,"grid");
-	OMshield.addChoice(&unsetShield,"clear");
-	OMshield.addChoice(&setEndcap,"ecap");
-	OMshield.addChoice(&modEndcap,"mcap");
-	OMshield.addChoice(&coneEndcap,"cone");
+	OMshield.addChoice(&addShieldSect,"add");
+	OMshield.addChoice(&modShieldOffset,"mod");
 	OMshield.addChoice(&exitMenu,"x");
 	
 	inputRequester meas("Coil field measurement",&mi_meas);

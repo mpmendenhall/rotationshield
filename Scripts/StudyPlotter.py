@@ -10,8 +10,12 @@ from math import *
 
 from EDM_IO import *
 from LinFitter import *
+from ArrowPlotter import *
 
 from QFile import *
+
+def rainbow(n):
+	return [ hsb((1.0*x)/n,1,1) for x in range(n) ]
 
 class cell_geom(KVMap):
 	"""Data cell geometry"""
@@ -48,6 +52,8 @@ class BCell:
 			Bi.rescale([.01,.01,.01])
 		self.ll = [100*x for x in self.ll]
 		self.ur = [100*x for x in self.ur]
+	def avgB(self):
+		return [Vol3Avg(self.B[i],self.ll,self.ur) for i in range(3)]
 	def normB0(self,Btarg):
 		"""Normalize average field to desired quantity"""
 		B0avg = Vol3Avg(self.B[0],self.ll,self.ur)
@@ -76,8 +82,15 @@ def linear_zerocrossings(pts):
 		x1,y1 = pts[i]
 		x2,y2 = pts[i+1]
 		if y1*y2 <= 0:
-			zcross.append( (y2*x1-y1*x2)/(y2-y1) )
+			zcross.append( [(y2*x1-y1*x2)/(y2-y1),(y2-y1)/(x2-x1)] )
 	return zcross
+
+def otherAxis(xi,xj):
+	assert xi != xj
+	for i in range(3):
+		if i not in (xi,xj):
+			return i
+	return None
 
 class FieldInfo:
 	"""Output fields information"""
@@ -105,8 +118,9 @@ class FieldInfo:
 					xpts[n][xi] = s[0]
 					xpts[n][xj] = s[1]
 					xpts[n][xk] = s[2]
-				self.slicepts.append( ((ni,nj), (xpts[0][xi],xpts[0][xj])) )
-				dlines[(x[xi],x[xj])] = [(x[xk],self.BC.B[x0](x)) for x in xpts]
+				p0 = (xpts[0][xi],xpts[0][xj])
+				self.slicepts.append( ((ni,nj), p0) )
+				dlines[p0] = [(x[xk],self.BC.B[x0](x)) for x in xpts]
 		return dlines
 		
 	def plotFields(self,x0,xi,xj,xk,nptsijk=(3,3,50)):
@@ -131,6 +145,40 @@ class FieldInfo:
 				[graph.style.line(lineattrs=istyles[ni]+jstyles[nj]),])
 
 		g.writePDFfile(self.basepath + "/Field_B%s_%s.pdf"%(axes[x0],axes[xk]))
+
+	def plotCellProjection(self, xi, xj, nptsijk=None, B0=None, B0scale=None):
+	
+		if nptsijk is None:
+			nptsijk = ( int(self.BC.ur[xi]-self.BC.ll[xi]), int(self.BC.ur[xj]-self.BC.ll[xj]), 5 )
+	
+		# default to residuals plot
+		if B0 is None:
+			B0 = self.BC.avgB()
+		if B0scale is None:
+			B0scale = sqrt(sum([x**2 for x in B0]))*0.005
+			
+		"""Plot projection of cell fields in xi-xj plane"""
+		g=graph.graphxy(width=self.BC.ur[xi]-self.BC.ll[xi]+1, height=self.BC.ur[xj]-self.BC.ll[xj]+1,
+			x=graph.axis.lin(title="$%s$ position [cm]"%axes[xi], min=self.BC.ll[xi]-0.5, max=self.BC.ur[xi]+0.5),
+			y=graph.axis.lin(title="$%s$ position [cm]"%axes[xj], min=self.BC.ll[xj]-0.5, max=self.BC.ur[xj]+0.5))
+		g.texrunner.set(lfs='foils17pt')
+
+		AP = ArrowPlotter(g)
+		
+		xk = otherAxis(xi,xj)
+		dati = self.gridLines(xi,xi,xj,xk,nptsijk)
+		datj = self.gridLines(xj,xi,xj,xk,nptsijk)
+		
+		kcol = rainbow(nptsijk[2])
+		
+		for nk in range(nptsijk[2]):
+			gdat = [ (p[1][0], p[1][1], (dati[p[1]][nk][1]-B0[xi])/B0scale, (datj[p[1]][nk][1]-B0[xj])/B0scale) for p in self.slicepts]
+			asty = graph.style.arrow(lineattrs=[style.linewidth.Thick,kcol[nk]])
+			AP.plot_arrowdat(gdat,asty,offset=True)
+
+		g.writePDFfile(self.basepath + "/Cell_%s-%s.pdf"%(axes[xi],axes[xj]))
+		
+
 
 
 class VarParamPlotter:
