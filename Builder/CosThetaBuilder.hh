@@ -68,7 +68,7 @@ public:
 	/// constructor
 	CosThetaBuilder(unsigned int n, mdouble r, mdouble l,
 					AnglePositioner* ap = new ShiftPositioner(), EndTranslator* et = NULL):
-	ncoils(n), radius(r), length(l), AP(ap), ET(et), nArc(100)  { myCap[0] = myCap[1] = CAP_LINE; }
+	ncoils(n), radius(r), length(l), AP(ap), ET(et), nArc(100)  { myCap[0] = myCap[1] = CAP_ARC; }
 	
 	/// build coil into MixedSource
 	void buildCoil(MixedSource& M);

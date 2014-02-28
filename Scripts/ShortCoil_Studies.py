@@ -20,13 +20,25 @@ def make_asym_shortcoil_base(nm,r,dz=-0.819):
 		
 	return S
 
-def make_asym_shortcoil_throughend(nm,r,dz=-0.8): #=-0.023):
+def make_asym_shortcoil_throughend(nm,r,dz=-0.10): #2751):
 
 	S = make_asym_shortcoil_base(nm,r,dz)
 	S.set_csgeom(clen = 2.5, crad = 1.0, dlen = 0.01, drad = 0.1)
+	
+	S.shsects[2].off[1][1] = 0.95	# just cover endcap
+	# move close to endcap
+	S.shsects[1].off[1][0] = S.shsects[2].off[0][0] = S.shsects[2].off[1][0] = -0.005
+	
+	# inner plug
+	S.shsects.append(ShieldSection(0,6,12,"pax","pax"))
+	S.shsects[3].off[0][1] = 0.65
+	
 	#S.shsects[2].off[1][1] = 0
-	S.cend = "none"
-	S.dist = [-0.0196]
+	#S.shsects.append(ShieldSection(0,6,12,"prd","pax"))
+	#S.shsects[3].off[1][1] = 0.95
+	
+	S.cend = ["none",None]
+	S.dist = [-0.0080]
 	
 	return S
 
@@ -52,7 +64,7 @@ def ECtoWiresScan():
 
 def DistortionScan():
 	SS = StudyScan()
-	for r in unifrange(-0.04, 0, 7, True):
+	for r in unifrange(-0.02, 0, 7, True):
 		S = make_setup("ShortCoil_Distortion",r)
 		S.dist = [r]
 		SS.fsimlist.write(S.make_cmd())
@@ -60,7 +72,7 @@ def DistortionScan():
 
 def MovingCellScan():
 	SS = StudyScan()
-	for r in unifrange(-0.15, 0.2, 7, True):
+	for r in unifrange(-1, 0.5, 7, True):
 		S = make_setup("ShortCoil_MovingCell",r,dz=r)
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
@@ -75,9 +87,18 @@ def LengthScan():
 
 def NegApertureScan():
 	SS = StudyScan()
-	for r in unifrange(0, 1.0, 7, True):
+	for r in unifrange(0, 0.2, 7, True):
 		S = make_setup("ShortCoil_NegAperture",r)
-		S.shsects[2].off[1][1] = r
+		S.shsects[0].off[0][1] = r
+		SS.fsimlist.write(S.make_cmd())
+	SS.run()
+
+def PosBlockScan():
+	SS = StudyScan()
+	for r in unifrange(0, 0.7, 7, True):
+		S = make_setup("ShortCoil_PosBlock",r)
+		#S.shsects[1].off[1][0] = S.shsects[2].off[0][0] = S.shsects[2].off[1][0] = r
+		S.shsects[3].off[0][1] = r
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
@@ -137,6 +158,7 @@ if __name__=="__main__":
 		#DistortionScan()
 		#SuperAScan()
 		#ConeScan()
+		#PosBlockScan()
 		
 		#GriddingScan()
 		
@@ -180,6 +202,9 @@ if __name__=="__main__":
 		#VPP = VarParamPlotter(outdir+"/ShortCoil_Cone")
 		#VPP.setupGraph("Endcap cone offset [m]")
 
+		#VPP = VarParamPlotter(outdir+"/ShortCoil_PosBlock")
+		#VPP.setupGraph("Inner disc z offset [m]")
+		
 		if VPP is not None:
 			VPP.makePlot()
 			VPP.outputPlot()
@@ -191,10 +216,11 @@ if __name__=="__main__":
 				FI.plotFields(2,0,1,2)
 		else:
 			
-			FI = FieldInfo(outdir+"ShortCoil_Distortion/X_-0.020000/")
+			FI = FieldInfo(outdir+"ShortCoil_PosBlock/X_0.500000/")
 			
 			FI.plotFields(2,0,1,2) # Bz along z
 			FI.plotFields(0,0,2,1) # Bx along y
+			FI.plotFields(0,0,1,2) # Bx along z
 			
 			FI.plotCellProjection(1,0)
 			FI.plotCellProjection(1,2)

@@ -32,7 +32,7 @@ class StudySetup:
 		self.crad = 0.61				# coil radius
 		self.clen = 2.5					# coil length
 		self.dist = []					# coil distortion parameters
-		self.cend = None
+		self.cend = [None,None]			# coild endcap type
 		
 		self.shieldR = 0				# shield radius (nominal 0.68; 0 = no shield)
 		self.shieldL = 0				# shield length (nominal 2.7; 0 = no shield)
@@ -63,8 +63,9 @@ class StudySetup:
 		coilcmd = "coil geom %i %f %f"%(self.N,self.clen,self.crad)
 		for (n,x) in enumerate(self.dist):
 			coilcmd += " dist %i %f"%(n+1,x)
-		if self.cend:
-			coilcmd += " end %s"%self.cend
+		for (n,s) in enumerate(["neg","pos"]):
+			if self.cend[n]:
+				coilcmd += " end %s %s"%(self.cend[n],s)
 			
 		shieldcmd = "shield"
 		if self.shieldR and self.shieldL:

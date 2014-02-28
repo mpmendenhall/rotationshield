@@ -62,10 +62,16 @@ class BCell:
 	def GradBAvg(self):
 		"""Volume average gradient"""
 	 	return [Vol3Avg(Bi,self.ll,self.ur) for Bi in GradV(self.B)]
+	def DerivsAvg(self):
+		"""dBi/dj average gradients"""
+		return [[Vol3Avg(self.B[i].derivative(j),self.ll,self.ur) for j in range(3)] for i in range(3)]
 	def GradBRMS(self,xi,xj):
 		"""Volume RMS sqrt(<(dBxi/dBxj)^2>)"""
 		dBxdz = self.B[xi].derivative(xj)
 		return sqrt(Vol3Avg(dBxdz*dBxdz,self.ll,self.ur))
+	def Bmag2(self):
+		"""Calculate magnitude of B^2 as polynomial"""
+		return sum([Bi*Bi for Bi in self.B])
 
 axes = ["x","y","z"]
 
@@ -81,7 +87,7 @@ def linear_zerocrossings(pts):
 	for i in range(len(pts)-1):
 		x1,y1 = pts[i]
 		x2,y2 = pts[i+1]
-		if y1*y2 <= 0:
+		if y1*y2 < 0:
 			zcross.append( [(y2*x1-y1*x2)/(y2-y1),(y2-y1)/(x2-x1)] )
 	return zcross
 
@@ -216,10 +222,17 @@ class VarParamPlotter:
 				if cell:
 					FI.BC.ll,FI.BC.ur = cell[0],cell[1]
 				lax = longAxis((FI.BC.ll,FI.BC.ur))
-				GradScaled = [x*1000 for x in FI.BC.GradBAvg()]
+				
+				#GradScaled = [x*1000 for x in FI.BC.GradBAvg()]
+				derivs = FI.BC.DerivsAvg()
+				GradScaled = [derivs[i][i]*1000 for i in range(3)]
+				
 				rms = FI.BC.GradBRMS(0,lax)*1000
+				
+				dBxdz = derivs[0][2]*1000
+				
 				print r,"B0 =",FI.Bavg,"\tBgrad =",GradScaled,"\tRMS =",rms
-				gdat.append([r,]+GradScaled+[rms,])
+				gdat.append([r,]+GradScaled+[rms,dBxdz])
 			gdat.sort()
 
 			for (n,a) in enumerate(axes):
@@ -228,71 +241,23 @@ class VarParamPlotter:
 				ptsymb = graph.style.symbol(symbol.circle,size=0.2,symbolattrs=[self.axiscols[a]])
 				self.g.plot(graph.data.points(axdat,x=1,y=2,title="$\\langle \\partial B_{%s} / \\partial %s \\rangle$ "%(a,a)+cname),
 						[graph.style.line(lineattrs=[self.axiscols[a],style.linewidth.THick]+csty),ptsymb])
+			
 			self.g.plot(graph.data.points(gdat,x=1,y=5,title="${\\langle (\\partial B_x / \\partial %s)^2 \\rangle}^{1/2}$ "%axes[lax]+cname),
 						[graph.style.line(lineattrs=[style.linewidth.THick]+csty),graph.style.symbol(symbol.circle,size=0.2)])
+						
+			if 0:
+				axdat = [(p[0],p[5]) for p in gdat]
+				print "dBx/dz zero crossings: %s"%(cname),linear_zerocrossings(axdat)
+				self.g.plot(graph.data.points(gdat,x=1,y=6,title="$\\langle \\partial B_x / \\partial z \\rangle$ "+cname),
+							[graph.style.line(lineattrs=[style.linewidth.thin]+csty),graph.style.symbol(symbol.circle,size=0.2)])
+
 
 	def outputPlot(self):
 		self.g.writePDFfile(self.outdir + "/FieldUniformity.pdf")
 		
 
-#
-#
-def FieldPlotter(basedir, b0Targ=30):
-
-	# load data
-	BC = BCell(basedir+"/Fields/Fieldstats.txt")
-	
-	BC.ll,BC.ur = (0.05,-0.20,-0.05),(0.125,0.20,0.05) # nominal measurement cell
-	BC.ll,BC.ur = (-0.15,-0.15,-0.4),(0.15,0.15,0.4) # half-scale measurement region
-	
-	BC.m2cm()
-	Bavg = BC.normB0(b0Targ)
-	
-	# Bx0 slice along fixed xi,xj, varying xk="z"
-	
-	#x0,xi,xj,xk = 0,0,2,1	# B_x along y
-	x0,xi,xj,xk = 0,0,1,2	# B_x along z
-	
-	#x0,xi,xj,xk = 1,0,1,2
-	
-	#x0,xi,xj,xk = 1,0,2,1
-	
-	nptsi,nptsj,nptsk = 3,3,50
-	istyles = [[rgb.red],[rgb.green],[rgb.blue]]
-	jstyles = [[style.linestyle.dotted,style.linewidth.THick],[style.linestyle.solid,style.linewidth.THick],[style.linestyle.dashed,style.linewidth.Thick]]
-	
-	g=graph.graphxy(width=24,height=16,
-		x=graph.axis.lin(title="$%s$ position [cm]"%axes[xk]),
-		y=graph.axis.lin(title="$B_{%s}$ [mG]"%axes[x0],min=29.9,max=30.1),
-		key = graph.key.key(pos="bc",columns=3))
-	g.texrunner.set(lfs='foils17pt')
-
-	for (ni,p_i) in enumerate(unifrange(BC.ll[xi],BC.ur[xi],nptsi)):
-		for (nj,p_j) in enumerate(unifrange(BC.ll[xj],BC.ur[xj],nptsj)):
-			spoints = [ (p_i,p_j,p_k) for p_k in unifrange(BC.ll[xk],BC.ur[xk],nptsk) ]
-			xpts = [ [0,0,0] for p in spoints ]
-			for (n,s) in enumerate(spoints):
-				xpts[n][xi] = s[0]
-				xpts[n][xj] = s[1]
-				xpts[n][xk] = s[2]
-			gdat = [(x[xk],BC.B[x0](x)) for x in xpts]
-			g.plot(graph.data.points(gdat,x=1,y=2,title="$%s,%s = %+.2f,%+.2f$"%(axes[xi],axes[xj],p_i,p_j)),
-			[graph.style.line(lineattrs=istyles[ni]+jstyles[nj]),])
-
-	g.writePDFfile(basedir + "/Field_B%s_%s.pdf"%(axes[x0],axes[xk]))
-
-	return Bavg
-
-
 if __name__=="__main__":
 	outdir = os.environ["ROTSHIELD_OUT"]
-	
-	#FieldPlotter(outdir+"Super_A3/X_-0.100000")
-	#FieldPlotter(outdir+"Super_Asearch_4/X_0.018000")
-	#FieldPlotter(outdir+"EC_VarRad/X_0.050000")
-	
-	print FieldPlotter(outdir+"halfscale_open_end/")
-	print FieldPlotter(outdir+"halfscale_sc_end/",30*2.76465874521/2.76559952922)
 
 
 
