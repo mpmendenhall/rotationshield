@@ -12,7 +12,7 @@ def product(l):
 	
 def basisv(n,m=-1):
 	l = [0,]*n
-	if m>0:
+	if m>=0:
 		l[m] = 1
 	return tuple(l)
 		
@@ -21,25 +21,30 @@ def basisv(n,m=-1):
 class polynomial:
 	"""Class for manipulating polynomials in N variables"""
 	
-	def __init__(self,N):
+	def __init__(self,N,coeffs={}):
 		self.N = N
 		self.C0 = (0,)*self.N
-		self.coeffs = {}
+		self.coeffs = coeffs.copy()
 		self.varnames = ( "x","y","z","t", "w","v", "u", "a", "b", "c" )
-		
+
+	def add_monomial(self,C,v):
+		"""Add monomial term vC"""
+		if not v:
+			return
+		if C in self.coeffs:
+			self.coeffs[C] += v
+		else:
+			self.coeffs[C] = v
+
 	def __add__(self,other):
 		"""Add polynomials"""
 		p = self.copy()
 		if isinstance(other,polynomial):
 			assert other.N == self.N
-			for k in other.coeffs.keys():
-				p.coeffs[k] = p.coeffs.get(k,0) + other.coeffs[k]
+			for k,v in other.items():
+				self.add_monomial(k,v)
 		else:
-			if other:
-				if self.coeffs.has_key(self.C0):
-					self.coeffs[self.C0] += other
-				else:
-					self.coeffs[self.C0] = other
+			self.add_monomial(self.C0,other)
 		return p
 	
 	def __mul__(self,other):
@@ -66,6 +71,19 @@ class polynomial:
 	def __sub__(self,other):
 		"""Subtract polynomials"""
 		return self + (-other)
+
+	def __pow__(self,n):
+		"""Raise polynomial to an integer power"""
+		assert isinstance(n,int)
+		assert n >= 0
+		if n==0:
+			return polynomial(self.N,{self.C0: 1})
+		if n==1:
+			return self.copy()
+		else:
+			p = self.copy()
+			return p*p**(n-1)
+
 
 	def __call__(self,varvals):
 		"""Evaluate at given variable values"""
@@ -97,7 +115,7 @@ class polynomial:
 		"""Scale each variable by given scale factor x->s*x"""
 		for k in self.coeffs.keys():
 			self.coeffs[k] *= product([ scalefactors[n]**p for (n,p) in enumerate(k) ])
-	
+
 	def evalOne(self,n,xval):
 		"""Evaluate out one variable at given value; return scalar if is scalar"""
 		p = polynomial(self.N-1)
@@ -136,12 +154,10 @@ class polynomial:
 	def average(self,n,a,b):
 		"""Average over range in variable b"""
 		return self.integral(n,a,b)*(1.0/(b-a))
-		
-		
+				
 	def copy(self):
 		"""Copy into another polynomial"""
-		p = polynomial(self.N)
-		p.coeffs = self.coeffs.copy()
+		p = polynomial(self.N,self.coeffs)
 		p.varnames = self.varnames
 		return p
 		
@@ -163,11 +179,34 @@ class polynomial:
 			P.coeffs[basisv(self.nvars(),i)] = 0
 		m = linalg.pinv(P.quadratic_derivs_matrix()[0])
 		return [ m[r,r]/sqrt(2*P( [ -x for x in m.transpose()[r].tolist()[0] ] )) for r in range(self.nvars()) ]
-			
+	
+	def __repr__(self):
+		s = ""
+		if len(self.coeffs) < 10:
+			ks = self.coeffs.keys()
+			ks.sort()
+			if not ks:
+				s = "0"
+			for k in ks:
+				if self.coeffs[k] == 0:
+					continue
+				s += " "+str(self.coeffs[k]);
+				for i in range(self.N):
+					if k[i] == 0:
+						continue
+					s += "%s"%self.varnames[i]
+					if k[i] > 1:
+						s += "%i"%k[i]
+		else:
+			s = "%i vars, %i terms"%(self.N,len(self.coeffs))
+		return "<polynomial %s>"%s
+		
 	def tostring(self):
 		"""Display as a string"""
 		s = ""
 		ks = self.coeffs.keys()
+		if not ks:
+			return "0"
 		ks.sort()
 		for k in ks:
 			if self.coeffs[k] == 0:
@@ -181,6 +220,74 @@ class polynomial:
 					s += "^%i"%k[i]
 					
 		return s[1:]
+
+	def set_coeff_to_first(self,i):
+		"""Re-order the i^th coefficient to first"""
+		if i==0:
+			return
+		self.varnames = list(self.varnames)
+		self.varnames = tuple([self.varnames[i],] + self.varnames[:i]+self.varnames[i+1:])
+		newcoeffs = {}
+		for c in self.coeffs:
+			cnew = [c[i],]+list(c[:i])+list(c[i+1:])
+			newcoeffs[tuple(cnew)] = self.coeffs[c]
+		self.coeffs = newcoeffs
+
+def poly_change_of_variable(p0,xnew):
+	"""Polynomial change-of-variable x_i -> P_i(x)"""
+	p = p0.copy()
+	p.coeffs = {}
+
+	for t in p0.coeffs:
+		q = polynomial(p0.N)
+		q += p0.coeffs[t]
+		for (n,m) in enumerate(t):
+			if m:
+				q *= xnew[n]**m
+		p += q
+	
+	return p
+
+def recenter_poly(p,c):
+	"""Origin-shifting change-of-variable x_i -> x_i + c_i"""
+	xnew = [ polynomial(p.N, {p.C0 : c[n], basisv(p.N,n) : 1.0}) for n in range(p.N) ]
+	return poly_change_of_variable(p,xnew)
+
+def map_poly_to_unit_cell(p,ll,ur):
+	"""Scale and translate polynomial to map region ll to ur onto [-1/2,1/2]^N"""
+	xnew = [ polynomial(p.N, {p.C0 : 0.5*(ll[n]+ur[n]), basisv(p.N,n) : ur[n]-ll[n]}) for n in range(p.N) ]
+	return poly_change_of_variable(p,xnew)
+
+def Fourier_transform_poly(p,i,k):
+	"""Fourier transform out the i^th variable of polynomial"""
+	
+	assert isinstance(k,int)
+	if k==0:
+		return p.integral(i,-0.5,0.5)
+
+	p0 = p.copy()
+	p0.set_coeff_to_first(i)
+	pF = polynomial(p.N-1)
+	pF.varnames = p0.varnames[1:]
+
+	while p0.coeffs:
+		clist = p0.coeffs.keys()
+		clist.sort()
+		C = clist[-1]
+		m = C[0]
+		if m==0:
+			break
+			
+		v = p0.coeffs.pop(C)
+		d = -1./(2j*pi*k)
+		if m%2:
+			pF.add_monomial(C[1:],v*d*2**(1-m)*(-1)**k)
+
+		C = list(C);
+		C[0] -= 1
+		p0.add_monomial(tuple(C),-m*v*d)
+
+	return pF
 
 
 def lowTriangTerms(nVars, order):
