@@ -7,6 +7,7 @@ import numpy
 import cmath
 from scipy import special
 import os
+import time
 
 ###################################################
 # spin precession effects from inhomogeneous fields
@@ -122,6 +123,7 @@ def omega_delta_omega(BC, PG, E = 7500000*E_SI_to_GCGS):
 
 def SBiBi(BC,i,w,PG):
 	"""S_{B_i B_i} [Gauss^2 s]"""
+	#tstart = time.clock()
 	
 	P = map_poly_to_unit_cell(BC.B[i], BC.ll, BC.ur)
 	Lx,Ly,Lz = [1.0*abs(BC.ur[a]-BC.ll[a]) for a in range(3)]
@@ -131,18 +133,20 @@ def SBiBi(BC,i,w,PG):
 	FT = numpy.zeros((2*lmax+1,2*lmax+1,2*lmax+1),dtype=complex)
 	p = numpy.zeros((lmax+1,lmax+1,lmax+1),dtype=complex)
 	for lx in range(0,lmax+1):
+		FPx = Fourier_transform_poly(P,0,0.5*lx)
 		for ly in range(-lmax,lmax+1):
+			FPy = Fourier_transform_poly(FPx,0,0.5*ly)
 			for lz in range(-lmax,lmax+1):
-				FT[lx][ly][lz] = Polynomial_Fourier_coeff(P,(0.5*lx, 0.5*ly, 0.5*lz))
-				FT[-lx][-ly][-lz] = FT[lx][ly][lz].conjugate()
+				FT[lx,ly,lz] = Fourier_transform_poly(FPy,0,0.5*lz)
+				FT[-lx,-ly,-lz] = FT[lx,ly,lz].conjugate()
 				if lx>=0 and ly>=0 and lz>=0 and (lx,ly,lz) != (0,0,0):
 					q = sqrt( (lx/Lx)**2 + (ly/Ly)**2 + (lz/Lz)**2 )*pi
-					p[lx][ly][lz] = PG.p(q,w)
-
+					p[lx,ly,lz] = PG.p(q,w)
 
 	# sum terms
 	s = 0
-	for lx in range(-lmax,lmax+1):
+	eipihalf_phase = [1,1j,-1,-1j]
+	for lx in range(0,lmax+1):
 		for ly in range(-lmax,lmax+1):
 			for lz in range(-lmax,lmax+1):
 			
@@ -153,11 +157,12 @@ def SBiBi(BC,i,w,PG):
 				for sx in [-1,1]:
 					for sy in [-1,1]:
 						for sz in [-1,1]:
-							FTm += cmath.exp(1j*pi*(lx*sx+ly*sy+lz*sz)*0.5)*FT[lx*sx][ly*sy][lz*sz]
-				FTm *= cmath.exp(1j*pi*(lx+ly+lz)*0.5)
+							FTm += eipihalf_phase[(lx*sx+ly*sy+lz*sz)%4]*FT[lx*sx,ly*sy,lz*sz]
+				FTm *= eipihalf_phase[(lx+ly+lz)%4]
 				
-				s += p[abs(lx)][abs(ly)][abs(lz)] * FTm * FT[-lx][-ly][-lz]
+				s += p[abs(lx),abs(ly),abs(lz)] * (FTm * FT[-lx,-ly,-lz]).real * 2**(lx>0)
 
+	#print "Calculation time",(time.clock() - tstart)
 	return s/8.
 
 def omega_T2i(BC,PG):
