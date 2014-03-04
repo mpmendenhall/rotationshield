@@ -1,0 +1,156 @@
+\documentclass[11pt,english]{article}
+
+% page layout
+\usepackage{geometry}
+\geometry{verbose,letterpaper,tmargin=0.75in,bmargin=0.75in,lmargin=0.75in,rmargin=0.75in}
+% text spacing
+\usepackage{setspace}
+\onehalfspacing
+
+% set font families
+%\renewcommand\rmdefault{cmr}
+%\renewcommand\sfdefault{cmss}
+%\renewcommand\ttdefault{cmtt}
+
+% math symbols
+\usepackage{amssymb,amsmath,bm}
+
+% vector
+\newcommand{\vc}[1]{\ensuremath{\bm{#1}}}
+
+\usepackage{hyperref}
+
+\begin{document}
+
+\title{Fourier transform notes}
+\author{Michael P. Mendenhall (Caltech)}
+\maketitle
+
+\section{Conventions}
+
+For a function $f(x)$, $x \in \left[ -\frac{1}{2}, \frac{1}{2} \right]$, we define the Fourier transform by:
+\begin{equation}
+	\tilde f(k) \equiv \int_{-1/2}^{1/2} f(x) e^{-2\pi i k x} dx
+\end{equation}
+
+\section{Fourier transforms of polynomials}
+
+For (multi-variate) polynomials $P(x_1,\cdots,x_n) = \sum_{k_1,\cdots,k_n} c_{k_1,\cdots,k_n} \prod_i x_i^{k_i}$,
+	Fourier transforms over rectangular domains $x_i \in [a_i,b_i]$ may be calculated analytically.
+Transforms may be calculated integrating out one dimension $x_i$ at a time,
+	so only the behavior of univariate polynomials need be considered.
+Starting from a polynomial $P(x)$ within cell $x \in [a,b]$,
+	we first apply the change-of-variable $\frac{x-a}{b-a} -\frac{1}{2} \rightarrow x$
+	for convenience, so the domain of interest is $x \in \left[ -\frac{1}{2}, \frac{1}{2} \right]$.
+Then, we define Fourier terms for wavenumber $k$ by
+\begin{equation}
+	\tilde P(k) \equiv \int_{-1/2}^{1/2} \left[ \sum_m c_m x^m \right] e^{-2\pi i k x} dx
+\end{equation}
+This integration may be carried out by reducing each term in the polynomial
+	(starting from the highest $m > 0$) to next lower order using integration by parts:
+\begin{equation}
+	\int_{-1/2}^{1/2} x^m e^{-2 \pi i k x} dx
+		= \frac{-1}{2\pi i k} \left[ \frac{1-(-1)^m}{2^m} (-1)^k -  m \int_{-1/2}^{1/2} x^{m-1} e^{-2\pi i k x} dx \right]
+	\label{eq:ft_xn}
+\end{equation}
+noting that
+\begin{equation}
+	\frac{1-(-1)^m}{2^m} = 
+	\begin{cases}
+		2^{(1-m)},		& \textrm{$m$ odd}		\\
+		0,				& \textrm{$m$ even}
+	\end{cases}
+\end{equation}
+Once the progression reaches $m=0$, we use
+\begin{equation}
+	\int_{-1/2}^{1/2} e^{-2\pi i k x} dx = \frac{\sin \pi k}{\pi k} 
+\end{equation}
+which vanishes for integer $k \neq 0$ (note, the formulae above do not depend on $k$ being an integer, though this is the common case).
+For the special case of $k=0$, one needs instead:
+\begin{equation}
+	\int_{-1/2}^{1/2} x^m dx =
+	\begin{cases}
+		\frac{2^{-m}}{m+1},		& \textrm{$m$ even}		\\
+		0,						& \textrm{$m$ odd}
+	\end{cases}
+\end{equation}
+
+\section{Mirrored cell}
+
+For $T_2$ calculations, we need Fourier transforms for a
+	``mirrored'' cell configuration.
+Let $f(x)$, $x \in \left[ -\frac{1}{2}, \frac{1}{2} \right]$ be any function.
+Mirroring instead around $x=\frac{1}{2}$, define the ``mirrored'' function
+\begin{equation}
+	f^m(x) \equiv
+	\begin{cases}
+		f(x),		& x \leq \frac{1}{2}		\\
+		f(1-x)		& x > \frac{1}{2}
+	\end{cases}
+\end{equation}
+We then wish to calculate the Fourier terms
+\begin{equation}
+	\tilde {f^m}(k) \equiv \int_{-1/2}^{3/2} f^m(x) e^{\pi i k x} dx
+	= \int_{-1}^{1} f^m \left( x + \frac{1}{2} \right) e^{\pi i k x}e^{\frac{k}{2} \pi i} dx
+\end{equation}
+Since $f^m \left( x + \frac{1}{2} \right)$ is symmetric around $x=0$,
+	only the symetric component of $e^{\pi i k x}$ will contribute to the integral.
+Thus, we may symmetrize $e^{\pi i k x} \rightarrow \frac{1}{2}\left(e^{\pi i k x}+e^{-\pi i k x}\right)$
+and integrate over the half-region where $f^m = f$:
+\begin{equation}
+	\tilde {f^m}(k) = e^{\frac{k}{2} \pi i} \int_{-1}^{0} f \left( x + \frac{1}{2} \right)
+	\left(e^{\pi i k x}+e^{-\pi i k x}\right) dx
+\end{equation}
+now, shifting bounds with the substitution $u = x+\frac{1}{2}$:
+\begin{equation}
+\tilde {f^m}(k) = e^{\frac{k}{2} \pi i}
+	\Bigg[
+		e^{-\frac{k}{2} \pi i} \underbrace{\int_{-1/2}^{1/2} f(x) e^{\pi i k x} dx}_{\tilde f \left( -\frac{k}{2} \right)}
+		+e^{\frac{k}{2} \pi i} \underbrace{\int_{-1/2}^{1/2} f(x) e^{-\pi i k x} dx}_{\tilde f \left( \frac{k}{2} \right)}
+	\Bigg]
+\end{equation}
+producing a formula in terms of the Fourier components $\tilde{f}\left( \pm \frac{k}{2} \right)$,
+	which are also used in the $T_2$ formula.
+
+
+
+\section{Other notes}
+
+\subsection{Simplification of $S_{B_x x}$}
+
+since FT results for $\pm l$ are complex conjugates:
+\begin{equation}
+	i^{-k} = (-1)^k i^k
+\end{equation}
+\begin{align}
+S_{B_x x}(\omega) & = \sum_{l_x=odd~-\infty }^{\infty } -\frac{(i)^{l_x}2L_x}{\pi ^{2}l_x^{2}}
+	p\left(\frac{l_x \pi}{L_x}, \omega \right)
+	\frac{1}{V} \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}\int_{-\frac{L_y}{2}}^{\frac{L_y}{2}} \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+	B_x(\mathbf{x} )\mathrm{e}^{\frac{i\pi l_x x}{L_x}}d^3\mathbf{x} \\
+		& = \sum_{l_x = 1,3,5,\cdots}^{\infty} \frac{(-1)^{(l_x-1)/2} 4 L_x}{\pi ^{2}l_x^{2}}
+	p\left(\frac{l_x \pi}{L_x}, \omega \right)
+	\Im \left[ \frac{1}{V} \iiint_V
+	B_x(\mathbf{x} )\mathrm{e}^{\frac{i\pi l_x x}{L_x}}d^3\mathbf{x} \right]
+\end{align}
+
+\subsection{$^3$He $p(q,\omega)$}
+
+To avoid computation overflow in large exponential terms in $p(q,\omega)$ for $^3$He,
+	we may employ the ``Fadeeva function'' $w(z)$,
+\begin{equation}
+	w(z) \equiv e^{-z^2} \operatorname{erfc}(-iz); \ \ z = i \sqrt{\frac{m}{2kT}} \frac{\lambda+i\omega}{q}
+\end{equation}
+available as, e.g., \texttt{scipy.special.wofz(z)}.
+
+\subsection{neutron $p(q,\omega)$}
+$p(q,\omega)$ for UCN is written more simply by collecting terms in a dimensionless variable $x$:
+\begin{equation}
+	p(q,\omega) = \frac{3ix^2}{2\omega} \left[ \left(x - \frac{1}{x}\right)(2\operatorname{atanh}(x)-i\pi) - 2 \right],\ \
+	x \equiv \frac{\omega}{\nu_\textrm{max}|q|}
+\end{equation}
+though, to avoid difficulty at $\omega = 0$, this must be re-written
+\begin{equation}
+	p(q,\omega) = \frac{3i}{2\nu_\textrm{max}|q|} \left[ \left(x^2 - 1\right)(2\operatorname{atanh}(x)-i\pi) - 2x \right]
+\end{equation}
+
+\end{document}

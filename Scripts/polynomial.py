@@ -3,6 +3,7 @@
 import numpy
 from numpy import *
 import numpy.linalg as linalg
+import cmath
 
 def product(l):
 	p = 1
@@ -11,10 +12,7 @@ def product(l):
 	return p
 	
 def basisv(n,m=-1):
-	l = [0,]*n
-	if m>=0:
-		l[m] = 1
-	return tuple(l)
+	return tuple([int(l==m) for l in range(n)])
 		
 # polynomial, represented by a dictionary with tuples of exponents as the keys
 # mapped to the coefficient of the term
@@ -41,10 +39,10 @@ class polynomial:
 		p = self.copy()
 		if isinstance(other,polynomial):
 			assert other.N == self.N
-			for k,v in other.items():
-				self.add_monomial(k,v)
+			for k,v in other.coeffs.items():
+				p.add_monomial(k,v)
 		else:
-			self.add_monomial(self.C0,other)
+			p.add_monomial(p.C0,other)
 		return p
 	
 	def __mul__(self,other):
@@ -233,6 +231,12 @@ class polynomial:
 			newcoeffs[tuple(cnew)] = self.coeffs[c]
 		self.coeffs = newcoeffs
 
+def monomial(C,v=1.):
+	"""Convenience constructor for a monomial term"""
+	coeff = tuple(C)
+	return polynomial(len(coeff),{coeff:v})
+
+
 def poly_change_of_variable(p0,xnew):
 	"""Polynomial change-of-variable x_i -> P_i(x)"""
 	p = p0.copy()
@@ -259,9 +263,8 @@ def map_poly_to_unit_cell(p,ll,ur):
 	return poly_change_of_variable(p,xnew)
 
 def Fourier_transform_poly(p,i,k):
-	"""Fourier transform out the i^th variable of polynomial"""
+	"""Fourier transform out the i^th variable of polynomial, defined on [-1/2,1/2]^N"""
 	
-	assert isinstance(k,int)
 	if k==0:
 		return p.integral(i,-0.5,0.5)
 
@@ -275,19 +278,31 @@ def Fourier_transform_poly(p,i,k):
 		clist.sort()
 		C = clist[-1]
 		m = C[0]
-		if m==0:
-			break
-			
+					
 		v = p0.coeffs.pop(C)
+		if m==0:
+			if k != int(k):
+				pF.add_monomial(C[1:],v*sin(pi*k)/(pi*k))
+			continue
 		d = -1./(2j*pi*k)
 		if m%2:
-			pF.add_monomial(C[1:],v*d*2**(1-m)*(-1)**k)
+			pF.add_monomial(C[1:],v*d*2**(1-m)*cmath.exp(1j*pi*k))
 
 		C = list(C);
 		C[0] -= 1
 		p0.add_monomial(tuple(C),-m*v*d)
 
 	return pF
+
+def Polynomial_Fourier_coeff(p0,kvec):
+	"""Fourier coefficient integrated over all variables"""
+	assert len(kvec) == p0.N
+	p = p0.copy()
+	for k in kvec:
+		p = Fourier_transform_poly(p,0,k)
+	if isinstance(p,polynomial):
+		p = p.coeffs.get((),0)
+	return p
 
 
 def lowTriangTerms(nVars, order):
