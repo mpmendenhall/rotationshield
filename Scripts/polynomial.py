@@ -72,7 +72,7 @@ class polynomial:
 
 	def __pow__(self,n):
 		"""Raise polynomial to an integer power"""
-		assert isinstance(n,int)
+		assert n==int(n)
 		assert n >= 0
 		if n==0:
 			return polynomial(self.N,{self.C0: 1})
@@ -179,6 +179,8 @@ class polynomial:
 		return [ m[r,r]/sqrt(2*P( [ -x for x in m.transpose()[r].tolist()[0] ] )) for r in range(self.nvars()) ]
 	
 	def __repr__(self):
+		return "<polynomial %s>"%str(self.coeffs)
+		
 		s = ""
 		if len(self.coeffs) < 10:
 			ks = self.coeffs.keys()
@@ -263,7 +265,7 @@ def map_poly_to_unit_cell(p,ll,ur):
 	return poly_change_of_variable(p,xnew)
 
 def Fourier_transform_poly(p,i,k):
-	"""Fourier transform out the i^th variable of polynomial, defined on [-1/2,1/2]^N"""
+	"""Fourier transform out the i^th variable of polynomial, \int_{-1/2}^{1/2} P(x) e^{-2*pi*i*k*x} dx"""
 	
 	if k==0:
 		return p.integral(i,-0.5,0.5)
@@ -280,18 +282,23 @@ def Fourier_transform_poly(p,i,k):
 		m = C[0]
 					
 		v = p0.coeffs.pop(C)
+		
 		if m==0:
 			if k != int(k):
 				pF.add_monomial(C[1:],v*sin(pi*k)/(pi*k))
 			continue
+		
 		d = -1./(2j*pi*k)
-		if m%2:
-			pF.add_monomial(C[1:],v*d*2**(1-m)*cmath.exp(1j*pi*k))
+		if m%2 or k != int(k):
+			c0 = 2**(-m)*(cmath.exp(-1j*pi*k) - (-1)**m*cmath.exp(1j*pi*k))
+			pF.add_monomial(C[1:],v*d*c0)
 
 		C = list(C);
 		C[0] -= 1
 		p0.add_monomial(tuple(C),-m*v*d)
 
+	if not pF.N:
+		return pF.coeffs.get((),0)
 	return pF
 
 def Polynomial_Fourier_coeff(p0,kvec):
@@ -318,5 +325,11 @@ def lowTriangTerms(nVars, order):
 		Q.coeffs[basisv(nVars,n)] = 0
 		P = P+P*Q
 	return P
+
+if __name__=="__main__":
+	P = monomial((2,))
+	print P
+	print Fourier_transform_poly(P,0,0.5)
+
 
 
