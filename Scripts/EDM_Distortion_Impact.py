@@ -165,7 +165,7 @@ def SBiBi(BC,i,w,PG):
 	#print "Calculation time",(time.clock() - tstart)
 	return s/8.
 
-def omega_T2i(BC,PG):
+def T2i(BC,PG):
 	"""1/T_2 dephasing time in inhomogeneous field [Hz]"""
 	B0 = BC.avgB()[0]	# Average holding field, [Gauss]
 	w0 = B0*PG.gmr		# Larmor angular frequency in holding field [Hz]
@@ -174,7 +174,7 @@ def omega_T2i(BC,PG):
 	BC.B[0] -= B0
 	
 	SB0B0 = SBiBi(BC,0,0,PG)
-	return w0, PG.gmr**2/4. * (2*SB0B0 + SBiBi(BC,1,w0,PG) + SBiBi(BC,2,w0,PG)).real	# 1/T_2 [Hz]
+	return PG.gmr**2/4. * (2*SB0B0 + SBiBi(BC,1,w0,PG) + SBiBi(BC,2,w0,PG)).real	# 1/T_2 [Hz]
 
 
 
@@ -183,73 +183,97 @@ def omega_T2i(BC,PG):
 ###########################
 # test example calculations
 
-if __name__ == "__main__":
+def T2_Studies(outdir = os.environ["HOME"]+"/Desktop/T2_Studies/"):
+	"""Plots of T2 dependence on gradients and cell geometry"""
 	
-	# define magnetic gradients cell
-	B0 = [0.030, 0, 0]		# B_0 field [Gauss]
-	gradB = [1e-7, 0, 0 ]	# linear field gradient [G/cm]
-	BC = BCell()
-	for a in range(3):
-		BC.B[a] += B0[a]
-		BC.B[a] += monomial(basisv(3,a),gradB[a])
-	#BC.ll,BC.ur = (-3.75,-20,-5.1),(3.75,20,5.1)	# field cell dimansions [cm]
-	BC.ll,BC.ur = (-20,-3.75,-5.1),(20,3.75,5.1)	# field cell dimansions [cm]
+	PGlist = [PG_n(),PG_3He()]
+	gstyles = [ [graph.style.line(),], [graph.style.line([style.linewidth.THick]),] ]
+	
+	## linear gradient dBx/dx ##
+	if 1:
+		gT2 = graph.graphxy(width=16,height=12,
+			#x=graph.axis.lin(title="Linear gradient $\\partial B_x/\\partial z$ [$\mu$G/cm]"),
+			x=graph.axis.lin(title="Linear gradient $\\partial B_x/\\partial y$ [$\mu$G/cm]"),
+			y=graph.axis.lin(title="Relaxation rate $1/T_2$ [mHz]",min=0),
+			key = graph.key.key(pos="tl"))
+		gT2.texrunner.set(lfs='foils17pt')
 
+		gdat = []
+		for dbxdz in unifrange(0,2e-6,15):
+			gdat.append([dbxdz*1e6,])
+			
+			for PG in PGlist:
+				BC = BCell()
+				BC.ll,BC.ur = (-3.75,-20,-5.0),(3.75,20,5.0)	# field cell dimansions [cm]
+				BC.B[0] += 0.030	# B0 = 30mG x
+				BC.B[0] += monomial((0,1,0),dbxdz)			# dBx/dz gradient
+
+				gdat[-1].append([dbxdz*1e6,1000*abs(T2i(BC,PG))])
+				print PG.name #,"dbxdz = %g"%dbxdz,"1/T2 = %g"%gdat[-1][-1]
+			
+		for (nPG,PG) in enumerate(PGlist):
+			pgdat = [p[1+nPG] for p in gdat]
+			LF = LinearFitter(terms=[polyterm(2),])
+			LF.fit(pgdat)
+			
+			gT2.plot(graph.data.points(pgdat,x=1,y=2,title="%s: $1/T_2 = %s$"%(PG.name,LF.toLatex(cfmt=".2g"))),gstyles[nPG])
+
+		gT2.writePDFfile(outdir+"/T2_vs_dBxdy_linear.pdf")
+
+	## quadratic gradient dBx/dy ##
+	if 1:
+		gT2 = graph.graphxy(width=16,height=12,
+			x=graph.axis.lin(title="Quadratic $\\langle (\\partial B_x/\\partial y)^2 \\rangle^{1/2}$ [$\mu$G/cm]"),
+			y=graph.axis.lin(title="Relaxation rate $1/T_2$ [mHz]",min=0),
+			key = graph.key.key(pos="tl"))
+		gT2.texrunner.set(lfs='foils17pt')
+
+		gdat = []
+		for dbxdy2 in unifrange(0,1e-7,15):
+		
+			gdat.append([dbxdy2,])
+			
+			for PG in PGlist:
+				BC = BCell()
+				BC.ll,BC.ur = (-3.75,-20,-5.0),(3.75,20,5.0)	# field cell dimansions [cm]
+				BC.B[0] += 0.030	# B0 = 30mG x
+				BC.B[0] += monomial((0,2,0),dbxdy2)
+
+				gdat[-1].append([BC.GradBRMS(0,1)*1e6,1000*abs(T2i(BC,PG))])
+				print PG.name
+			
+
+
+		for (nPG,PG) in enumerate(PGlist):
+			pgdat = [p[1+nPG] for p in gdat]
+			LF = LinearFitter(terms=[polyterm(2),])
+			LF.fit(pgdat)
+			
+			gT2.plot(graph.data.points(pgdat,x=1,y=2,title="%s: $1/T_2 = %s$"%(PG.name,LF.toLatex(cfmt=".2g"))),gstyles[nPG])
+
+		gT2.writePDFfile(outdir+"/T2_vs_dBxdy_quadratic.pdf")
+
+
+def ref_linear_T2_test():
+	"""Linear gradient reference test"""
 	# with a gradient of 1E-7 G/cm in the holding field direction 40 cm long axis,
 	# for neutrons I'm getting 3.88E-5 Hz
-	# for helium-3 I'm getting relaxation rate of  2.05E-4 Hz,
-	# = 5.28:1 3He:n
+	# for helium-3 I'm getting relaxation rate of  2.05E-4 Hz
 
-	# +-5
-	# neutron B0 = 0.03 1/T2 = 3.79892062823e-05
-	# $^3$He B0 = 0.03 1/T2 = -0.000207002279851
+	for PG in [PG_n(),PG_3He()]:
+		BC = BCell()
+		BC.ll,BC.ur = (-20,-3.75,-5.1),(20,3.75,5.1)	# field cell dimansions [cm]
+		BC.B[0] += 0.030
+		BC.B[0] += monomial((1,0,0),1e-7)
+		
+		print PG.name,"1/T2 = %g"%T2i(BC,PG)
 
-	# +-10
-	# neutron B0 = 0.03 1/T2 = 3.79920971318e-05
-	# $^3$He B0 = 0.03 1/T2 = -0.000207004474475
 
-	print "Calculating field impacts..."
-
-	gdw = graph.graphxy(width=16,height=12,
-		#x=graph.axis.lin(title="Larmor frequency $f$ [Hz]",min=80,max=120),
-		#y=graph.axis.lin(title="Geometric phase $\\delta\\omega$",min=-3e-8,max=3e-8),
-		x=graph.axis.lin(title="Larmor frequency $f$ [Hz]",min=0,max=150),
-		y=graph.axis.lin(title="Geometric phase $\\delta\\omega$"),
-		key = graph.key.key())
-	gdw.texrunner.set(lfs='foils17pt')
-	gdw.plot(graph.data.function("y(x)=0",title=None),[graph.style.line([style.linestyle.dotted]),])
-
-	gT2 = graph.graphxy(width=16,height=12,
-		x=graph.axis.lin(title="Larmor frequency $f$ [Hz]"),
-		y=graph.axis.lin(title="Relaxation rate $1/T_2$ [Hz]"),
-		key = graph.key.key())
-	gT2.texrunner.set(lfs='foils17pt')
-
-	gstyles = [ [graph.style.line(),], [graph.style.line([style.linewidth.THick]),] ]
-
-	for (nPG,PG) in enumerate([PG_n(),PG_3He()]):
+if __name__ == "__main__":
 	
-		gdat_dw = []
-		gdat_T2 = []
-
-		for (i,b0) in [(0,0.030),]: #enumerate(unifrange(0.0, 0.050, 200)):
-			BC.B[0].coeffs[BC.B[0].C0] = b0
-						
-			if not i%10:
-				w0,T2i = omega_T2i(BC,PG)
-				gdat_T2.append([w0/(2*pi),T2i])
-				print PG.name,"B0 =",b0,"1/T2 = %g"%T2i
-
-			w0,dw = omega_delta_omega(BC,PG)
-			gdat_dw.append([w0/(2*pi),dw])
-
-			
-		gdw.plot(graph.data.points(gdat_dw,x=1,y=2,title=PG.name),gstyles[nPG])
-		gT2.plot(graph.data.points(gdat_T2,x=1,y=2,title=PG.name),gstyles[nPG])
-
-	if 0:
-		print "Plotting result..."
-		outdir = os.environ["HOME"]+"/Desktop/"
-		#gdw.writePDFfile(outdir+"/GeomPhase.pdf")
-		gT2.writePDFfile(outdir+"/T2.pdf")
-
+	ref_linear_T2_test()
+	exit(0)
+	
+	T2_Studies()
+	exit(0)
+	
