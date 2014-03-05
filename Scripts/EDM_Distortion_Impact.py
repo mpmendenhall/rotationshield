@@ -143,7 +143,7 @@ def SBiBi(BC,i,w,PG):
 					q = sqrt( (lx/Lx)**2 + (ly/Ly)**2 + (lz/Lz)**2 )*pi
 					p[lx,ly,lz] = PG.p(q,w)
 
-	# sum terms
+	# sum terms, implicitly summing over +/- l_x
 	s = 0
 	eipihalf_phase = [1,1j,-1,-1j]
 	for lx in range(0,lmax+1):
@@ -152,18 +152,27 @@ def SBiBi(BC,i,w,PG):
 			
 				if (lx,ly,lz) == (0,0,0):
 					continue	# exclude B0^2 term
-				
+					
 				FTm = 0
-				for sx in [-1,1]:
+				# only need half-sum over sx because of (sx,sy,sz)->(-sx,-sy,-sz) conjugation symmetry
+				for sx in [1,]:
 					for sy in [-1,1]:
 						for sz in [-1,1]:
 							FTm += eipihalf_phase[(lx*sx+ly*sy+lz*sz)%4]*FT[lx*sx,ly*sy,lz*sz]
-				FTm *= eipihalf_phase[(lx+ly+lz)%4]
+				FTm = eipihalf_phase[(-lx-ly-lz)%4] * (2*FTm.real) / 8.
 				
-				s += p[abs(lx),abs(ly),abs(lz)] * (FTm * FT[-lx,-ly,-lz]).real * 2**(lx>0)
+				p_qw = p[abs(lx),abs(ly),abs(lz)]
+				
+				FTi = FT[-lx,-ly,-lz]
+				
+				ss = p_qw * (FTm * FTi).real * 2**(lx>0)
+				
+				#print (lx,ly,lz), "\tFTm =",FTm, "\tFT =",FTi, "\tp =",p_qw, "\ts =",ss
+				
+				s += ss
 
 	#print "Calculation time",(time.clock() - tstart)
-	return s/8.
+	return s
 
 def T2i(BC,PG):
 	"""1/T_2 dephasing time in inhomogeneous field [Hz]"""
@@ -171,7 +180,7 @@ def T2i(BC,PG):
 	w0 = B0*PG.gmr		# Larmor angular frequency in holding field [Hz]
 	
 	# subtract off average holding field
-	BC.B[0] -= B0
+	#BC.B[0] -= B0
 	
 	SB0B0 = SBiBi(BC,0,0,PG)
 	return PG.gmr**2/4. * (2*SB0B0 + SBiBi(BC,1,w0,PG) + SBiBi(BC,2,w0,PG)).real	# 1/T_2 [Hz]
@@ -190,7 +199,7 @@ def T2_Studies(outdir = os.environ["HOME"]+"/Desktop/T2_Studies/"):
 	gstyles = [ [graph.style.line(),], [graph.style.line([style.linewidth.THick]),] ]
 	
 	## linear gradient dBx/dx ##
-	if 1:
+	if 0:
 		gT2 = graph.graphxy(width=16,height=12,
 			#x=graph.axis.lin(title="Linear gradient $\\partial B_x/\\partial z$ [$\mu$G/cm]"),
 			x=graph.axis.lin(title="Linear gradient $\\partial B_x/\\partial y$ [$\mu$G/cm]"),
@@ -229,20 +238,19 @@ def T2_Studies(outdir = os.environ["HOME"]+"/Desktop/T2_Studies/"):
 		gT2.texrunner.set(lfs='foils17pt')
 
 		gdat = []
-		for dbxdy2 in unifrange(0,1e-7,15):
+		for beta in unifrange(0,2e-6*sqrt(3.)/40.,15):
 		
-			gdat.append([dbxdy2,])
+			gdat.append([beta,])
 			
 			for PG in PGlist:
 				BC = BCell()
 				BC.ll,BC.ur = (-3.75,-20,-5.0),(3.75,20,5.0)	# field cell dimansions [cm]
 				BC.B[0] += 0.030	# B0 = 30mG x
-				BC.B[0] += monomial((0,2,0),dbxdy2)
+				BC.B[0] += monomial((0,2,0),beta)
 
 				gdat[-1].append([BC.GradBRMS(0,1)*1e6,1000*abs(T2i(BC,PG))])
-				print PG.name
-			
-
+				print PG.name,"beta = %g, <Grad^2> = %g"%(beta,(gdat[-1][-1][0]*1e-6)**2)
+				print "\tuG/cm = %g, 1/T2 = %g mHz"%tuple(gdat[-1][-1])
 
 		for (nPG,PG) in enumerate(PGlist):
 			pgdat = [p[1+nPG] for p in gdat]
@@ -268,12 +276,15 @@ def ref_linear_T2_test():
 		
 		print PG.name,"1/T2 = %g"%T2i(BC,PG)
 
+	# neutron 1/T2 = -3.79892e-05
+	# $^3$He 1/T2 = 0.000207002
+
 
 if __name__ == "__main__":
 	
-	ref_linear_T2_test()
-	exit(0)
+	#ref_linear_T2_test()
+	#exit(0)
 	
 	T2_Studies()
 	exit(0)
-	
+
