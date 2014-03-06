@@ -11,7 +11,7 @@ import time
 
 ###################################################
 # spin precession effects from inhomogeneous fields
-# formulae provided by Christopher Swank, Feb. 2014
+# formalism provided by Christopher Swank, March 2014
 #
 # everything in Gaussian-cgs units
 
@@ -143,33 +143,29 @@ def SBiBi(BC,i,w,PG):
 					q = sqrt( (lx/Lx)**2 + (ly/Ly)**2 + (lz/Lz)**2 )*pi
 					p[lx,ly,lz] = PG.p(q,w)
 
-	# sum terms, implicitly summing over +/- l_x
 	s = 0
 	eipihalf_phase = [1,1j,-1,-1j]
 	for lx in range(0,lmax+1):
-		for ly in range(-lmax,lmax+1):
-			for lz in range(-lmax,lmax+1):
+		for ly in range(0,lmax+1):
+			for lz in range(0,lmax+1):
 			
-				if (lx,ly,lz) == (0,0,0):
-					continue	# exclude B0^2 term
-					
+				nzero = int(lx==0)+int(ly==0)+int(lz==0)
+				if nzero == 3:
+					continue	# exclude B0^2 term; also excluded by p[0,0,0]=0
+				
+				p_qw = p[abs(lx),abs(ly),abs(lz)]
+
 				FTm = 0
 				# only need half-sum over sx because of (sx,sy,sz)->(-sx,-sy,-sz) conjugation symmetry
 				for sx in [1,]:
 					for sy in [-1,1]:
 						for sz in [-1,1]:
-							FTm += eipihalf_phase[(lx*sx+ly*sy+lz*sz)%4]*FT[lx*sx,ly*sy,lz*sz]
-				FTm = eipihalf_phase[(-lx-ly-lz)%4] * (2*FTm.real) / 8.
+							FTm += eipihalf_phase[(lx*sx+ly*sy+lz*sz)%4] * FT[lx*sx,ly*sy,lz*sz]
+				FTm = (2.*FTm.real) / 8.
 				
-				p_qw = p[abs(lx),abs(ly),abs(lz)]
-				
-				FTi = FT[-lx,-ly,-lz]
-				
-				ss = p_qw * (FTm * FTi).real * 2**(lx>0)
-				
-				#print (lx,ly,lz), "\tFTm =",FTm, "\tFT =",FTi, "\tp =",p_qw, "\ts =",ss
-				
-				s += ss
+				s += p_qw * FTm**2 * 2**(3-nzero)
+								
+				#print (lx,ly,lz), "\tFTm =",FTm, "\tp =",p_qw
 
 	#print "Calculation time",(time.clock() - tstart)
 	return s
@@ -264,9 +260,9 @@ def T2_Studies(outdir = os.environ["HOME"]+"/Desktop/T2_Studies/"):
 
 def ref_linear_T2_test():
 	"""Linear gradient reference test"""
-	# with a gradient of 1E-7 G/cm in the holding field direction 40 cm long axis,
-	# for neutrons I'm getting 3.88E-5 Hz
-	# for helium-3 I'm getting relaxation rate of  2.05E-4 Hz
+	# From analytical calculation, should be approx.:
+	# 	neutron: 3.88E-5 Hz
+	# 	3He: 2.05E-4 Hz
 
 	for PG in [PG_n(),PG_3He()]:
 		BC = BCell()
@@ -280,7 +276,27 @@ def ref_linear_T2_test():
 	# $^3$He 1/T2 = 0.000207002
 
 
+def diagonal_multiterm_test():
+	"""Check answer is unchanged, for a heap of gradients"""
+	for PG in [PG_n(),PG_3He()]:
+		BC = BCell()
+		BC.ll,BC.ur = (-20,-3.75,-5.1),(20,3.75,5.1)
+		BC.B[0] += polynomial(3,{(0,0,0):0.030})
+		for i in range(3):
+			BC.B[0] += monomial(basisv(3,i),1e-7)
+			for j in range(3):
+				C = tuple([ int(a==i)+int(a==j) for a in range(3)])
+				BC.B[0] += monomial(C,1e-7)
+		print PG.name,"1/T2 = %g"%T2i(BC,PG)
+	# for lmax = 5:
+	# neutron 1/T2 = -0.00245394
+	# $^3$He 1/T2 = 0.00604303
+
+
 if __name__ == "__main__":
+	
+	diagonal_multiterm_test()
+	exit(0)
 	
 	#ref_linear_T2_test()
 	#exit(0)

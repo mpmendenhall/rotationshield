@@ -326,10 +326,5 @@ def lowTriangTerms(nVars, order):
 		P = P+P*Q
 	return P
 
-if __name__=="__main__":
-	P = monomial((2,))
-	print P
-	print Fourier_transform_poly(P,0,0.5)
-
 
 

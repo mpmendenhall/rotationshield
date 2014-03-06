@@ -7,6 +7,8 @@
 \usepackage{setspace}
 \onehalfspacing
 
+\usepackage{comment}
+
 % set font families
 %\renewcommand\rmdefault{cmr}
 %\renewcommand\sfdefault{cmss}
@@ -23,8 +25,11 @@
 \begin{document}
 
 \title{Fourier transform notes}
-\author{Michael P. Mendenhall (Caltech)}
+\author{Michael P. Mendenhall}
 \maketitle
+
+Miscellaneous notes related to calculation of geometric phase and dephasing effects in
+	nonuniform magnetic fields, based on formalisms provided by Christopher Swank.
 
 \section{Conventions}
 
@@ -50,15 +55,15 @@ This integration may be carried out by reducing each term in the polynomial
 	(starting from the highest $m > 0$) to next lower order using integration by parts:
 \begin{equation}
 	\int_{-1/2}^{1/2} x^m e^{-2 \pi i k x} dx
-		= \frac{-1}{2\pi i k} \left[ \frac{1-(-1)^m}{2^m} (-1)^k -  m \int_{-1/2}^{1/2} x^{m-1} e^{-2\pi i k x} dx \right]
+		= \frac{-1}{2\pi i k} \left[ \frac{e^{-\pi i k}-(-1)^m e^{\pi i k}}{2^m} -  m \int_{-1/2}^{1/2} x^{m-1} e^{-2\pi i k x} dx \right]
 	\label{eq:ft_xn}
 \end{equation}
-noting that
+noting that, for integer k, the constant term becomes
 \begin{equation}
-	\frac{1-(-1)^m}{2^m} = 
+	\frac{1-(-1)^m}{2^m} (-1)^k =
 	\begin{cases}
-		2^{(1-m)},		& \textrm{$m$ odd}		\\
-		0,				& \textrm{$m$ even}
+		2^{(1-m)} (-1)^k,	& \textrm{$m$ odd}		\\
+		0,					& \textrm{$m$ even}
 	\end{cases}
 \end{equation}
 Once the progression reaches $m=0$, we use
@@ -88,31 +93,77 @@ Mirroring instead around $x=\frac{1}{2}$, define the ``mirrored'' function
 		f(1-x)		& x > \frac{1}{2}
 	\end{cases}
 \end{equation}
-We then wish to calculate the Fourier terms
+We then wish to calculate the mirror-function Fourier terms
 \begin{equation}
-	\tilde {f^m}(k) \equiv \int_{-1/2}^{3/2} f^m(x) e^{\pi i k x} dx
-	= \int_{-1}^{1} f^m \left( x + \frac{1}{2} \right) e^{\pi i k x}e^{\frac{k}{2} \pi i} dx
+	\tilde{f}^m(k) \equiv \int_{-1/2}^{3/2} f^m(x) e^{-\pi i k x} dx
+	= e^{-\frac{k}{2} \pi i} \int_{-1}^{1} f^m \left( x + \frac{1}{2} \right) e^{-\pi i k x} dx
 \end{equation}
 Since $f^m \left( x + \frac{1}{2} \right)$ is symmetric around $x=0$,
-	only the symetric component of $e^{\pi i k x}$ will contribute to the integral.
-Thus, we may symmetrize $e^{\pi i k x} \rightarrow \frac{1}{2}\left(e^{\pi i k x}+e^{-\pi i k x}\right)$
+	only the symetric component of $e^{-\pi i k x}$ will contribute to the integral.
+Thus, we may symmetrize $e^{-\pi i k x} \rightarrow \frac{1}{2}\left(e^{-\pi i k x}+e^{\pi i k x}\right)$
 and integrate over the half-region where $f^m = f$:
-\begin{equation}
-	\tilde {f^m}(k) = e^{\frac{k}{2} \pi i} \int_{-1}^{0} f \left( x + \frac{1}{2} \right)
-	\left(e^{\pi i k x}+e^{-\pi i k x}\right) dx
-\end{equation}
-now, shifting bounds with the substitution $u = x+\frac{1}{2}$:
-\begin{equation}
-\tilde {f^m}(k) = e^{\frac{k}{2} \pi i}
+\begin{align}
+	\tilde{f}^m(k) & = e^{-\frac{k}{2} \pi i} \int_{-1}^{0} f^m \left( x + \frac{1}{2} \right)
+	\left(e^{-\pi i k x}+e^{\pi i k x}\right) dx \\
+	& = e^{-\frac{k}{2} \pi i}
 	\Bigg[
-		e^{-\frac{k}{2} \pi i} \underbrace{\int_{-1/2}^{1/2} f(x) e^{\pi i k x} dx}_{\tilde f \left( -\frac{k}{2} \right)}
-		+e^{\frac{k}{2} \pi i} \underbrace{\int_{-1/2}^{1/2} f(x) e^{-\pi i k x} dx}_{\tilde f \left( \frac{k}{2} \right)}
+		e^{\frac{k}{2} \pi i} \underbrace{\int_{-1/2}^{1/2} f(x) e^{-\pi i k x} dx}_{\tilde f \left( \frac{k}{2} \right)}
+		+e^{-\frac{k}{2} \pi i} \underbrace{\int_{-1/2}^{1/2} f(x) e^{\pi i k x} dx}_{\tilde f \left( -\frac{k}{2} \right)}
 	\Bigg]
-\end{equation}
+\end{align}
 producing a formula in terms of the Fourier components $\tilde{f}\left( \pm \frac{k}{2} \right)$,
 	which are also used in the $T_2$ formula.
 
+\subsection{Multiple dimensions}
+In multiple dimensions, the same symmetrizing procedure may be carried out,
+	summing over both signs for all variables.
+Let $\sum_{\pm k_x, \pm k_y, \pm k_z}$ indicate the fully-symmetric sum over all sign combinations for $k_i$.
+Then, the 3D mirrored FT becomes
+\begin{align}
+	\tilde{f}^m(k_x,k_y,k_z) & \equiv \iiint_{-1/2}^{3/2} f^m(\vc x) e^{-\pi i (k_x x + k_y y + k_z z)} d^3\vc x \\
+	& = e^{-\frac{1}{2}(k_x+k_y+k_z)\pi i}
+		\sum_{\pm k_x, \pm k_y, \pm k_z}
+			e^{\frac{1}{2}(\pm k_x \pm k_y \pm k_z)\pi i}
+			\tilde f \left( \pm \frac{k_x}{2}, \pm \frac{k_y}{2}, \pm \frac{k_z}{2} \right)
+\end{align}
+Conveniently, in the full sum for $S_{B_i B_i}$,
+\begin{align}
+	S_{B_i B_i} & = \sum_{k_x,k_y,k_z = -\infty}^\infty p(\pi|\vc k/\vc L|,\omega) \frac{1}{8} \tilde B_i^m(\vc k) \tilde B(-\vc k / 2) \\
+	& = \sum_{k_x,k_y,k_z = -\infty}^\infty p(\pi|\vc k / \vc L|,\omega)
+		e^{-\frac{1}{2}(k_x+k_y+k_z)\pi i} \tilde B(-\vc k / 2)
+		\frac{1}{8} \sum_{\pm k_i} e^{\frac{1}{2}(\pm k_x \pm k_y \pm k_z)\pi i} \tilde B(\pm \vc k / 2) \\
+	& = \sum_{k_x,k_y,k_z = 0}^\infty p(\pi|\vc k / \vc L|,\omega) 2^{3 - N_0 (\vc k)}
+		\left[\frac{1}{8}\sum_{\pm k_i} e^{\frac{1}{2}(\pm k_x \pm k_y \pm k_z)\pi i} \tilde B(\pm \vc k / 2)\right]^2
+\end{align}
+where $N_0(\vc k)$ denotes the number of ${k_x,k_y,k_z}$ which are 0.
+Note that the $\sum_{\pm k_i}$ needs only be taken over half the volume,
+	due to conjugation symmetry of $f(\vc k) \equiv e^{\frac{1}{2}(\pm k_x \pm k_y \pm k_z)\pi i} \tilde B(\pm \vc k / 2)$:
+	$f(-\vc k) = f(\vc k)^*$, i.e.
+\begin{equation}
+	\sum_{\pm k_i} f(\pm k_x,\pm k_y,\pm k_z) = 2 \Re \left[ \sum_{\pm k_y,\pm k_z} f(k_x,\pm k_y,\pm k_z) \right]
+\end{equation}
 
+\begin{comment}
+\section{Mirrored cell -- generic window}
+\begin{equation}
+	f^m(x) \equiv
+	\begin{cases}
+		f(x-w+1/2),		& x \leq w		\\
+		f(w+1/2-x)		& x > w
+	\end{cases}
+\end{equation}
+\begin{align}
+	\tilde{f}^m(k) & \equiv \int_{w-1}^{w+1} f^m(x) e^{-\pi i k x} dx
+	= e^{-w k \pi i} \int_{-1}^{1} f^m \left( x + w \right) e^{-\pi i k x} dx \\
+	& = e^{-w k \pi i} \int_{-1}^{0} f^m \left( x + w \right)
+	\left(e^{-\pi i k x}+e^{\pi i k x}\right) dx \\
+	& = e^{-w k \pi i}
+	\Bigg[
+		e^{\frac{k}{2} \pi i} \underbrace{\int_{-1/2}^{1/2} f(x) e^{-\pi i k x} dx}_{\tilde f \left( \frac{k}{2} \right)}
+		+e^{-\frac{k}{2} \pi i} \underbrace{\int_{-1/2}^{1/2} f(x) e^{\pi i k x} dx}_{\tilde f \left( -\frac{k}{2} \right)}
+	\Bigg]
+\end{align}
+\end{comment}
 
 \section{Other notes}
 
@@ -152,5 +203,22 @@ though, to avoid difficulty at $\omega = 0$, this must be re-written
 \begin{equation}
 	p(q,\omega) = \frac{3i}{2\nu_\textrm{max}|q|} \left[ \left(x^2 - 1\right)(2\operatorname{atanh}(x)-i\pi) - 2x \right]
 \end{equation}
+
+
+\subsection{Estimates}
+
+From McGregor (via EDM coil NIM A), for a gradient along the cell long direction, the $^3$He dephasing rate will be
+\begin{equation}
+	\frac{1}{T_2} \approx \frac{\gamma^2 L_z^4}{120 D}\left\langle \left( \frac{\partial B_x}{\partial z} \right)^2 \right\rangle
+	\approx 2.07 \cdot 10^{10} \frac{\text{cm}^2}{\text{G}^2\text{s}} \left\langle \left( \frac{\partial B_x}{\partial z} \right)^2 \right\rangle
+\end{equation}
+Using
+\begin{equation}
+	D = 1.6/T^7\,\textrm{cm$^2$/s at $T$=0.45K} \Rightarrow D = 428\,\textrm{cm$^2$/s},\
+	\gamma = 2.03789 \cdot 10^4\,\textrm{(Gauss s)$^{-1}$},\ L_z = 40\,\textrm{cm}
+\end{equation}
+i.e. $\frac{1}{T_2} \approx \frac{20\,\textrm{mHz}}{(\mu\text{G}/\text{cm})^2}
+	\left\langle \left( \frac{\partial B_x}{\partial z} \right)^2 \right\rangle$,
+	in excellent agreement with $\frac{21\,\textrm{mHz}}{(\mu\text{G}/\text{cm})^2}$ estimate by Swank formalism.
 
 \end{document}
