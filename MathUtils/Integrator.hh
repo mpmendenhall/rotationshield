@@ -17,63 +17,62 @@
 #include "Vec.hh"
 #include <map>
 
-
-class Integrator;
+///	Integration of vector-valued functions
 
 /// Contains the arguments for generalIntegratingFunction()
-struct integratingParams {
-	void* fparams; //< additional arguments for the function being integrated
-	vec3 (*f)(mdouble,void *); //< pointer to the function being integrated
-	int axis; //< which of the three vector components is currently being integrated
-	std::map<double,vec3> m; //< cache for evaluated function points
-	bool verbose; //< whether to display pts during integration
+class integratingParams {
+public:
+	/// destructor
+	virtual ~integratingParams() {}
+	
+	void* fparams; 					//< additional arguments for the function being integrated
+	vec3 (*f)(mdouble,void *);		//< pointer to the function being integrated
+	int axis;						//< which of the three vector components is currently being integrated
+	std::map<double,vec3> m;		//< cache for evaluated function points
+	
+	static bool verbose;			//< whether to display pts during integration
 };
-
-/// Used as a wrapper for 3-vector functions, presenting the correct form needed by the GSL integration routines
-double generalIntegratingFunction(double x, void* params);
-
-///	Integration of vector-valued functions
 
 ///	The Integrator class uses gsl_integration_qag()
 ///	running in GSL_INTEG_GAUSS15 mode to evaluate
 ///	vector-valued functions, caching the evaluated
-///	points in a SequenceCache so they can be used
-///	for all three component integrals.
+///	points so they can be used for all three component integrals.
 class Integrator {
 public:
 	/// Constructor
-	Integrator() { gslIntegrationWS = gsl_integration_workspace_alloc(512); gsl_set_error_handler_off(); }
+	Integrator(): gslIntegrationWS(gsl_integration_workspace_alloc(512)) { gsl_set_error_handler_off(); }
 	/// Destructor
-	~Integrator() { gsl_integration_workspace_free(gslIntegrationWS); }
+	virtual ~Integrator() { gsl_integration_workspace_free(gslIntegrationWS); }
 	/// Integrates a vector-valued function \f$ \int_a^b \vec f(x)dx\f$ using GSL numerical integration routines for each component
 	/** \param f vector-valued function of a real variable to be integrated
 	 \param a lower bound of integration
 	 \param b upper bound of integration
 	 \param params additional parameters for the integrated function */
-	vec3 integrate(vec3 (*f)(mdouble,void*),mdouble a, mdouble b, void* params = 0x0) {
-		vec3 v; integratingParams p;
-		p.fparams = params;
-		p.f = f;
-		p.m = std::map<double,vec3>();
-		gsl_function F;
-		F.function = &generalIntegratingFunction;
-		F.params = &p;
-		double r,e;
-		p.verbose = false;
-		size_t neval;
-		
-		for(int i=0; i<3; i++) {
-			p.axis = i;
-			int er = gsl_integration_qng(&F, a, b, 1e-7, 1e-7, &r, &e, &neval);
-			if(er)
-				printf("(*INTEGRATION WARNING*)\n");
-			v[i] = r;
-		}
-		return v;
-	}
+	vec3 integrate(vec3 (*f)(mdouble,void*),mdouble a, mdouble b, void* params = 0x0);
+
+protected:
+	/// internal calls to GSL integration
+	vec3 _integrate(integratingParams& p, double (*integf)(double,void*), mdouble a, mdouble b);
 	
 	gsl_integration_workspace* gslIntegrationWS; //< needed by GSL integration routines called in integrate()
 };
+
+/// 2-dimensional vector integrator
+class Integrator2D: public Integrator {
+public:
+	/// Constructor
+	Integrator2D(): Integrator() {}
+
+	/// Integrates a vector-valued function \f$ \int_{x_0}^{x_1} \int_{y_0}^{y_1} \vec f(x,y) dy dx\f$
+	/** \param f vector-valued function of a real variable to be integrated
+	 \param x0 lower x bound of integration
+	 \param x1 upper x bound of integration
+	 \param y0 lower y bound of integration
+	 \param y1 upper y bound of integration
+	 \param params additional parameters for the integrated function */
+	vec3 integrate(vec3 (*f)(mdouble,mdouble,void*), mdouble x0, mdouble x1, mdouble y0, mdouble y1, void* params = 0x0);
+};
+
 
 
 #endif
