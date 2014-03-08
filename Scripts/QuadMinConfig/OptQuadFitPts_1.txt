@@ -1,0 +1,4 @@
+fit_pt:		fit_pt = 1	n = 0
+fit_pt:		fit_pt = -0.999999	n = 1
+fit_pt:		fit_pt = 0	n = 2
+opt_search:		best_val = 0	n_coeffs = 3	n_dim = 1	n_iterations = 20	n_searchball = 1000	n_searchpts = 200000	rsearch = 5e-06

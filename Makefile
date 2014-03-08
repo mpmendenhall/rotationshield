@@ -59,11 +59,11 @@ obj_IO = Visr.o strutils.o ControlMenu.o QFile.o SMExcept.o PathUtils.o
 obj_MathUtils = Geometry.o Integrator.o MiscUtils.o RefCounter.o analysis.o linmin.o
 
 obj_FieldSource = FieldSource.o MixedSource.o InfiniteLineSource.o LineSource.o InfinitePlaneSource.o SurfaceSource.o \
-	PlanarElement.o PlaneSource.o FieldEstimator2D.o SurfacelCyl.o ReactiveSet.o
+	PlanarElement.o PlaneSource.o FieldEstimator2D.o
 
-obj_Solver = GenericSolver.o InteractionSolver.o SymmetricSolver.o
+obj_Solver = ReactiveSet.o GenericSolver.o InteractionSolver.o SymmetricSolver.o
 
-obj_Builder = CosThetaBuilder.o
+obj_Builder = CosThetaBuilder.o SurfacelCyl.o
 
 obj_Studies = tests.o Studies.o
 
