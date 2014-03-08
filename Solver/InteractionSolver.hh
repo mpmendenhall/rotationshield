@@ -2,7 +2,7 @@
 #define INTERACTIONSOLVER_HH 1
 
 #include "ReactiveSet.hh"
-#include "MiscUtils.hh"
+#include "Typedefs.hh"
 #include <stdlib.h>
 #include <math.h>
 

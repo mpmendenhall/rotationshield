@@ -1,7 +1,7 @@
 #ifndef GENERICSOLVER_HH
 #define GENERICSOLVER_HH 1
 
-#include "MiscUtils.hh"
+#include "Typedefs.hh"
 #include "InteractionSolver.hh"
 #include "gsl/gsl_matrix.h"
 

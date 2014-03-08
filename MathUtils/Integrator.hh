@@ -13,8 +13,7 @@
 
 #include "gsl/gsl_integration.h"
 #include "gsl/gsl_errno.h"
-#include "VarVec.hh"
-#include "Vec.hh"
+#include "Typedefs.hh"
 #include <map>
 
 ///	Integration of vector-valued functions
@@ -26,9 +25,10 @@ public:
 	virtual ~integratingParams() {}
 	
 	void* fparams; 					//< additional arguments for the function being integrated
-	vec3 (*f)(mdouble,void *);		//< pointer to the function being integrated
-	int axis;						//< which of the three vector components is currently being integrated
-	std::map<double,vec3> m;		//< cache for evaluated function points
+	mvec (*f)(mdouble,void *);		//< pointer to the function being integrated
+	unsigned int axis;				//< which of the three vector components is currently being integrated
+	unsigned int n_dim;				//< dimension of return vector
+	std::map<double,mvec> m;		//< cache for evaluated function points
 	
 	static bool verbose;			//< whether to display pts during integration
 };
@@ -48,11 +48,11 @@ public:
 	 \param a lower bound of integration
 	 \param b upper bound of integration
 	 \param params additional parameters for the integrated function */
-	vec3 integrate(vec3 (*f)(mdouble,void*),mdouble a, mdouble b, void* params = 0x0);
+	mvec integrate(mvec (*f)(mdouble,void*), mdouble a, mdouble b, void* params = 0x0);
 
 protected:
 	/// internal calls to GSL integration
-	vec3 _integrate(integratingParams& p, double (*integf)(double,void*), mdouble a, mdouble b);
+	mvec _integrate(integratingParams& p, double (*integf)(double,void*), mdouble a, mdouble b);
 	
 	gsl_integration_workspace* gslIntegrationWS; //< needed by GSL integration routines called in integrate()
 };
@@ -70,7 +70,7 @@ public:
 	 \param y0 lower y bound of integration
 	 \param y1 upper y bound of integration
 	 \param params additional parameters for the integrated function */
-	vec3 integrate(vec3 (*f)(mdouble,mdouble,void*), mdouble x0, mdouble x1, mdouble y0, mdouble y1, void* params = 0x0);
+	mvec integrate(mvec (*f)(mdouble,mdouble,void*), mdouble x0, mdouble x1, mdouble y0, mdouble y1, void* params = 0x0);
 };
 
 

@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 #include "PathUtils.hh"
-#include "MiscUtils.hh"
+#include "Typedefs.hh"
 #include "ControlMenu.hh"
 #include "tests.hh"
 #include "Studies.hh"
@@ -18,6 +18,14 @@ void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
 	reference_simpleshield();
 	printf("\n\nReference self-test...\n");
 	reference_sanity_check();
+}
+
+/// Return a random number, uniformly distributed over interval [a,b]
+/**	\param a lower bound of interval
+ \param b upper bound of interval
+ \return a random number in the interval [a,b] */
+mdouble randunif(mdouble a, mdouble b) { 
+	return a + (b-a)*mdouble(rand())/mdouble(RAND_MAX);
 }
 
 template<unsigned int N>

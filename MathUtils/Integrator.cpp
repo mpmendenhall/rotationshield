@@ -1,5 +1,5 @@
 #include "Integrator.hh"
-
+#include <cassert>
 
 bool integratingParams::verbose = false;
 
@@ -9,22 +9,24 @@ bool integratingParams::verbose = false;
 
 double generalIntegratingFunction(double x, void* params) {
 	integratingParams* p = (integratingParams*)params;
-	std::map<double,vec3>::iterator it = p->m.find(x);
-	if(it != p->m.end()) { if(p->verbose) std::cout << x << " " << p->axis << " " << it->second << std::endl; return (it->second)[p->axis]; }
-	vec3 v = p->f(x,p->fparams);
+	std::map<double,mvec>::iterator it = p->m.find(x);
+	if(it != p->m.end())
+		return (it->second)[p->axis];
+	mvec v = p->f(x,p->fparams);
+	p->n_dim = v.size();
 	p->m[x] = v;
-	if(p->verbose) std::cout << x << v << std::endl;
+	assert(p->axis < p->n_dim);
 	return v[p->axis];
 }
 
-vec3 Integrator::integrate(vec3 (*f)(mdouble,void*),mdouble a, mdouble b, void* params) {
+mvec Integrator::integrate(mvec (*f)(mdouble,void*), mdouble a, mdouble b, void* params) {
 	integratingParams p;
 	p.fparams = params;
 	p.f = f;
 	return _integrate(p, &generalIntegratingFunction, a, b);
 }
 
-vec3 Integrator::_integrate(integratingParams& p, double (*integf)(double,void*), mdouble a, mdouble b) {
+mvec Integrator::_integrate(integratingParams& p, double (*integf)(double,void*), mdouble a, mdouble b) {
 	p.m.clear();
 
 	gsl_function F;
@@ -33,14 +35,16 @@ vec3 Integrator::_integrate(integratingParams& p, double (*integf)(double,void*)
 	double r,e;
 	size_t neval;
 	
-	vec3 v;
-	for(int i=0; i<3; i++) {
-		p.axis = i;
+	mvec v;
+	p.axis = 0;
+	do {
 		int er = gsl_integration_qng(&F, a, b, 1e-7, 1e-7, &r, &e, &neval);
 		if(er)
 			printf("(*INTEGRATION WARNING*)\n");
-		v[i] = r;
-	}
+		v.push_back(r);
+		p.axis++;
+	} while (p.axis < p.n_dim);
+	
 	return v;
 }
 
@@ -53,7 +57,7 @@ vec3 Integrator::_integrate(integratingParams& p, double (*integf)(double,void*)
 /// Contains arguments for general 2D integrating function
 class integratingParams_2D: public integratingParams {
 public:
-	vec3 (*f2)(mdouble,mdouble,void *);	//< pointer to the 2D function being integrated
+	mvec (*f2)(mdouble,mdouble,void *);	//< pointer to the 2D function being integrated
 	Integrator yIntegrator;				//< Integrator for y-direction integrals
 	mdouble x;							//< x value being integrated
 	mdouble y0;							//< y lower bound of integration
@@ -61,23 +65,28 @@ public:
 };
 
 // slice of a 2D function at constant x
-vec3 xslice(mdouble y, void* params) {
+mvec xslice(mdouble y, void* params) {
 	integratingParams_2D* p = (integratingParams_2D*)params;
 	return p->f2(p->x,y,p->fparams);
 }
 
 double generalIntegratingFunction2D(double x, void* params) {
 	integratingParams_2D* p = (integratingParams_2D*)params;
-	std::map<double,vec3>::iterator it = p->m.find(x);
-	if(it != p->m.end()) { if(p->verbose) std::cout << x << " " << p->axis << " " << it->second << std::endl; return (it->second)[p->axis]; }
+	std::map<double,mvec>::iterator it = p->m.find(x);
+	if(it != p->m.end()) {
+		//if(p->verbose) std::cout << x << " " << p->axis << " " << it->second << std::endl;
+		return (it->second)[p->axis];
+	}
 	p->x = x;
-	vec3 v = p->yIntegrator.integrate(&xslice, p->y0, p->y1, params);
+	mvec v = p->yIntegrator.integrate(&xslice, p->y0, p->y1, params);
+	p->n_dim = v.size();
 	p->m[x] = v;
-	if(p->verbose) std::cout << x << v << std::endl;
+	//if(p->verbose) std::cout << x << v << std::endl;
+	assert(p->axis < p->n_dim);
 	return v[p->axis];
 }
 
-vec3 Integrator2D::integrate(vec3 (*f)(mdouble,mdouble,void*), mdouble x0, mdouble x1, mdouble y0, mdouble y1, void* params) {
+mvec Integrator2D::integrate(mvec (*f)(mdouble,mdouble,void*), mdouble x0, mdouble x1, mdouble y0, mdouble y1, void* params) {
 	integratingParams_2D p;
 	p.f2 = f;
 	p.fparams = params;

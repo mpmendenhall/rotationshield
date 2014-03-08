@@ -2,7 +2,7 @@
 #define COSTHETABUILDER_HH 1
 
 #include "MixedSource.hh"
-#include "MiscUtils.hh"
+#include "Typedefs.hh"
 #include "QFile.hh"
 #include <vector>
 

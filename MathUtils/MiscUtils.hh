@@ -6,10 +6,6 @@
 #include <cassert>
 #include <string>
 #include <math.h>
-#include "Vec.hh"
-#include "Matrix.hh"
-
-typedef double mdouble; //< Sets precision at which most calculations are carried out
 
 template<typename T>
 inline T max(T a, T b) { return (a>=b)?a:b; }
@@ -24,16 +20,5 @@ inline float min(float a, float b) { return (a<b)?a:b; }
 
 /// normalize an angle to [t0,t0+2*PI)
 float normalizeAngle(float a, float theta0 = -M_PI);
-
-/// Return a random number, uniformly distributed over interval [a,b]
-/**	\param a lower bound of interval
- \param b upper bound of interval
- \return a random number in the interval [a,b] */
-mdouble randunif(mdouble a, mdouble b);
-
-typedef Vec<4,mdouble> vec4;
-typedef Vec<3,mdouble> vec3;
-typedef Vec<2,mdouble> vec2;
-typedef Matrix<3,3,mdouble> mat3;
 
 #endif

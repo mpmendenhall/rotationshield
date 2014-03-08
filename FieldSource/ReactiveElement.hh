@@ -6,9 +6,6 @@
 #include <cmath>
 #include "VarMat.hh"
 
-typedef VarMat<mdouble> mmat;
-typedef VarVec<mdouble> mvec;
-
 /// FieldSource that responds linearly to incident fields in order to satisfy boundary conditions
 class ReactiveElement: public FieldSource {
 public:

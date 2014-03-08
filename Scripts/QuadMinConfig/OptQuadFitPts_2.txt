@@ -1,7 +1,7 @@
-fit_pt:		fit_pt = 0.591994,0.805858,0.952585,-0.304255	n = 0
-fit_pt:		fit_pt = 0.952585,-0.304255,-0.952597,-0.304224	n = 1
-fit_pt:		fit_pt = -0.952597,-0.304224,-0.579543,0.814934	n = 2
-fit_pt:		fit_pt = -0.579543,0.814934,-6.10352e-05,-6.10352e-05	n = 3
-fit_pt:		fit_pt = -6.10352e-05,-6.10352e-05,1.52588e-05,-0.999985	n = 4
-fit_pt:		fit_pt = 1.52588e-05,-0.999985,1,0.591994	n = 5
-opt_search:		best_val = 0	n_coeffs = 6	n_dim = 2	n_iterations = 20	n_searchball = 1000	n_searchpts = 200000	rsearch = 0.00223607
+fit_pt:		fit_pt = 0.591994,0.805858	n = 0
+fit_pt:		fit_pt = 0.952585,-0.304255	n = 1
+fit_pt:		fit_pt = -0.952597,-0.304224	n = 2
+fit_pt:		fit_pt = -0.579543,0.814934	n = 3
+fit_pt:		fit_pt = -6.10352e-05,-6.10352e-05	n = 4
+fit_pt:		fit_pt = 1.52588e-05,-0.999985	n = 5
+opt_search:		best_val = 12.1998	n_coeffs = 6	n_dim = 2	n_iterations = 20	n_searchball = 1000	n_searchpts = 200000	rsearch = 0.00223607

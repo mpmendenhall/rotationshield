@@ -3,7 +3,7 @@
 /// Make sure this header is only loaded once
 #define SYMMETRICSOLVER_HH 1
 
-#include "MiscUtils.hh"
+#include "Typedefs.hh"
 #include "InteractionSolver.hh"
 #include "BlockCMat.hh"
 

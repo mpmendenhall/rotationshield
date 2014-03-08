@@ -1,5 +1,5 @@
-#ifndef VARVarMat_HH
-#define VARVarMat_HH 1
+#ifndef VARMAT_HH
+#define VARMAT_HH 1
 
 #include "VarVec.hh"
 #include "Matrix.hh"

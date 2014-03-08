@@ -4,13 +4,9 @@
 /// Makes sure to only load this file once
 #define REACTIVESET_HH 1
 
-#include "VarMat.hh"
-#include "VarVec.hh"
+#include "Typedefs.hh"
 #include <vector>
 #include <cassert>
-
-typedef VarMat<mdouble> mmat;
-typedef VarVec<mdouble> mvec;
 
 /// a set of linearly interacting degrees of freedom
 class ReactiveSet {

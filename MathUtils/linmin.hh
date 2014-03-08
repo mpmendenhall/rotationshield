@@ -7,7 +7,7 @@
 #include "gsl/gsl_vector.h"
 #include <iostream>
 #include "Polynomial.hh"
-#include "MiscUtils.hh"
+#include "Typedefs.hh"
 
 /// least-squares minimize coeffs*x = rslt+resid using QR decomposition. *frees* coeffs; needs proper-sized resid, returns x.
 gsl_vector* lsmin(gsl_matrix* coeffs, const gsl_vector* rslt, gsl_vector* resid);

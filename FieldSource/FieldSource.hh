@@ -5,7 +5,7 @@
 #define FIELDSOURCE_HH 1
 
 #include "Geometry.hh"
-#include "MiscUtils.hh"
+#include "Typedefs.hh"
 #include "RefCounter.hh"
 #include "Integrator.hh"
 					

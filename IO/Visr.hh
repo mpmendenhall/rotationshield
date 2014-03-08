@@ -2,7 +2,7 @@
 #define VISCONTROLLER_HH 1
 
 #include "Vec.hh"
-#include "MiscUtils.hh"
+#include "Typedefs.hh"
 #include <vector>
 #include <deque>
 

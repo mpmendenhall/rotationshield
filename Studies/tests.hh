@@ -3,7 +3,7 @@
 /// Make sure this header is only loaded once
 #define TESTS_HH 1
 
-#include "MiscUtils.hh"
+#include "Typedefs.hh"
 
 /// Print a comparison between expected and calculated values for a data point
 bool compareResults(mdouble a, mdouble b, const char* label = 0x0);

@@ -4,7 +4,7 @@
 #include <cmath>
 #include <algorithm>
 #include "Visr.hh"
-#include "MiscUtils.hh"
+#include "Typedefs.hh"
 #include <vector>
 #include <stdio.h>
 
