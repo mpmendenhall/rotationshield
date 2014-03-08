@@ -11,11 +11,20 @@ from math import *
 from EDM_IO import *
 from LinFitter import *
 from ArrowPlotter import *
+from polynomial import *
 
 from QFile import *
+from EDM_Distortion_Impact import *
 
 def rainbow(n):
 	return [ hsb((1.0*x)/n,1,1) for x in range(n) ]
+
+def rainbowDict(keys):
+	n = len(keys)
+	knew = [k for k in keys]
+	knew.sort()
+	return dict([ (k,hsb((1.0*x)/n,1,1)) for (x,k) in enumerate(knew) ])
+
 
 class cell_geom(KVMap):
 	"""Data cell geometry"""
@@ -39,39 +48,6 @@ def Vol3Avg(P,ll,ur):
 def GradV(V):
 	"Gradient of polynomial vector"
 	return [Vi.derivative(a) for (a,Vi) in enumerate(V)]
-
-class BCell:
-	"""B Field in measurement cell from polynomial"""
-	def __init__(self,fname):
-		fitf = open(fname,"r")
-		self.B = [read_polynomial(fitf) for a in range(3)]
-		self.ll = self.ur = ()
-	def m2cm(self):
-		"""Convert position units from m to cm"""
-		for Bi in self.B:
-			Bi.rescale([.01,.01,.01])
-		self.ll = [100*x for x in self.ll]
-		self.ur = [100*x for x in self.ur]
-	def avgB(self):
-		return [Vol3Avg(self.B[i],self.ll,self.ur) for i in range(3)]
-	def normB0(self,Btarg):
-		"""Normalize average field to desired quantity"""
-		B0avg = Vol3Avg(self.B[0],self.ll,self.ur)
-		self.B = [Bi * (Btarg/B0avg) for Bi in self.B]
-		return B0avg
-	def GradBAvg(self):
-		"""Volume average gradient"""
-	 	return [Vol3Avg(Bi,self.ll,self.ur) for Bi in GradV(self.B)]
-	def DerivsAvg(self):
-		"""dBi/dj average gradients"""
-		return [[Vol3Avg(self.B[i].derivative(j),self.ll,self.ur) for j in range(3)] for i in range(3)]
-	def GradBRMS(self,xi,xj):
-		"""Volume RMS sqrt(<(dBxi/dBxj)^2>)"""
-		dBxdz = self.B[xi].derivative(xj)
-		return sqrt(Vol3Avg(dBxdz*dBxdz,self.ll,self.ur))
-	def Bmag2(self):
-		"""Calculate magnitude of B^2 as polynomial"""
-		return sum([Bi*Bi for Bi in self.B])
 
 axes = ["x","y","z"]
 
@@ -98,27 +74,56 @@ def otherAxis(xi,xj):
 			return i
 	return None
 
-class FieldInfo:
-	"""Output fields information"""
-	def __init__(self,basepath):
-		self.basepath = basepath
-		self.BC = BCell(basepath+"/Fields/Fieldstats.txt")
-		self.GIF = GeomInfo_File(basepath+"/Fields/GeomInfo.txt")
+class BCell:
+	"""B Field in measurement cell from polynomial"""
+	def __init__(self,fname=None):
+		if fname:
+			fitf = open(fname,"r")
+			self.B = [read_polynomial(fitf) for a in range(3)]
+		else:
+			self.B = [polynomial(3) for a in range(3)]
+		self.ll = self.ur = ()
+		self.basepath = None
+		
+	def m2cm(self):
+		"""Convert position units from m to cm"""
+		for Bi in self.B:
+			Bi.rescale([.01,.01,.01])
+		self.ll = [100*x for x in self.ll]
+		self.ur = [100*x for x in self.ur]
+	def avgB(self):
+		return [Vol3Avg(self.B[i],self.ll,self.ur) for i in range(3)]
+	def normB0(self,Btarg):
+		"""Normalize average field to desired quantity"""
+		B0avg = Vol3Avg(self.B[0],self.ll,self.ur)
+		self.B = [Bi * (Btarg/B0avg) for Bi in self.B]
+		return B0avg
+	def GradBAvg(self):
+		"""Volume average gradient"""
+	 	return [Vol3Avg(Bi,self.ll,self.ur) for Bi in GradV(self.B)]
+	def DerivsAvg(self):
+		"""dBi/dj average gradients"""
+		return [[Vol3Avg(self.B[i].derivative(j),self.ll,self.ur) for j in range(3)] for i in range(3)]
+	def GradBRMS(self,xi,xj):
+		"""Volume RMS sqrt(<(dBxi/dBxj)^2>)"""
+		dBxdz = self.B[xi].derivative(xj)
+		return sqrt(Vol3Avg(dBxdz*dBxdz,self.ll,self.ur))
+	def Bmag2(self):
+		"""Calculate magnitude of B^2 as polynomial"""
+		return sum([Bi*Bi for Bi in self.B])
+	def volume(self):
+		"""Cell volume"""
+		return abs(product([self.ur[a]-self.ll[a] for a in range(3)]))
 
-		# target B0, mG
-		self.B0targ = 30.
-		
-		self.BC.ll,self.BC.ur = self.GIF.cell.ll,self.GIF.cell.ur
-		self.BC.m2cm()
-		self.Bavg = self.BC.normB0(self.B0targ)
-		
+
+
 	def gridLines(self,x0,xi,xj,xk,nptsijk=(3,3,50)):
 		"""Bx0 along lines points on axes (xi,xj), [ xk, Bx0(x) ]"""
 		self.slicepts = []
 		dlines = {}
-		for (ni,p_i) in enumerate(unifrange(self.BC.ll[xi],self.BC.ur[xi],nptsijk[0])):
-			for (nj,p_j) in enumerate(unifrange(self.BC.ll[xj],self.BC.ur[xj],nptsijk[1])):
-				spoints = [ (p_i,p_j,p_k) for p_k in unifrange(self.BC.ll[xk],self.BC.ur[xk],nptsijk[2]) ]
+		for (ni,p_i) in enumerate(unifrange(self.ll[xi],self.ur[xi],nptsijk[0])):
+			for (nj,p_j) in enumerate(unifrange(self.ll[xj],self.ur[xj],nptsijk[1])):
+				spoints = [ (p_i,p_j,p_k) for p_k in unifrange(self.ll[xk],self.ur[xk],nptsijk[2]) ]
 				xpts = [ [0,0,0] for p in spoints ]
 				for (n,s) in enumerate(spoints):
 					xpts[n][xi] = s[0]
@@ -126,7 +131,7 @@ class FieldInfo:
 					xpts[n][xk] = s[2]
 				p0 = (xpts[0][xi],xpts[0][xj])
 				self.slicepts.append( ((ni,nj), p0) )
-				dlines[p0] = [(x[xk],self.BC.B[x0](x)) for x in xpts]
+				dlines[p0] = [(x[xk],self.B[x0](x)) for x in xpts]
 		return dlines
 		
 	def plotFields(self,x0,xi,xj,xk,nptsijk=(3,3,50)):
@@ -155,18 +160,18 @@ class FieldInfo:
 	def plotCellProjection(self, xi, xj, nptsijk=None, B0=None, B0scale=None):
 	
 		if nptsijk is None:
-			nptsijk = ( int(self.BC.ur[xi]-self.BC.ll[xi]), int(self.BC.ur[xj]-self.BC.ll[xj]), 5 )
+			nptsijk = ( int(self.ur[xi]-self.ll[xi]), int(self.ur[xj]-self.ll[xj]), 5 )
 	
 		# default to residuals plot
 		if B0 is None:
-			B0 = self.BC.avgB()
+			B0 = self.avgB()
 		if B0scale is None:
 			B0scale = sqrt(sum([x**2 for x in B0]))*0.005
 			
 		"""Plot projection of cell fields in xi-xj plane"""
-		g=graph.graphxy(width=self.BC.ur[xi]-self.BC.ll[xi]+1, height=self.BC.ur[xj]-self.BC.ll[xj]+1,
-			x=graph.axis.lin(title="$%s$ position [cm]"%axes[xi], min=self.BC.ll[xi]-0.5, max=self.BC.ur[xi]+0.5),
-			y=graph.axis.lin(title="$%s$ position [cm]"%axes[xj], min=self.BC.ll[xj]-0.5, max=self.BC.ur[xj]+0.5))
+		g=graph.graphxy(width=self.ur[xi]-self.ll[xi]+1, height=self.ur[xj]-self.ll[xj]+1,
+			x=graph.axis.lin(title="$%s$ position [cm]"%axes[xi], min=self.ll[xi]-0.5, max=self.ur[xi]+0.5),
+			y=graph.axis.lin(title="$%s$ position [cm]"%axes[xj], min=self.ll[xj]-0.5, max=self.ur[xj]+0.5))
 		g.texrunner.set(lfs='foils17pt')
 
 		AP = ArrowPlotter(g)
@@ -183,6 +188,24 @@ class FieldInfo:
 			AP.plot_arrowdat(gdat,asty,offset=True)
 
 		g.writePDFfile(self.basepath + "/Cell_%s-%s.pdf"%(axes[xi],axes[xj]))
+
+
+
+
+class FieldInfo:
+	"""Output fields information"""
+	def __init__(self,basepath):
+		self.basepath = basepath
+		self.BC = BCell(basepath+"/Fields/Fieldstats.txt")
+		self.GIF = GeomInfo_File(basepath+"/Fields/GeomInfo.txt")
+
+		# target B0, mG
+		self.B0targ = 30.
+		
+		self.BC.ll,self.BC.ur = self.GIF.cell.ll,self.GIF.cell.ur
+		self.BC.m2cm()
+		self.BC.basepath = basepath
+		self.Bavg = self.BC.normB0(self.B0targ)
 		
 
 
@@ -206,17 +229,25 @@ class VarParamPlotter:
 		self.g = graph.graphxy(width=24,height=16,
 			x=graph.axis.lin(title=varname),
 			y=graph.axis.lin(title="Cell Average Gradients [$\\mu$G/cm]", min=self.yrange[0], max=self.yrange[1]),
+			y2=graph.axis.lin(title="Dephasing rate $1/T_2$ [mHz]", min=0),
 			key = graph.key.key(pos=self.keypos,columns=2))
 		self.g.texrunner.set(lfs='foils17pt')
 		
+		self.gT2 = graph.graphxy(width=24,height=16,
+			x=graph.axis.lin(title=varname),
+			y=graph.axis.lin(title="Dephasing rate $1/T_2$ [mHz]", min=0),
+			key = graph.key.key(pos=self.keypos,columns=2))
+		self.gT2.texrunner.set(lfs='foils17pt')
+		
 		self.g.plot(graph.data.function("y(x)=0",title=None),[graph.style.line(lineattrs=[style.linestyle.dotted,style.linewidth.Thick])])
 		
-	def makePlot(self,cname="",csty=[],cell=None):
+	def makePlot(self,cname="",csty=[],cell=None,PGlist=[]):
 			
 			assert self.g is not None
 	
 			# collect data
 			gdat = []
+			gdat_T2 = []
 			lax = None
 			for (r,FI) in self.datlist:
 				if cell:
@@ -233,7 +264,15 @@ class VarParamPlotter:
 				
 				print r,"B0 =",FI.Bavg,"\tBgrad =",GradScaled,"\tRMS =",rms
 				gdat.append([r,]+GradScaled+[rms,dBxdz])
+				
+				# unscale milligauss to Gauss; calculate T2
+				for a in range(3):
+					FI.BC.B[a] *= 1e-3
+				gdat_T2.append([r,]+[1000*abs(T2i(FI.BC,PG)) for PG in PGlist])
+				
 			gdat.sort()
+			gdat_T2.sort()
+			print gdat_T2
 
 			for (n,a) in enumerate(axes):
 				axdat = [(p[0],p[1+n]) for p in gdat]
@@ -242,8 +281,18 @@ class VarParamPlotter:
 				self.g.plot(graph.data.points(axdat,x=1,y=2,title="$\\langle \\partial B_{%s} / \\partial %s \\rangle$ "%(a,a)+cname),
 						[graph.style.line(lineattrs=[self.axiscols[a],style.linewidth.THick]+csty),ptsymb])
 			
-			self.g.plot(graph.data.points(gdat,x=1,y=5,title="${\\langle (\\partial B_x / \\partial %s)^2 \\rangle}^{1/2}$ "%axes[lax]+cname),
-						[graph.style.line(lineattrs=[style.linewidth.THick]+csty),graph.style.symbol(symbol.circle,size=0.2)])
+			if PGlist:
+				self.g.plot(graph.data.points(gdat_T2,x=1,y2=2,title=PG.name+" $1/T_2$"),
+							[graph.style.line(lineattrs=[style.linewidth.THick]+csty),graph.style.symbol(symbol.circle,size=0.2)])
+			else:
+				self.g.plot(graph.data.points(gdat,x=1,y=5,title="${\\langle (\\partial B_x / \\partial %s)^2 \\rangle}^{1/2}$ "%axes[lax]+cname),
+							[graph.style.line(lineattrs=[style.linewidth.THick]+csty),graph.style.symbol(symbol.circle,size=0.2)])
+						
+			PGsty = [graph.style.line([style.linestyle.dashed]),graph.style.line([style.linestyle.dotted])]
+			for (n,PG) in enumerate(PGlist):
+				self.gT2.plot(graph.data.points(gdat_T2,x=1,y2=2+n,title=PG.name+" $1/T_2$"),
+						[PGsty[n],graph.style.symbol(symbol.circle,size=0.2)])
+
 						
 			if 0:
 				axdat = [(p[0],p[5]) for p in gdat]
@@ -254,7 +303,7 @@ class VarParamPlotter:
 
 	def outputPlot(self):
 		self.g.writePDFfile(self.outdir + "/FieldUniformity.pdf")
-		
+		#self.gT2.writePDFfile(self.outdir + "/T2.pdf")
 
 if __name__=="__main__":
 	outdir = os.environ["ROTSHIELD_OUT"]

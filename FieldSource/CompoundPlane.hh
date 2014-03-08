@@ -83,7 +83,6 @@ public:
 		printf("Pre-solving for subassembly (%i components)...\n",(int)els.size());
 		
 		GenericSolver* GS = new GenericSolver();
-		GS->retain();
 		for(unsigned int i=0; i<els.size(); i++)
 			GS->addSurfacel(els[i]);
 		//addAuxElements(GS);
@@ -106,8 +105,6 @@ public:
 					elResponse[i](j,axis) = f[j];
 			}
 		}
-			
-		GS->release();
 	}
 	
 	

@@ -27,8 +27,6 @@ class polynomial:
 
 	def add_monomial(self,C,v):
 		"""Add monomial term vC"""
-		if not v:
-			return
 		if C in self.coeffs:
 			self.coeffs[C] += v
 		else:
@@ -320,11 +318,10 @@ def lowTriangTerms(nVars, order):
 		P.coeffs[P.C0] = 0
 		return P
 	P = lowTriangTerms(nVars,order-1)
+	Q = P.copy()
 	for n in range(nVars):
-		Q = polynomial(nVars)
-		Q.coeffs[basisv(nVars,n)] = 0
-		P = P+P*Q
-	return P
+		Q += P*monomial(basisv(nVars,n),0)
+	return Q
 
 
 

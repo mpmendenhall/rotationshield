@@ -41,7 +41,7 @@ void shieldFrame::construct(MixedSource& ms, CosThetaBuilder* ct) const {
 
 	FieldEstimator2Dfrom3D fe(&ms);
 	
-	ShieldBuilder* G = new ShieldBuilder(pSegs);
+	SurfacelCyl* G = new SurfacelCyl(pSegs);
 	
 	for(std::vector<shieldSection>::const_iterator it = mySections.begin(); it != mySections.end(); it++) {
 		G->OptCone(it->cSegs, it->vSegs,
@@ -50,13 +50,13 @@ void shieldFrame::construct(MixedSource& ms, CosThetaBuilder* ct) const {
 					new PlaneSource(Plane(),it->mu), &fe);
 	}
 	
-	SymmetricSolver* sp = new SymmetricSolver(G);
+	SymmetricSolver SS;
 	
-	sp->solve();
-	sp->calculateIncident(&ms);
-	sp->calculateResult();
+	SS.solve(*G);
+	G->calculateIncident(&ms);
+	SS.calculateResult(*G);
 	
-	ms.addsource(sp);
+	ms.addsource(G);
 }
 
 Stringmap shieldFrame::getInfo() const {
@@ -176,7 +176,7 @@ void fullScaleCoil(std::ostream& gridf, std::ostream& fitf) {
 	fe.addsource(vec2(-clen/2.0,cradius),1.0);
 	fe.addsource(vec2(clen/2.0,cradius),1.0);
 	
-	ShieldBuilder* G = new ShieldBuilder(128);
+	SurfacelCyl* G = new SurfacelCyl(128);
 	G->makeOptCyl(10, 20, sradius, -slen/2, slen/2, new PlaneSource(Plane(),10000) );
 	
 	SymmetricSolver* sp = new SymmetricSolver(G);
@@ -258,7 +258,7 @@ void mi_sampleShieldVis(std::deque<std::string>&, std::stack<std::string>&) {
 		FieldEstimator2D* fe = new FieldEstimator2D();
 		fe->addsource(vec2(-clen/2.0,cradius),1.0);
 		fe->addsource(vec2(clen/2.0,cradius),1.0);
-		ShieldBuilder* G = new ShieldBuilder(128);	// 128 segments around shield builder
+		SurfacelCyl* G = new SurfacelCyl(128);	// 128 segments around shield builder
 		G->makeOptCyl(10, 20, sradius, -slen/2, slen/2, new PlaneSource(Plane(),10000), fe); // optimized grid with 10+20 divisions along z
 		// solve for shield response function
 		SymmetricSolver* sp = new SymmetricSolver(G);

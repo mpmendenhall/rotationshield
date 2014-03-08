@@ -1,4 +1,12 @@
 #include "tests.hh"
+#include "SymmetricSolver.hh"
+#include "GenericSolver.hh"
+#include "FieldSource.hh"
+#include "PlaneSource.hh"
+#include "SurfacelCyl.hh"
+#include "analysis.hh"
+#include "CosThetaBuilder.hh"
+#include "Integrator.hh"
 
 bool compareResults(mdouble a, mdouble b, const char* label) {
 	bool pass = true;
@@ -15,7 +23,9 @@ bool reference_sanity_check() {
 	MixedSource* MxS = new MixedSource();
 	MxS->retain();
 	
-	CosThetaBuilder(17, 0.61, 3.92).buildCoil(*MxS);
+	CosThetaBuilder CB(17, 0.61, 3.92);
+	CB.myCap[0] = CB.myCap[1] = CosThetaBuilder::CAP_LINE;
+	CB.buildCoil(*MxS);
 	MxS->visualize();
 	
 	FieldAnalyzer FA = FieldAnalyzer(MxS);
@@ -43,21 +53,16 @@ bool reference_sanity_check() {
 	fe->addsource(vec2(-3.92/2,0.61),1.0);
 	fe->addsource(vec2(3.92/2,0.61),1.0);
 	
-	ShieldBuilder SB = ShieldBuilder(128);
-	SB.makeOptCyl(20, 30, .6223, -3.9624/2, 3.9624/2, new PlaneSource(Plane(),10000.0), fe);
+	SurfacelCyl* SB = new SurfacelCyl(128);
+	SB->retain();
+	SB->makeOptCyl(20, 30, .6223, -3.9624/2, 3.9624/2, new PlaneSource(Plane(),10000.0), fe);
+	SB->calculateIncident(MxS);
 	
-	SymmetricSolver* s = new SymmetricSolver(&SB);
-	s->retain();
-	s->visualize();
+	SymmetricSolver SS;
+	SS.solve(*SB);
+	SS.calculateResult(*SB);
 	
-	s->calculateIncident(MxS);
-	s->visualize();
-	
-	s->solve();
-	
-	s->calculateResult();
-	
-	MxS->addsource(s);
+	MxS->addsource(SB);
 	
 	printf("Testing shielded fields...\n");
 	b0 = MxS->fieldAt(origin)[0];
@@ -73,8 +78,8 @@ bool reference_sanity_check() {
 	MxS->visualize();
 	vsr::pause();
 	
-	s->release();
 	MxS->release();
+	SB->release();
 	
 	return pass;
 }
@@ -84,6 +89,7 @@ bool reference_simpleshield() {
 	
 	MixedSource* MxS = new MixedSource();
 	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 3.92);
+	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_LINE;
 	b.buildCoil(*MxS);
 	FieldAnalyzer FA = FieldAnalyzer(MxS);
 	
@@ -91,20 +97,19 @@ bool reference_simpleshield() {
 	fe.addsource(vec2(-3.92/2,0.55),1.0);
 	fe.addsource(vec2(3.92/2,0.55),1.0);
 	
-	ShieldBuilder SB = ShieldBuilder(32);
-	SB.makeOptCyl(10, 2, .6223, -3.9624/2, 3.9624/2, new PlaneSource(Plane(),10000.0), &fe);
+	SurfacelCyl* SB = new SurfacelCyl(32);
+	SB->retain();
+	SB->makeOptCyl(10, 2, .6223, -3.9624/2, 3.9624/2, new PlaneSource(Plane(),10000.0), &fe);
 	
-	SymmetricSolver* s = new SymmetricSolver(&SB);
-	s->retain();
-	
-	s->calculateIncident(MxS);
-	s->visualize();
+	SB->calculateIncident(MxS);
+	SB->visualize();
 	vsr::pause();
 	
-	s->solve();
-	s->calculateResult();
+	SymmetricSolver SS;
+	SS.solve(*SB);
+	SS.calculateResult(*SB);
 	
-	MxS->addsource(s);
+	MxS->addsource(SB);
 	MxS->visualize();
 	
 	//center scan lines
@@ -124,6 +129,27 @@ bool reference_simpleshield() {
 	pass &= compareResults(MxS->fieldAt(-zscan)[0]-b0,-2.60066781561097e-04,"-z");
 	
 	vsr::pause();
-	s->release();
+	SB->release();
 	return pass;
 }
+
+vec3 f_integ2_test_1(mdouble x, mdouble y, void*) {
+	return vec3(x*x + y*y, x + y*y*y, 1 + (x+x*x)*y);
+}
+
+
+bool integrator_tests() {
+
+	Integrator2D I2;
+
+	vec3 v1 = I2.integrate(&f_integ2_test_1, -0.3, 4.6, -6, 7.2);
+	
+	bool pass = true;
+	
+	pass &= compareResults(v1[0], 1390.8356);
+	pass &= compareResults(v1[1], 1843.50936);
+	pass &= compareResults(v1[2], 405.15552);
+	
+	return pass;
+}
+

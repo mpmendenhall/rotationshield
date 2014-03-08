@@ -5,14 +5,13 @@
 
 #include "MiscUtils.hh"
 #include "InteractionSolver.hh"
-#include "ShieldBuilder.hh"
 #include "BlockCMat.hh"
 
 /// The class where everything else is pulled together to solve the shield boundary-value problem.
 
 /// Usage:
-///		- Create a ShieldBuilder describing the geometry of the shield
-///		- Create an instance of the class with SymmetricSolver(ShieldBuilder* g)
+///		- Create a SurfacelCyl describing the geometry of the shield
+///		- Create an instance of the class with SymmetricSolver(SurfacelCyl* g)
 ///		- Call solve() to calculate the shield's Green's Function (this takes time... we have to calculate and invert the interaction matrix)
 ///		- Create a FieldSource describing the incident field that you want to see the shield's response to
 ///		- Call calculate_incident() using the FieldSource (this takes time, depending on the field source)
@@ -21,23 +20,21 @@
 
 class SymmetricSolver: public InteractionSolver {
 public:
-	/// Constructor; uses ShieldBuilder * g to describe the shield geometry
-	SymmetricSolver(ShieldBuilder* g);
+	/// Constructor; uses SurfacelCyl * g to describe the shield geometry
+	SymmetricSolver();
 	/// Destructor
 	virtual ~SymmetricSolver() {}
-	/// Solves the boundary value problem for the shield's geometry, producing #the_GF
-	virtual void solve(bool checkinversion = false);
-	/// Calculate the shield's #finalState in response to the #incidentState
-	virtual void calculateResult();
-	
+	/// Solve for the Greene's Function of a ReactiveSet system
+	virtual void solve(ReactiveSet& R);
+	/// Apply solution to ReactiveSet system initial state
+	virtual void calculateResult(ReactiveSet& R);
+		
 protected:
 	
 	/// Assembles the interaction matrix
-	void buildInteractionMatrix();
+	void buildInteractionMatrix(ReactiveSet& R);
 	
 	BlockCMat<mdouble> the_GF; //< The inverted interaction matrix, i.e. the Green's Function for the system
-	unsigned int nZ; //< Number of sections the shield is gridded into along the z axis
-	unsigned int nTheta; //< Number of sections the shield is gridded into angularly
 };
 
 

@@ -7,7 +7,7 @@
 #include "CosThetaBuilder.hh"
 #include "SymmetricSolver.hh"
 #include "PlaneSource.hh"
-#include "ShieldBuilder.hh"
+#include "SurfacelCyl.hh"
 #include "analysis.hh"
 #include "QFile.hh"
 #include <vector>

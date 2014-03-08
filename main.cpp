@@ -195,6 +195,7 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	setClearColor.addArg("r","0.0");
 	setClearColor.addArg("g","0.0");
 	setClearColor.addArg("b","0.0");
+	
 	inputRequester selfTests("Self test to reproduce known results",&mi_runtests);
 	
 	inputRequester setFCrange("Set Measurement Range",&mi_setFCrange);

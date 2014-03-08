@@ -8,8 +8,8 @@ class RefCounter {
 public:
 	RefCounter(): refcount(0) { ++nReferencedObjects; }
 	virtual ~RefCounter() { assert(refcount==0); --nReferencedObjects; }
-	void retain() const { ++refcount; ++nTotalReferences; }
-	void release() const { assert(refcount>0); --refcount; --nTotalReferences; if(!refcount) delete(this); }
+	virtual void retain() const { ++refcount; ++nTotalReferences; }
+	virtual void release() const { assert(refcount>0); --refcount; --nTotalReferences; if(!refcount) delete(this); }
 	static int referencedObjectCount() { return nReferencedObjects; }
 	static int totalReferenceCount() { return nTotalReferences; }
 protected:
@@ -19,14 +19,12 @@ protected:
 };
 
 
-class VerboseRefCounter {
+class VerboseRefCounter: public RefCounter {
 public:
-	VerboseRefCounter(): refcount(0) { printf("*%p created\n",this); }
-	virtual ~VerboseRefCounter() { assert(refcount==0);  printf("*%p destroyed\n",this); }
-	void retain() const { ++refcount;  printf("*%p retained [%i]\n",this,refcount); }
-	void release() const { assert(refcount>0); --refcount;  printf("*%p released [%i]\n",this,refcount); if(!refcount) delete(this); }
-protected:
-	mutable unsigned int refcount;
+	VerboseRefCounter(): RefCounter() { printf("*%p created\n",this); }
+	virtual ~VerboseRefCounter() { printf("*%p destroyed\n",this); }
+	virtual void retain() const { RefCounter::retain();  printf("*%p retained [%i]\n",this,refcount); }
+	virtual void release() const { printf("*%p released [%i]\n",this,refcount-1); RefCounter::release(); }
 };
 
 

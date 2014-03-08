@@ -5,7 +5,7 @@
 #include "GenericSolver.hh"
 #include "FieldSource.hh"
 #include "analysis.hh"
-#include "ShieldBuilder.hh"
+#include "SurfacelCyl.hh"
 #include "CosThetaBuilder.hh"
 #include "ScanRange.hh"
 #include <iostream>
@@ -39,7 +39,7 @@ void comparison_shield(std::ostream& gridf, std::ostream& fitf) {
 	fe.addsource(vec2(3.92/2,0.61),1.0);
 	
 	
-	ShieldBuilder SB = ShieldBuilder(128);
+	SurfacelCyl SB = SurfacelCyl(128);
 	//SB.makeOptCyl(20, 30, .6223, -3.9624/2, 3.9624/2, new DipolePlane(Plane(),100000.0,0.001), &fe);
 	
 	SymmetricSolver* s = new SymmetricSolver(&SB);
@@ -66,7 +66,7 @@ void comparison_shield(std::ostream& gridf, std::ostream& fitf) {
 
 void shieldingFactorTest(std::ostream& outf, mdouble mu) {
 	
-	ShieldBuilder SB = ShieldBuilder(128);
+	SurfacelCyl SB = SurfacelCyl(128);
 	//SB.makeOptCyl(30, 0, .6223, -3.9624/2, 3.9624/2, new DipolePlane(Plane(),mu,0.001) );
 
 	SymmetricSolver* s = new SymmetricSolver(&SB);
@@ -116,7 +116,7 @@ void dipoleTest() {
 	
 	unsigned int nEls = 128;
 	unsigned int nZ = 20;
-	ShieldBuilder SB = ShieldBuilder(nEls);
+	SurfacelCyl SB = SurfacelCyl(nEls);
 	
 	if(true) {
 		SB.makeOptCyl(nZ, 0, .50, -1, 1, w);
@@ -169,7 +169,7 @@ void infiniTest() {
 	
 	unsigned int nEls = 64;
 	unsigned int nZ = 1;
-	ShieldBuilder SB = ShieldBuilder(nEls);
+	SurfacelCyl SB = SurfacelCyl(nEls);
 	
 	if(false) {
 		SB.makeOptCyl(nZ, 0, .50, 1, -1, w);

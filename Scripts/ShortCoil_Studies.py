@@ -4,99 +4,124 @@ from StudyPlotter import *
 from ShieldStudyLauncher import *
 
 
-def make_asym_shortcoil_base(nm,r,dz=-0.819):
+def make_asym_shortcoil_base(nm,r,dz=-0.783,r0=0.70):
 
 	S = StudySetup(nm,r)
 	S.set_csgeom(clen = 2.5, crad = 1.0, dlen = 0.05, drad = 0.1)
 	
-	S.shsects.append(ShieldSection(0,6,12,"nax","nrd"))
+	S.shsects.append(ShieldSection(0,12,6,"nax","nrd"))
 	S.shsects.append(ShieldSection(10000,10,20,"nrd","prd"))
-	S.shsects.append(ShieldSection(0,6,12,"prd","pax"))
-	S.shsects[2].off[1][1] = 0.70
+	S.shsects.append(ShieldSection(0,12,6,"prd","pax"))
+	S.shsects[2].off[1][1] = r0
 		
 	S.measGrid = (7,11,7)
 	S.measCell = [(0.05,-0.20,-0.05+dz), (0.125,0.20,0.05+dz)]
-	S.dist = [-0.0116]
+	S.dist = [-0.0096]
 		
 	return S
 
-def make_asym_shortcoil_throughend(nm,r,dz=-0.10): #2751):
+def make_asym_shortcoil_wireshrough(nm,r,dz=-0.0224,r0=0.70):
 
-	S = make_asym_shortcoil_base(nm,r,dz)
+	S = make_asym_shortcoil_base(nm,r,dz,r0)
 	S.set_csgeom(clen = 2.5, crad = 1.0, dlen = 0.01, drad = 0.1)
+	S.cend = ["none","none"]
+	S.dist = [-0.0196]
 	
-	S.shsects[2].off[1][1] = 0.95	# just cover endcap
-	# move close to endcap
-	S.shsects[1].off[1][0] = S.shsects[2].off[0][0] = S.shsects[2].off[1][0] = -0.005
-	
-	# inner plug
-	S.shsects.append(ShieldSection(0,6,12,"pax","pax"))
-	S.shsects[3].off[0][1] = 0.65
-	
-	#S.shsects[2].off[1][1] = 0
-	#S.shsects.append(ShieldSection(0,6,12,"prd","pax"))
-	#S.shsects[3].off[1][1] = 0.95
-	
-	S.cend = ["none",None]
-	S.dist = [-0.0080]
+	return S
+
+def make_closed_ends(nm,r,dz=0):
+
+	S = make_asym_shortcoil_base(nm,r,dz,0)
+	S.set_csgeom(clen = 2.5, crad = 1.0, dlen = 0.01, drad = 0.1)
+	S.cend = ["none","none"]
+	S.dist = []
+	S.nPhi = 256
 	
 	return S
 
 
+def make_asym_shortcoil_centerblock(nm,r,dz=-0.262):
 
-make_setup = make_asym_shortcoil_throughend
+	S = make_asym_shortcoil_wireshrough(nm,r,dz)
+	S.cend = ["none",None]
+	
+	# inner plug
+	S.shsects[2] = ShieldSection(0,6,12,"pax","pax")
+	S.shsects[2].off[0][1] = 0.70
+	
+	S.dist = [-0.0070]
 
-def BothApertureScan():
+	return S
+
+def make_smallholes_annular(nm,r,dz=0):
+	"""More 'realistic' endcap with small central hole and annular ring"""
+	S = make_asym_shortcoil_base(nm,r,dz,r0=0.60)
+	S.set_csgeom(clen = 2.5, crad = 1.0, dlen = 0.01, drad = 0.1)
+	
+	S.shsects.append(ShieldSection(0,6,12,"pax","pax"))
+	S.shsects[-1].off = ([0,0.52],[0,0.0635])
+	
+	S.shsects[0].off[0][1] = 0.50	# bottom end hole
+	#S.shsects[0].cseg = 24
+	#S.shsects[0].vseg = 12
+		
+	S.cend = ["none","none"]
+	S.dist = [-0.0184]
+	
+	return S
+
+#make_setup = make_asym_shortcoil_base
+#stname = "ShortCoil"
+
+#make_setup = make_asym_shortcoil_wireshrough
+#stname = "SC_WiresTrough"
+
+#make_setup = make_asym_shortcoil_centerblock
+#stname = "SC_InnerPlug"
+
+#make_setup = make_smallholes_annular
+#stname = "SC_SmallHoles"
+
+make_setup = make_closed_ends
+stname = "SC_ClosedEnds"
+
+
+def NegApertureScan():
 	SS = StudyScan()
-	for r in unifrange(0.05, 1, 7, True):
-		S = make_setup("ShortCoil_Aperture",r)
-		S.ecapR = [r,r]
+	for r in unifrange(0, 0.7, 15, True):
+		S = make_setup(stname+"_NegAperture",r)
+		S.shsects[0].off[0][1] = r
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
 def ECtoWiresScan():
 	SS = StudyScan()
 	for r in unifrange(0.001, .05, 7, True):
-		S = make_setup("ShortCoil_ECdz",r)
+		S = make_setup(stname+"_ECdz",r)
 		S.set_csgeom(clen = 2.5, crad = 1.0, dlen = r, drad = 0.1)
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
 def DistortionScan():
 	SS = StudyScan()
-	for r in unifrange(-0.02, 0, 7, True):
-		S = make_setup("ShortCoil_Distortion",r)
+	for r in unifrange(-0.04, 0, 7, True):
+		S = make_setup(stname+"_Distortion",r)
 		S.dist = [r]
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
 def MovingCellScan():
 	SS = StudyScan()
-	for r in unifrange(-1, 0.5, 7, True):
-		S = make_setup("ShortCoil_MovingCell",r,dz=r)
+	for r in unifrange(-.5, 0.5, 7, True):
+		S = make_setup(stname+"_MovingCell",r,dz=r)
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
-def LengthScan():
-	SS = StudyScan()
-	for r in unifrange(2.5, 10, 7, True):
-		S = make_setup("ShortCoil_Length",r)
-		S.set_csgeom(clen = r, crad = 1.0, dlen = 0.01, drad = 0.1)
-		SS.fsimlist.write(S.make_cmd())
-	SS.run()
-
-def NegApertureScan():
-	SS = StudyScan()
-	for r in unifrange(0, 0.2, 7, True):
-		S = make_setup("ShortCoil_NegAperture",r)
-		S.shsects[0].off[0][1] = r
-		SS.fsimlist.write(S.make_cmd())
-	SS.run()
 
 def PosBlockScan():
 	SS = StudyScan()
 	for r in unifrange(0, 0.7, 7, True):
-		S = make_setup("ShortCoil_PosBlock",r)
+		S = make_setup(stname+"_PosBlock",r)
 		#S.shsects[1].off[1][0] = S.shsects[2].off[0][0] = S.shsects[2].off[1][0] = r
 		S.shsects[3].off[0][1] = r
 		SS.fsimlist.write(S.make_cmd())
@@ -105,28 +130,13 @@ def PosBlockScan():
 def GriddingScan():
 	SS = StudyScan()
 	for r in unifrange(12, 27, 16, True):
-		S = make_setup("ShortCoil_Gridding",r)
+		S = make_setup(stname+"stname_Gridding",r)
 		#S.shsects[0].cseg = S.shsects[2].cseg = r
 		S.shsects[1].cseg = r
 		S.shsects[1].vseg = 0
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
-def SuperAScan():
-	SS = StudyScan()
-	for r in unifrange(-0.02, 0, 7, True):
-		S = make_setup("ShortCoil_a5",r)
-		S.dist = [-0.028,0,-0.3,0,r]
-		SS.fsimlist.write(S.make_cmd())
-	SS.run()
-
-def ConeScan():
-	SS = StudyScan()
-	for r in unifrange(-0.14, 0, 7, True):
-		S = make_setup("ShortCoil_Cone",r)
-		S.ecapCone = [r,r]
-		SS.fsimlist.write(S.make_cmd())
-	SS.run()
 
 
 #
@@ -149,20 +159,14 @@ if __name__=="__main__":
 	
 	if options.scan:
 		
-		#BothApertureScan()
-		#ECtoWiresScan()
-		#ShortCoilScan()
 		#MovingCellScan()
-		#LengthScan()
-		NegApertureScan()
 		#DistortionScan()
-		#SuperAScan()
-		#ConeScan()
-		#PosBlockScan()
+		
+		ECtoWiresScan()
+				
+		#NegApertureScan()
 		
 		#GriddingScan()
-		
-		exit(0)
 
 	outdir = os.environ["ROTSHIELD_OUT"]
 
@@ -170,60 +174,52 @@ if __name__=="__main__":
 
 	if options.plot:
 	
-		#VPP = VarParamPlotter(outdir+"/ShortCoil_MovingCell")
-		#VPP.keypos = "br"
+		#VPP = VarParamPlotter(outdir+"/"+stname+"_MovingCell")
+		#VPP.keypos = "tc"
 		#VPP.setupGraph("Cell center z [m]")
 		
-		#VPP = VarParamPlotter(outdir+"/ShortCoil_Length")
-		#VPP.setupGraph("Coil Length [m]")
-		
-		#VPP = VarParamPlotter(outdir+"/ShortCoil_Distortion")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"_Distortion")
 		#VPP.keypos = "tr"
 		#VPP.setupGraph("Distortion parameter $a$")
+	
+	
+		VPP = VarParamPlotter(outdir+"/"+stname+"_ECdz")
+		VPP.keypos = "tl"
+		VPP.setupGraph("Wires to endcap distance [m]")
 
-		#VPP = VarParamPlotter(outdir+"/ShortCoil_a5")
-		#VPP.setupGraph("Distortion parameter $a_3$")
-			
-		#VPP = VarParamPlotter(outdir+"/ShortCoil_ECdz")
-		#VPP.keypos = "bl"
-		#VPP.setupGraph("Wires to endcap distance [m]")
-
-		#VPP = VarParamPlotter(outdir+"/ShortCoil_Aperture")
-		#VPP.keypos = "bl"
+		#VPP = VarParamPlotter(outdir+"/"+stname+"_NegAperture")
+		#VPP.keypos = "tc"
 		#VPP.setupGraph("Baseplate aperture [m]")
-			
-		VPP = VarParamPlotter(outdir+"/ShortCoil_NegAperture")
-		VPP.keypos = "bl"
-		VPP.setupGraph("Baseplate aperture [m]")
 
-		#VPP = VarParamPlotter(outdir+"/ShortCoil_Gridding")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"_Gridding")
 		#VPP.setupGraph("Endcap grid segments")
 
-		#VPP = VarParamPlotter(outdir+"/ShortCoil_Cone")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"_Cone")
 		#VPP.setupGraph("Endcap cone offset [m]")
 
-		#VPP = VarParamPlotter(outdir+"/ShortCoil_PosBlock")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"_PosBlock")
 		#VPP.setupGraph("Inner disc z offset [m]")
 		
 		if VPP is not None:
-			VPP.makePlot()
+			VPP.makePlot(PGlist=[PG_n(),PG_3He()])
 			VPP.outputPlot()
 			
 
 	if options.fplt:
 		if VPP is not None:
 			for r,FI in VPP.datlist:
-				FI.plotFields(2,0,1,2)
+				FI.BC.plotFields(2,0,1,2)
 		else:
 			
-			FI = FieldInfo(outdir+"ShortCoil_PosBlock/X_0.500000/")
+			FI = FieldInfo(outdir+"/"+stname+"_ECdz/X_0.009167/")
 			
-			FI.plotFields(2,0,1,2) # Bz along z
-			FI.plotFields(0,0,2,1) # Bx along y
-			FI.plotFields(0,0,1,2) # Bx along z
-			
-			FI.plotCellProjection(1,0)
-			FI.plotCellProjection(1,2)
-			FI.plotCellProjection(0,2)
+			if 1:
+				FI.BC.plotFields(2,0,1,2) # Bz along z
+				FI.BC.plotFields(0,0,2,1) # Bx along y
+				FI.BC.plotFields(0,0,1,2) # Bx along z
+			if 0:
+				FI.BC.plotCellProjection(1,0)
+				FI.BC.plotCellProjection(1,2)
+				FI.BC.plotCellProjection(0,2)
 
 

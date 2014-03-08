@@ -42,7 +42,7 @@ public:
 	virtual void visualize(bool top = true, mdouble scaling = 1.0) const {
 		if(top) { vsr::startRecording(true); vsr::clearWindow(); }
 		vsr::setColor(displayColor[0],displayColor[1],displayColor[2]);
-		for(unsigned int i=0; i<sources.size(); i++) sources[i]->visualize(false);
+		for(unsigned int i=0; i<sources.size(); i++) sources[i]->visualize(false, scaling);
 		if(top) vsr::stopRecording();
 	}
 	
