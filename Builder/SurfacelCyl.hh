@@ -10,11 +10,18 @@
 #include "FieldEstimator2D.hh"
 #include "PlanarElement.hh"
 
+/// surface element interaction protocol
+class Surfacel_Protocol {
+public:
+	ReactiveElement* e;
+	static Surfacel_Protocol* SP;
+};
+
 /// collection of individual surface elements
 class SurfacelSet: public ReactiveUnitSet, public FieldSource {
 public:
 	/// constructor
-	SurfacelSet(unsigned int nph): ReactiveUnitSet(nph), FieldSource(), verbose(true) { myClass = RS_CLASSTYPE(myClass | RS_SS); }
+	SurfacelSet(unsigned int nph): ReactiveUnitSet(nph), FieldSource(), verbose(true) { set_protocol(Surfacel_Protocol::SP); }
 	/// destructor
 	virtual ~SurfacelSet();
 	
@@ -32,18 +39,22 @@ public:
 	
 	/// set state for i^th sub-element
 	virtual void setState(unsigned int i, const mvec& v) { surfacels[i]->setState(v); }
-	/// sets surfacels to final state
-	virtual void setFinalState(const mvec& v);
-	/// get final state for i^th sub-element
-	mvec getFinalState(unsigned int i) const;
+	
+	/// set interaction protocol to use; respond whether accepted
+	virtual bool set_protocol(void* ip);
+	/// respond to interaction protocol
+	virtual void queryInteraction();
 	
 	bool verbose;	//< whether to display calculation progress
 	
 protected:
 	std::vector<ReactiveElement*> surfacels;	//< the surface elements
 	
-	/// interaction between elements i and j
-	virtual mmat interactionBetween(unsigned int i, unsigned int j) const;
+	/// set state for i^th sub-element
+	virtual void setSubelDF(unsigned int el, unsigned int df, mdouble v) { surfacels[el]->setState(df,v); }
+	
+	/// sub-element reaction to RS via protocol
+	virtual mvec subelReaction();
 };
 
 /// segment of a shield, generates a ring of PlanarElements

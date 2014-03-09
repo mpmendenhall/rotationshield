@@ -2,16 +2,13 @@
 #include "ProgressBar.hh"
 #include <cassert>
 
+Surfacel_Protocol* Surfacel_Protocol::SP = new Surfacel_Protocol();
+
 SurfacelSet::~SurfacelSet() {
 	while(surfacels.size()) {
 		surfacels.back()->release();
 		surfacels.pop_back();
 	}
-}
-
-mmat SurfacelSet::interactionBetween(unsigned int i, unsigned int j) const {
-	assert(i<n_subels() && j<n_subels());
-	return surfacels[i]->interactionWith(surfacels[j]);
 }
 	
 vec3 SurfacelSet::fieldAt(const vec3& v) const {
@@ -35,21 +32,6 @@ void SurfacelSet::visualize(bool top, mdouble scale) const {
 	if(top) vsr::stopRecording();
 }
 
-mvec SurfacelSet::getFinalState(unsigned int i) const {
-	assert(i<n_subels());
-	assert(finalState.size() == nDF());
-	mvec s = mvec(surfacels[i]->nDF());
-	for(unsigned int j=0; j<surfacels[i]->nDF(); j++)
-		s[j] = finalState[df_subindex(i,j)];
-	return s;
-}
-
-void SurfacelSet::setFinalState(const mvec& v) {
-	ReactiveUnitSet::setFinalState(v);
-	for(unsigned int i=0; i<n_subels(); i++)
-		surfacels[i]->setState(getFinalState(i));
-}
-
 void SurfacelSet::calculateIncident(FieldSource* f) {
 	if(verbose) printf("Calculating incident field on %i elements in %i groups...\n", n_subels(), n_subels()/nPhi);
 	ProgressBar pb = ProgressBar(n_subels(), nPhi, verbose);
@@ -60,6 +42,28 @@ void SurfacelSet::calculateIncident(FieldSource* f) {
 		for(unsigned int j = 0; j<surfacels[i]->nDF(); j++)
 			incidentState[df_subindex(i,j)] = surfacels[i]->getState()[j];
 	}
+}
+
+bool SurfacelSet::set_protocol(void* ip) {
+	ReactiveUnitSet::set_protocol(ip);
+	return ixn_ptcl==BField_Protocol::BFP || ixn_ptcl==Surfacel_Protocol::SP;
+}
+
+void SurfacelSet::queryInteraction() {
+	if(ixn_ptcl == Surfacel_Protocol::SP)
+		Surfacel_Protocol::SP->e = surfacels[ixn_el];
+	else if(ixn_ptcl == BField_Protocol::BFP)
+		BField_Protocol::BFP->B = surfacels[ixn_el]->fieldAt(BField_Protocol::BFP->x);
+}
+
+mvec SurfacelSet::subelReaction() {
+	if(ixn_ptcl == Surfacel_Protocol::SP) {
+		queryInteraction();
+		return surfacels[ic_i]->interactionWith(Surfacel_Protocol::SP->e);
+	} else if(ixn_ptcl == BField_Protocol::BFP) {
+		assert(false);
+	}
+	return mvec(surfacels[ic_i]->nDF());
 }
 
 //----------------------------------------------

@@ -17,7 +17,7 @@ public:
 	virtual ~CompoundPlane() { while(els.size()) { els.back()->release(); els.pop_back(); } }
 	
 	/// interaction matrix with another ReactiveElement
-	virtual mmat interactionWith(const ReactiveElement* e) const { return rmat * e->fieldAtComponents(p.o); }
+	virtual mmat interactionWithComponents(const ReactiveElement* e) const { return rmat * e->fieldAtComponents(p.o); }
 	
 	/// resulting state in response to incident field f
 	virtual mvec responseToFieldSource(const FieldSource* f) const { return rmat * f->fieldOverPlane(p); }

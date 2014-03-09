@@ -358,4 +358,14 @@ varvec2doublevec(const VarVec<T>& v) {
 	return dv;
 }
 
+/// string output representation for vectors
+template<typename T>
+std::ostream& operator<<(std::ostream& o, const VarVec<T>& v) {
+	o << "< ";
+	for(unsigned int i=0; i<v.size(); i++)
+		o << v[i] << " ";
+	o << ">";
+	return o;
+}
+
 #endif

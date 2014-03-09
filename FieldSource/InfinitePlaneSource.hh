@@ -20,7 +20,9 @@ public:
 	//virtual mvec responseToFieldSource(const FieldSource* f) const { return rmat * f->fieldOverLine(Line(p.o-p.dx*0.5,p.o+p.dx*0.5)); }
 	virtual mvec responseToFieldSource(const FieldSource* f) const { return rmat * f->fieldAt(p.o); }
 	/// interaction matrix with another ReactiveElement
-	virtual mmat interactionWith(const ReactiveElement* e) const { return rmat * e->fieldAtComponents(p.o); }
+	virtual mmat interactionWithComponents(const ReactiveElement* e) const { return rmat * e->fieldAtComponents(p.o); }
+	/// interaction matrix with another ReactiveElement
+	virtual mvec interactionWith(const ReactiveElement* e) const { return rmat * e->fieldAt(p.o); }
 	
 	/// replicate around a new plane
 	virtual PlanarElement* replicate(Plane pl) const { return new InfinitePlaneSource(pl,murel); }

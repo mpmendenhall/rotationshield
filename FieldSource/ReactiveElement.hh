@@ -11,7 +11,7 @@ class ReactiveElement: public FieldSource {
 public:
 	
 	/// constructor
-	ReactiveElement(): state(mvec()) { }
+	ReactiveElement() { }
 
 	/// number of degrees of freedom
 	virtual unsigned int nDF() const = 0;
@@ -23,8 +23,11 @@ public:
 	virtual mmat fieldAtComponents(vec3 p0) const = 0;
 	/// resulting state in response to incident field f
 	virtual mvec responseToFieldSource(const FieldSource* f) const = 0;
-	/// interaction matrix with another ReactiveElement
-	virtual mmat interactionWith(const ReactiveElement* e) const = 0;
+	/// interaction matrix with another ReactiveElement's state
+	virtual mmat interactionWithComponents(const ReactiveElement* e) const = 0;
+	/// interaction matrix with another ReactiveElement in its current state
+	virtual mvec interactionWith(const ReactiveElement* e) const = 0;
+	
 	/// set state in reaction to applied field
 	void reactTo(const FieldSource* f) { setState(responseToFieldSource(f)); }
 	
@@ -39,6 +42,12 @@ public:
 	
 	/// set state vector
 	virtual void setState(mvec v) { assert(v.size() == nDF()); state = v; }
+	/// set element of state vector
+	virtual void setState(unsigned int df, mdouble v) {
+		if(state.size() != nDF()) state = mvec(nDF());
+		assert(df<nDF());
+		state[df] = v;
+	}
 		
 protected:
 	
