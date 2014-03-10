@@ -14,7 +14,7 @@ vec3 SurfaceSource::fieldAt(const vec3& v) const {
 	SurfaceSourceIntegParams p;
 	p.S = this;
 	p.v = v;
-	mvec B = myIntegrator.integrate(&SSdA, 0, 1, 0, 1, &p);
+	mvec B = myIntegrator.integrate(&SSdA, 0., 1., 0., 1., &p);
 	return vec3(B[0],B[1],B[2]);
 	
 }

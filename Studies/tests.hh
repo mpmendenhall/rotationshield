@@ -17,4 +17,7 @@ bool reference_simpleshield();
 /// tests for integrator routines
 bool integrator_tests();
 
+/// testing continuous surface current routine
+bool csurface_test();
+
 #endif

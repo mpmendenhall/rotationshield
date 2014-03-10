@@ -12,7 +12,7 @@ InterpolationHelper::~InterpolationHelper() {
 	if(myInterpolator) delete myInterpolator;
 }
 
-double InterpolationHelper::eval(double* x) {
+double InterpolationHelper::eval(double* x) const {
 	assert(x);
 	return myInterpolator->eval(x);
 }
@@ -94,7 +94,7 @@ InterpolationHelper& InterpolationHelper::getSubHelper(unsigned int nDeep, const
 	return subInterpolators[n[0]]->getSubHelper(nDeep-1,n+1);
 }
 
-double InterpolationHelper::valueAt(int i, void* xopts) {
+double InterpolationHelper::valueAt(int i, void* xopts) const {
 	unsigned int ci = coerce(i);
 	if(ci < myData.size()) return myData[ci];
 	if(ci < subInterpolators.size()) return subInterpolators[ci]->eval((double*)xopts);

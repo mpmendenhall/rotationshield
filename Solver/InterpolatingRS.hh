@@ -17,17 +17,16 @@ public:
 	/// total number of degrees of freedom
 	virtual unsigned int nDF() const { return InterplDF.n_pts(); }
 	/// possibly arbitrarily ordered interaction matrix entries
-	//virtual mdouble nextInteractionTerm(unsigned int& i, unsigned int& j);
+	virtual mdouble nextInteractionTerm(unsigned int& i, unsigned int& j) { assert(false); }
 	
-	InterpolationHelper InterplDF;	//< degrees of freedom in InterpolatingHelper grid
-
 protected:
 
 	/// additional routines for setting a DF value
 	virtual void _setDF(unsigned int DF, double v) { InterplDF[DF] = v; }
 	/// additional routines for setting entire state vector
 	virtual void _setDF(const mvec& v) { assert(v.size() == nDF()); InterplDF.setData(&v[0]); }
-
+	
+	InterpolationHelper InterplDF;	//< degrees of freedom in InterpolatingHelper grid
 };
 
 #endif

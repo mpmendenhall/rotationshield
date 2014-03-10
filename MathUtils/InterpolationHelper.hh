@@ -28,10 +28,12 @@ public:
 	
 	
 	/// evaluation at given x
-	double eval(double* x);
+	double eval(double* x) const;
 	
 	/// directly address sub-InterpolationHelper
 	InterpolationHelper& getSubHelper(unsigned int nDeep, const unsigned int* n);
+	/// get sub-InterpolationHelper list
+	std::vector<InterpolationHelper*>& getSubHelpers() { return subInterpolators; }
 	
 	/// set interpolation method for all InterpolationHelpers at given depth
 	void setInterpolatorMethod(Interpolator* (*makeInterp)(DataSequence*, double, double), unsigned int nDeep = 0);
@@ -44,7 +46,7 @@ public:
 protected:
 
 	/// value at given grid location
-	virtual double valueAt(int i, void* xopts);
+	virtual double valueAt(int i, void* xopts) const;
 	
 	/// delete sub-interpolators
 	void clearSubinterps();
@@ -56,9 +58,8 @@ protected:
 	unsigned int from_flat_index(unsigned int& n) const;
 	
 	Interpolator* myInterpolator;
-	std::vector<InterpolationHelper*> subInterpolators;	//< sub-interpolators if not lowest dimension
 	std::vector<double> myData;							//< internal list of data points if lowest dimension
-	
+	std::vector<InterpolationHelper*> subInterpolators;	//< sub-interpolators if not lowest dimension
 	std::vector<unsigned int> cum_sum_dpts;				//< cumulative sum of datapoints in underlying structures
 };
 

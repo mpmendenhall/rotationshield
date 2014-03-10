@@ -7,6 +7,7 @@
 #include "analysis.hh"
 #include "CosThetaBuilder.hh"
 #include "Integrator.hh"
+#include "SurfaceCurrentSource.hh"
 
 bool compareResults(mdouble a, mdouble b, const char* label) {
 	bool pass = true;
@@ -152,3 +153,26 @@ bool integrator_tests() {
 	return pass;
 }
 
+vec2 sdens(vec2 x, void*) {
+	x = vec2(x[0]-0.5,sin(2*M_PI*x[1]));
+	return vec2(x[0]*x[0]+x[1]*x[1], x[0]*x[1]);
+}
+
+class WavyThing: public DFunc<mdouble> {
+public:
+	virtual mdouble operator()(mdouble x) const { return 0.7+0.1*sin(9*M_PI*x); }
+};
+
+
+bool csurface_test() {
+	
+	CylSurfaceGeometry SG;
+	SG.fr = new WavyThing;
+	SurfaceCurrentSource SSC(&SG);
+	SSC.sj = &sdens;
+
+	SSC.visualize();
+	vsr::pause();
+	
+	return true;
+}
