@@ -46,6 +46,8 @@ public:
 	const std::vector<T>& getDataC() const { return data; }
 	/// append
 	void push_back(const T& x) { data.push_back(x); }
+	/// generate sub-vector
+	VarVec<T> subvec(unsigned int a, unsigned int b) const { VarVec<T> V; V.data = std::vector<T>(&data[a],&data[b]); return V; }
 	
 	/// size of vector
 	unsigned int size() const { return data.size(); }

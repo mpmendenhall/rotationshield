@@ -16,31 +16,41 @@ public:
 	/// destructor
 	virtual ~ReactiveSet() {}
 	
+	
+	// subclass these for core functions
+	
 	/// total number of degrees of freedom
 	virtual unsigned int nDF() const = 0;
+	/// possibly arbitrarily ordered interaction matrix entries
+	virtual mdouble nextInteractionTerm(unsigned int& i, unsigned int& j) = 0;
+	
+	/// set (final) state
+	virtual void setFinalState(const mvec& v) { assert(v.size()==nDF()); finalState = v; _setDF(v); }
+	/// set degree of freedom to produce interactions from
+	virtual void setInteractionDF(unsigned int DF, double v=1.0);
+	
+	// subclass these to define specific interaction
 	
 	/// set interaction protocol
 	virtual bool set_protocol(void* ip) { ixn_ptcl = ip; return false; }
-	/// reset interaction term counter
-	virtual void startInteractionScan() { setZeroState(); setInteractionDF(0); }
-	/// possibly arbitrarily ordered interaction matrix entries
-	virtual mdouble nextInteractionTerm(unsigned int& i, unsigned int& j) = 0;
-	/// set degree of freedom to produce interactions from
-	virtual void setInteractionDF(unsigned int DF, double v=1.0);
 	/// respond to interaction protocol
 	virtual void queryInteraction() { }
 	
 	
 	const unsigned int nPhi;	//< internal periodic symmetry
-
-	mvec incidentState; 	//< non-interacting initial state vector
+	mvec incidentState; 		//< non-interacting initial state vector
 	
-	/// set (final) state
-	virtual void setFinalState(const mvec& v) { assert(v.size()==nDF()); finalState = v; }
+	/// reset interaction term counter
+	virtual void startInteractionScan() { setZeroState(); setInteractionDF(0); }
 	/// set zero state
 	virtual void setZeroState() { setFinalState(mvec(nDF())); }
 
 protected:
+
+	/// additional routines for setting a DF value
+	virtual void _setDF(unsigned int DF, double v) = 0;
+	/// additional routines for setting entire state vector
+	virtual void _setDF(const mvec& v);
 
 	mvec finalState;					//< final state after interactions
 	mutable unsigned int rterm;			//< current interaction term
@@ -62,13 +72,11 @@ public:
 	virtual void startInteractionScan() { ReactiveSet::startInteractionScan(); ic_i = ic_di = 0; ic_v = subelReaction(); }
 	/// possibly arbitrarily ordered interaction matrix entries
 	virtual mdouble nextInteractionTerm(unsigned int& i, unsigned int& j);
-	/// set degree of freedom to produce interactions from
-	virtual void setInteractionDF(unsigned int DF, double v=1.0);
-	
-	/// set (final) state
-	virtual void setFinalState(const mvec& v);
 	
 protected:
+	
+	/// additional routines for setting a DF value
+	virtual void _setDF(unsigned int DF, double v=1.0);
 	
 	/// get DF index for sub-element DF
 	unsigned int df_subindex(unsigned int el, unsigned int df) const { return group_start[el/nPhi] + df*nPhi + (el%nPhi); }
@@ -101,6 +109,33 @@ protected:
 	std::vector<unsigned int> df_subel_df;	//< sub-element's DF corresponding to each DF
 };
 
-// TODO: combining RS
+/*
+
+/// combine several ReactiveSets into one
+class ReactiveSetCombiner: public ReactiveUnitSet {
+public:
+	/// constructor
+	ReactiveSetCombiner(unsigned int nph=1): ReactiveUnitSet(nph) {}
+	/// append a new ReactiveSet
+	void addSet(ReactiveSet* R);
+	
+	/// set interaction protocol
+	virtual bool set_protocol(void* ip);
+	/// possibly arbitrarily ordered interaction matrix entries
+	virtual mdouble nextInteractionTerm(unsigned int& i, unsigned int& j);
+	/// set state for i^th sub-element
+	virtual void setSubelDF(unsigned int el, unsigned int df, mdouble v);
+	/// respond to interaction protocol
+	virtual void queryInteraction() { mySets[ixn_el]->queryInteraction(); }
+		
+	/// set (final) state
+	virtual void setFinalState(const mvec& v);
+	/// set zero state
+	virtual void setZeroState();
+	
+protected:
+	std::vector<ReactiveSet*> mySets;
+};
+*/
 
 #endif
