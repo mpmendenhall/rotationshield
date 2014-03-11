@@ -101,7 +101,7 @@ void FieldAnalyzer::visualizeSurvey(vec3 ll, vec3 ur, int nX, int nY, int nZ) co
 	
 	vsr::startRecording(); 
 	vsr::clearWindow();
-	FS->visualize(false);
+	FS->_visualize();
 	
 	for(n[0] = 0; n[0] < nX; n[0]++) {
 		for(n[1] = 0; n[1] < nY; n[1] ++) {

@@ -154,20 +154,25 @@ bool integrator_tests() {
 }
 
 vec2 sdens(vec2 x, void*) {
-	x = vec2(x[0]-0.5,sin(2*M_PI*x[1]));
-	return vec2(x[0]*x[0]+x[1]*x[1], x[0]*x[1]);
+	x = vec2(cos(2.3*M_PI*x[0]),sin(3*M_PI*x[1]));
+	return vec2(x[0], x[1]);
 }
 
 class WavyThing: public DFunc<mdouble> {
 public:
-	virtual mdouble operator()(mdouble x) const { return 0.7+0.1*sin(9*M_PI*x); }
+	virtual mdouble operator()(mdouble x) const { return 0.5 + 0.25*x + 0.1*sin(9*M_PI*x); }
 };
 
+class zDist: public DFunc<mdouble> {
+public:
+	virtual mdouble operator()(mdouble x) const { return x*x - 0.5; }
+};
 
 bool csurface_test() {
 	
 	CylSurfaceGeometry SG;
 	SG.fr = new WavyThing;
+	SG.fz = new zDist;
 	SurfaceCurrentSource SSC(&SG);
 	SSC.sj = &sdens;
 

@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 /// A (directed) line, represented by two endpoint vectors
-class Line {
+class Line: public Visualizable {
 public:
 	/// Contructor
 	Line(vec3 start, vec3 end): s(start), e(end), len((end-start).mag()), dv((end-start).normalized()) {}
@@ -20,7 +20,7 @@ public:
 	///print info to stdout
 	void display() const { printf("Line: "); s.display(); printf(" to "); e.display("\n"); }
 	///draw to visualizer
-	void visualize(bool top = true) const;	
+	void _visualize() const;
 	void visualizeDirected(float j = 1.0) const;
 	
 	const vec3 s; //< Starting point
@@ -71,7 +71,7 @@ public:
 };
 
 /// An (oriented) plane, represented by an origin and two width/direction vectors
-class Plane {
+class Plane: public Visualizable {
 public:
 	/// Constructor
 	Plane(vec3 origin = vec3(), vec3 dxx = vec3(1,0,0), vec3 dzz = vec3(0,0,1)): wx(dxx.mag()), wz(dzz.mag()), o(origin), dx(dxx), dz(dzz)  { area = wx*wz; sn = cross(dx,dz)/area; }
@@ -90,7 +90,7 @@ public:
 	/// get subtended angle around z axis
 	mdouble dTheta() const { return 2*atan2(0.5*wx,vec2(o[0],o[1]).mag()); }
 	///draw to visualizer
-	void visualize(bool top = true) const;
+	void _visualize() const;
 	///draw local coordinate axes
 	void visualizeCoordinates(float scale = 1.0) const;
 	/// visualize a vector in local coordinates

@@ -17,14 +17,12 @@ public:
 	virtual ReactiveElement* reference(annulusSpec a) const { GridBoxel* w = new GridBoxel(a,murel,d,nZ,nT,nD); w->preSolve(); return w; }
 	
 	/// Visualize the element
-	virtual void visualize(bool top = true, mdouble logmax = 3.0) const {
-		if(top) { vsr::startRecording(true); vsr::clearWindow(); }
+	virtual void _visualize() const {
 		unsigned int elmax = els.size();
 		if(drawSurfaces<3)
 			elmax = 2*nZ*nT;
 		for(unsigned int i=0; i<elmax; i++)
-			els[i]->visualize(false);
-		if(top) vsr::stopRecording();
+			els[i]->_visualize();
 	}
 	
 	/// replicate reference element to other angle

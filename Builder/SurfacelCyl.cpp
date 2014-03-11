@@ -25,11 +25,9 @@ void SurfacelSet::addSurfacel(ReactiveElement* e) {
 	add_DF_group(e->nDF());
 }
 
-void SurfacelSet::visualize(bool top, mdouble scale) const {
-	if(top) { vsr::startRecording(true); vsr::clearWindow(); }
+void SurfacelSet::_visualize() const {
 	for(std::vector<ReactiveElement*>::const_iterator it = surfacels.begin(); it != surfacels.end(); it++)
-		(*it)->visualize(false);
-	if(top) vsr::stopRecording();
+		(*it)->_visualize();
 }
 
 void SurfacelSet::calculateIncident(FieldSource* f) {

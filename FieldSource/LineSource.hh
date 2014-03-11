@@ -24,12 +24,7 @@ public:
 	/// Print info to stdout
 	void display() const { printf("Linesource (j=%g):\n\t",(double)j); l.display(); }
 	/// Visualize the field source
-	virtual void visualize(bool top = true, mdouble scaling = 1.0) const {
-		if(top) { vsr::startRecording(true); vsr::clearWindow(); } 
-		//l.visualize(false); 
-		l.visualizeDirected(sign(j));
-		if(top) vsr::stopRecording(); 
-	}
+	virtual void _visualize() const { l.visualizeDirected(sign(j)); }
 	
 	/// Integrates \f$ \int_0^x \frac{(t^2+a^2)^{1/2}}{(t^2+b^2)^{3/2}}dt \f$ (\f$ a>b \f$)
 	/** See Abramowitz and Stegun 17.4.41 */

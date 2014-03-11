@@ -39,11 +39,9 @@ public:
 	/// Print info to stdout
 	void display() const { printf("Multisource:\n"); for(unsigned int i=0; i<sources.size(); i++) sources[i]->display(); }
 	/// Visualize the field source
-	virtual void visualize(bool top = true, mdouble scaling = 1.0) const {
-		if(top) { vsr::startRecording(true); vsr::clearWindow(); }
+	virtual void _visualize() const {
 		vsr::setColor(displayColor[0],displayColor[1],displayColor[2]);
-		for(unsigned int i=0; i<sources.size(); i++) sources[i]->visualize(false, scaling);
-		if(top) vsr::stopRecording();
+		for(unsigned int i=0; i<sources.size(); i++) sources[i]->_visualize();
 	}
 	
 	vec3 displayColor;

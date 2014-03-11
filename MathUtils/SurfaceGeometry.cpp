@@ -11,7 +11,7 @@ vec3 CylSurfaceGeometry::operator()(const vec2& p) const {
 	assert(fr);
 	
 	mdouble z = (fz ? (*fz)(p[0]) : p[0]);
-	mdouble r = (*fr)(z);
+	mdouble r = (*fr)(p[0]);
 	mdouble phi = 2*M_PI*p[1];
 	mdouble c = cos(phi);
 	mdouble s = sin(phi);
@@ -29,7 +29,7 @@ vec3 CylSurfaceGeometry::deriv(const vec2& p, unsigned int i) const {
 	
 	if(i==0) {
 		mdouble dzdl = (fz ? fz->deriv(p[0]) : 1.);
-		mdouble drdl = fr->deriv(z)*dzdl;
+		mdouble drdl = fr->deriv(p[0]);
 		return vec3(drdl*c,drdl*s,dzdl);
 	}
 	if(i==1) {

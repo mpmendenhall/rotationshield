@@ -55,4 +55,21 @@ namespace vsr {
 	
 }
 
+/// virtual base class for visualizable objects
+class Visualizable {
+public:
+	/// constructor
+	Visualizable() {}
+	/// destructor
+	virtual ~Visualizable() {}
+	
+
+	/// visualize "top level"
+	void visualize() const { vsr::startRecording(true); vsr::clearWindow(); _visualize(); vsr::stopRecording(); }
+		
+	/// visualize without clearing screen
+	virtual void _visualize() const = 0;
+};
+
+
 #endif

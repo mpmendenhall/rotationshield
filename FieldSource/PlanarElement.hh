@@ -19,7 +19,7 @@ public:
 	virtual PlanarElement* replicateRotated(mdouble th) const = 0;
 	
 	/// Visualize the element
-	virtual void visualize(bool top = true, mdouble logmax = 3.0) const;
+	virtual void _visualize() const;
 	
 	Plane p;		//< The plane in which the element resides
 };

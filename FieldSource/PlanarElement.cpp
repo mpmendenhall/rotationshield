@@ -1,9 +1,8 @@
 #include "PlanarElement.hh"
 
-void PlanarElement::visualize(bool top, mdouble logmax) const {
-	
-	if(top) { vsr::startRecording(true); vsr::clearWindow(); }
-	
+void PlanarElement::_visualize() const {
+
+	mdouble logmax = 3.0;
 	float smag = state.mag2();
 	if(smag)
 		smag = max(0,min(1.0,0.1*(log(smag)+10-logmax)));
@@ -15,7 +14,7 @@ void PlanarElement::visualize(bool top, mdouble logmax) const {
 	vec3 hsv = vec3( atan2(svec[0],svec[1]), 1.0, 1.0 );
 	vec3 rgb = hsv2rgb(hsv);
 	vsr::setColor(rgb[0], rgb[1] , rgb[2], 1.0*smag);
-	p.visualize(false);
+	p._visualize();
 	vsr::setColor(1, .7, .7, 1.0);
 	p.visualizeCoordinates(0.2);
 	vsr::setColor(.7, .7, 1, 1.0);
@@ -23,5 +22,4 @@ void PlanarElement::visualize(bool top, mdouble logmax) const {
 	vsr::setColor(1,1,1,1);
 	
 	p.visualizeVector(svec);
-	if(top) vsr::stopRecording();
 }

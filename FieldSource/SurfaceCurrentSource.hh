@@ -23,7 +23,7 @@ public:
 	void* sjparams;				//< extra parameters for surface function
 	
 	/// Visualize the field source
-	virtual void visualize(bool top = true, mdouble scale = 1.0) const;
+	virtual void _visualize() const;
 	unsigned int vis_n1;		//< visualization gridding, z
 	unsigned int vis_n2;		//< visualization gridding, phi
 	

@@ -10,7 +10,7 @@
 #include "Integrator.hh"
 					
 /// Base (virtual) class for magnetic field sources due to current distributions
-class FieldSource: public RefCounter {
+class FieldSource: public RefCounter, public Visualizable {
 public:
 	/// Constructor
 	FieldSource(): RefCounter() {}
@@ -27,10 +27,7 @@ public:
 	virtual vec3 dipole() const { return vec3(); }
 	/// Print info to stdout
 	virtual void display() const { printf("[FieldSource]\n"); }
-	
-	/// Visualize the field source
-	virtual void visualize(bool top = true, mdouble scale = 1.0) const { printf("Unimplemented!!!\n"); }
-	
+		
 private:
 	static Integrator lineIntegrator; //< Integrator for averaging over lines
 	static Integrator planeIntegrator; //< Integrator for averaging over planes

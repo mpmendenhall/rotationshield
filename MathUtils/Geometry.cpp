@@ -1,10 +1,6 @@
 #include "Geometry.hh"
 
-void Line::visualize(bool top) const { 
-	if(top) { vsr::startRecording(true); vsr::clearWindow(); } 
-	vsr::line(s,e); 
-	if(top) vsr::stopRecording();
-}
+void Line::_visualize() const { vsr::line(s,e); }
 
 void Line::visualizeDirected(float j) const { 
 	vsr::startLines();
@@ -46,11 +42,7 @@ const mat3 Plane::projectionMatrix() const {
 }
 
 
-void Plane::visualize(bool top) const { 
-	if(top) { vsr::startRecording(true); vsr::clearWindow(); } 
-	vsr::plane(o,dx,dz);
-	if(top) vsr::stopRecording();
-}
+void Plane::_visualize() const { vsr::plane(o,dx,dz); }
 
 void Plane::visualizeCoordinates(float scale) const {
 	float l = min(wx,wz)*0.5*scale;

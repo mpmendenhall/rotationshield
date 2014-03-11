@@ -32,7 +32,7 @@ public:
 	void addSurfacel(ReactiveElement* e);
 	
 	/// visualize surface elements
-	virtual void visualize(bool top = true, mdouble scale = 1.0) const;
+	virtual void _visualize() const;
 	
 	/// calculate response to incident field
 	virtual void calculateIncident(FieldSource* f);

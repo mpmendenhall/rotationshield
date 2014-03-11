@@ -32,11 +32,9 @@ public:
 	mat3 fieldAtComponentsNearfield(vec3 p0) const;
 	
 	/// Visualize the element
-	virtual void visualize(bool top = true, mdouble logmax = 3.0) const {
-		if(top) { vsr::startRecording(); vsr::clearWindow(); }
+	virtual void visualize() const {
 		for(unsigned int i=0; i<drawSurfaces; i++)
-			surfaces[i]->visualize(false);
-		if(top) vsr::stopRecording();
+			surfaces[i]->_visualize();
 	}
 	
 	/// point at which to measure incident field

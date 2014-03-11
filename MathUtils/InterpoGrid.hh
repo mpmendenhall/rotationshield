@@ -279,17 +279,15 @@ public:
 		}
 	}
 	
-	virtual void visualize(bool istop = true)
+	virtual void _visualize() const
 	{
-		if(istop) { vsr::startRecording(true); vsr::clearWindow(); }
-		
 		
 		int nsub = 0;
 		for(int i=0; i<4; i++)
 		{
 			if(split[i])
 			{
-				this->subTrees[i]->visualize(false);
+				this->subTrees[i]->_visualize();
 				nsub++;
 			}
 		}
@@ -310,8 +308,6 @@ public:
 			vsr::quad(xyzcorners);
 		
 		}
-		
-		if(istop) vsr::stopRecording();		
 	}
 	
 	virtual void visualize_cyl(mdouble r = 0.75)
