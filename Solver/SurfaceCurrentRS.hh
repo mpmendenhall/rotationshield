@@ -13,15 +13,17 @@ public:
 	/// constructor
 	SurfaceI_Response(mdouble mu = 0): murel(mu) { setRmat(); }
 	
+	/// determine response to field in local coordinates
+	vec2 responseToField(const vec3& Blocal) const { return rmat * Blocal; }
+	
 protected:
-	mdouble murel;	//< relative permeability
-	mmat rmat;		//< response matrix to applied field
+	mdouble murel;					//< relative permeability
+	Matrix<2,3,mdouble> rmat;		//< response matrix to applied field
 	
 	/// generate correct response matrix to applied fields
 	void setRmat() {
-		//Matrix<2,3,mdouble> M = Matrix<2,3,mdouble>();
-		//M(0,1) = M(1,0) = 2.0*(1.0-murel)/(1.0+murel);
-		//rmat = mmat(M*p.projectionMatrix());
+		rmat = Matrix<2,3,mdouble>();
+		rmat(0,1) = rmat(1,0) = 2.0*(1.0-murel)/(1.0+murel);
 	}
 };
 
@@ -38,6 +40,8 @@ public:
 	virtual bool set_protocol(void* ip);
 	/// respond to interaction protocol
 	virtual void queryInteraction();
+	/// calculate response to incident field
+	virtual void calculateIncident(const FieldSource& f);
 	
 	/// set surface response at all points
 	void setSurfaceResponse(SurfaceI_Response r);
@@ -50,7 +54,11 @@ public:
 	/// visualization routine
 	virtual void _visualize() const;
 	
+	/// get surface coordinates for i^th element
+	vec2 surf_coords(unsigned int i) const { return vec2(((i/nPhi)+0.5)/nZ, ((i%nPhi)+0.5)/nPhi); }
+	
 protected:
+
 	std::vector<SurfaceI_Response> sdefs;
 };
 

@@ -31,14 +31,14 @@ public:
 	double eval(const double* x) const;
 	
 	/// directly address sub-InterpolationHelper
-	InterpolationHelper& getSubHelper(unsigned int nDeep, const unsigned int* n);
-	/// get sub-InterpolationHelper list
-	std::vector<InterpolationHelper*>& getSubHelpers() { return subInterpolators; }
-	/// get sub-InterpolationHelper list, const version
-	const std::vector<InterpolationHelper*>& getSubHelpers() const { return subInterpolators; }
+	const InterpolationHelper& getSubHelper(unsigned int nDeep, const unsigned int* n) const;
+	/// get a list of sub-interpolators at given depth
+	std::vector<InterpolationHelper*> getSubHelpers(unsigned int nDeep);
+	/// get interpolator
+	Interpolator* getInterpolator() { return myInterpolator; }
 	
 	/// set interpolation method for all InterpolationHelpers at given depth
-	void setInterpolatorMethod(Interpolator* (*makeInterp)(DataSequence*, double, double), unsigned int nDeep = 0);
+	void setInterpolatorMethod(Interpolator* (*makeInterp)(DataSequence*), unsigned int nDeep = 0);
 	/// set boundary condition at indicated depth
 	void setBoundaryCondition(BoundaryCondition b, unsigned int nDeep = 0);
 	
@@ -46,7 +46,7 @@ public:
 	unsigned int n_pts() const { return cum_sum_dpts.back(); }
 	/// recalculate point count structure
 	void recalc_structure(bool recurse=true);
-	
+
 protected:
 
 	/// value at given grid location
@@ -62,8 +62,8 @@ protected:
 	unsigned int from_flat_index(unsigned int& n) const;
 	
 	Interpolator* myInterpolator;
-	std::vector<double> myData;							//< internal list of data points if lowest dimension
 	std::vector<InterpolationHelper*> subInterpolators;	//< sub-interpolators if not lowest dimension
+	std::vector<double> myData;							//< internal list of data points if lowest dimension
 	std::vector<unsigned int> cum_sum_dpts;				//< cumulative sum of datapoints in underlying structures
 };
 

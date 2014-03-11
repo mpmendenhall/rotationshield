@@ -17,19 +17,18 @@ double InterpolationHelper::eval(const double* x) const {
 	return myInterpolator->eval(x);
 }
 
-void InterpolationHelper::setInterpolatorMethod(Interpolator* (*makeInterp)(DataSequence*, double, double), unsigned int nDeep) {
+void InterpolationHelper::setInterpolatorMethod(Interpolator* (*makeInterp)(DataSequence*), unsigned int nDeep) {
 	if(nDeep) {
 		for(std::vector<InterpolationHelper*>::iterator it = subInterpolators.begin(); it != subInterpolators.end(); it++)
 			(*it)->setInterpolatorMethod(makeInterp,nDeep-1);
 	} else {
-		double s = 1.0;
-		double o = 0.;
+		Interpolator* newInterp = makeInterp(this);
 		if(myInterpolator) {
-			s = myInterpolator->scale;
-			o = myInterpolator->offset;
+			newInterp->scale = myInterpolator->scale;
+			newInterp->offset = myInterpolator->offset;
 			delete myInterpolator;
 		}
-		myInterpolator = makeInterp(this,s,o);
+		myInterpolator = newInterp;
 	}
 }
 
@@ -94,13 +93,25 @@ void InterpolationHelper::setData(const double* x0) {
 	}
 }
 
-
-InterpolationHelper& InterpolationHelper::getSubHelper(unsigned int nDeep, const unsigned int* n) {
+const InterpolationHelper& InterpolationHelper::getSubHelper(unsigned int nDeep, const unsigned int* n) const {
 	if(!nDeep) return *this;
 	assert(n);
 	assert(n[0] < subInterpolators.size());
 	return subInterpolators[n[0]]->getSubHelper(nDeep-1,n+1);
 }
+
+std::vector<InterpolationHelper*> InterpolationHelper::getSubHelpers(unsigned int nDeep) {
+	std::vector<InterpolationHelper*> v;
+	if(!nDeep) v.push_back(this);
+	else {
+		for(std::vector<InterpolationHelper*>::iterator it = subInterpolators.begin(); it != subInterpolators.end(); it++) {
+			std::vector<InterpolationHelper*> v2 = (*it)->getSubHelpers(nDeep-1);
+			v.insert(v.end(), v2.begin(), v2.end());
+		}
+	}
+	return v;
+}
+
 
 double InterpolationHelper::valueAt(int i, void* xopts) const {
 	unsigned int ci = coerce(i);

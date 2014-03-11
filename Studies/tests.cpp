@@ -161,28 +161,30 @@ vec2 sdens(vec2 x, void*) {
 
 class WavyThing: public DVFunc1<2,mdouble> {
 public:
-	virtual vec2 operator()(mdouble x) const { return vec2(x*x-0.5, 0.5 + 0.25*x + 0.1*sin(9*M_PI*x)); }
+	virtual vec2 operator()(mdouble x) const { return vec2( (x*x-0.5)*3.9624, .6223 + 0.1*(1-x) + 0.04*sin(9*M_PI*x)); }
 };
-
 
 bool csurface_test() {
 	
 	CylSurfaceGeometry SG;
-	SG.fprofile = new WavyThing;
+	//SG.fprofile = new WavyThing;
+	SG.fprofile = new Line2D(vec2(-3.9624/2,.6223), vec2(3.9624/2,.6223));
 	SurfaceCurrentSource SSC(&SG);
 	SSC.sj = &sdens;
 
 	SSC.visualize();
 	vsr::pause();
 	
-	SurfaceCurrentRS RS(7,13);
+	SurfaceCurrentRS RS(128,50);
 	RS.mySurface = &SG;
 	
-	mvec rv(7*13*2);
-	rv.random();
-	rv -= 0.5;
-	RS.setFinalState(rv);
+	MixedSource* MxS = new MixedSource();
+	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 3.92);
+	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_LINE;
+	b.buildCoil(*MxS);
 	
+	RS.setSurfaceResponse(SurfaceI_Response(10000));
+	RS.calculateIncident(*MxS);
 	RS.visualize();
 	vsr::pause();
 	

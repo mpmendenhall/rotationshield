@@ -5,6 +5,19 @@ vec3 SurfaceGeometry::snorm(const vec2& p) const {
 	return cross(deriv(p,0),deriv(p,1));
 }
 
+Matrix<3,3,mdouble> SurfaceGeometry::rotToLocal(const vec2& x) const {
+	vec3 v0 = deriv(x,0).normalized();
+	vec3 v1 = deriv(x,1).normalized();
+	vec3 v2 = cross(v0,v1);
+	Matrix<3,3,mdouble> M;
+	for(unsigned int i=0; i<3; i++) {
+		M(0,i) = v0[i];
+		M(1,i) = v1[i];
+		M(2,i) = v2[i];
+	}
+	return M;
+}
+
 //--------------------------------------
 
 vec3 CylSurfaceGeometry::operator()(const vec2& p) const {

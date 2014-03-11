@@ -10,7 +10,7 @@
 class SurfaceCurrentSource: public SurfaceSource {
 public:
 	/// constructor
-	SurfaceCurrentSource(SurfaceGeometry* SG = NULL): SurfaceSource(), mySurface(SG), vis_n1(50), vis_n2(200) {}
+	SurfaceCurrentSource(SurfaceGeometry* SG = NULL): SurfaceSource(), mySurface(SG), vis_n1(100), vis_n2(200) {}
 	
 	/// current element dipole dl from surface coordinate x,y
 	vec3 dipoleContrib(mdouble x, mdouble y, vec3& xout) const;
@@ -27,6 +27,8 @@ public:
 	unsigned int vis_n1;		//< visualization gridding, z
 	unsigned int vis_n2;		//< visualization gridding, phi
 	
+	/// visualize local coordinate axes
+	virtual void vis_coords(const vec2& l, double s = 0.02) const;
 	
 };
 

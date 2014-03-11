@@ -18,7 +18,8 @@ public:
 	/// surface normal at point p; magnitude is dA / dl1 dl2
 	virtual vec3 snorm(const vec2& p) const;
 	
-
+	/// calculate rotation to surface local coordinates v_local = M*v
+	Matrix<3,3,mdouble> rotToLocal(const vec2& x) const;
 };
 
 /// cylindrically symmetric surface geometry

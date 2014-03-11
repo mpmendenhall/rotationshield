@@ -18,8 +18,8 @@ void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
 	return;
 	printf("Simple shield self-test...\n");
 	reference_simpleshield();
-	printf("\n\nReference self-test...\n");
-	reference_sanity_check();
+	//printf("\n\nReference self-test...\n");
+	//reference_sanity_check();
 }
 
 /// Return a random number, uniformly distributed over interval [a,b]

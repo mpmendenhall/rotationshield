@@ -46,7 +46,7 @@ void SurfaceCurrentSource::_visualize() const {
 			
 			vec2 j = (*sj)(l0,sjparams);
 			
-			vec3 hsv = vec3( atan2(j[0],j[1]), 1.0, 1.0 );
+			vec3 hsv = vec3( atan2(j[1],j[0]), 1.0, 1.0 );
 			vec3 rgb = hsv2rgb(hsv);
 			float smag = j.mag2();
 			if(smag)
@@ -66,3 +66,15 @@ void SurfaceCurrentSource::_visualize() const {
 		}
 	}
 }
+
+void SurfaceCurrentSource::vis_coords(const vec2& l, double s) const {
+	vec3 o = (*mySurface)(l);
+	vec3 dx = mySurface->deriv(l,0).normalized();
+	vec3 dy = mySurface->deriv(l,1).normalized();
+	vec3 dz = cross(dx,dy);
+	
+	vsr::line(o, o+dx*s);
+	vsr::line(o, o+dy*s);
+	vsr::line(o, o+dz*s);
+}
+
