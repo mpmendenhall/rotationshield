@@ -16,7 +16,6 @@ public:
 	/// determine response to field in local coordinates
 	vec2 responseToField(const vec3& Blocal) const { return rmat * Blocal; }
 	
-protected:
 	mdouble murel;					//< relative permeability
 	Matrix<2,3,mdouble> rmat;		//< response matrix to applied field
 	
@@ -42,6 +41,10 @@ public:
 	virtual void queryInteraction();
 	/// calculate response to incident field
 	virtual void calculateIncident(const FieldSource& f);
+	/// reset interaction term counter
+	virtual void startInteractionScan() { ReactiveSet::startInteractionScan(); ic_i = ic_di = 0; ic_v = subelReaction(); }
+	/// possibly arbitrarily ordered interaction matrix entries
+	virtual mdouble nextInteractionTerm(unsigned int& i, unsigned int& j);
 	
 	/// set surface response at all points
 	void setSurfaceResponse(SurfaceI_Response r);
@@ -59,6 +62,14 @@ public:
 	
 protected:
 
+	/// calculate element interaction
+	vec2 subelReaction();
+	
+	// interaction calculator cache variables
+	mvec ic_v;				//< cached interaction matrix between sub-elements
+	unsigned int ic_i;		//< interaction scan element being examined
+	unsigned int ic_di;		//< interaction scan element DF being examined
+	
 	std::vector<SurfaceI_Response> sdefs;
 };
 

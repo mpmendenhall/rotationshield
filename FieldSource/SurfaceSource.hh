@@ -15,9 +15,15 @@ public:
 	/// field contribution f(x,y)dA; x,y in [0,1]^2
 	virtual vec3 fieldAt_contrib_from(const vec3& v, mdouble x, mdouble y) const = 0x0;
 	
-	/// Magnetic field at a specified point
-	virtual vec3 fieldAt(const vec3& v) const;
+	/// Magnetic field at a certain point from a sub-domain
+	virtual vec3 fieldAt(const vec3& v, const vec2& ll, const vec2& ur) const;
 	
+	/// Magnetic field at a specified point
+	virtual vec3 fieldAt(const vec3& v) const { return fieldAt(v,vec2(0,0),vec2(1,1)); }
+	
+	/// Display field contributions over grid to given point
+	void displayContribGrid(const vec3& v, unsigned int nx = 7, unsigned int ny = 7) const;
+		
 protected:
 	mutable Integrator2D myIntegrator;	//< surface field integrator
 };

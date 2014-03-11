@@ -16,8 +16,8 @@
 void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
 	csurface_test();
 	return;
-	printf("Simple shield self-test...\n");
-	reference_simpleshield();
+	//printf("Simple shield self-test...\n");
+	//reference_simpleshield();
 	//printf("\n\nReference self-test...\n");
 	//reference_sanity_check();
 }

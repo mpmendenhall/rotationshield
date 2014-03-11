@@ -15,6 +15,7 @@
 #include "gsl/gsl_errno.h"
 #include "Typedefs.hh"
 #include <map>
+#include <string>
 
 ///	Integration of vector-valued functions
 
@@ -30,6 +31,7 @@ public:
 	unsigned int n_dim;				//< dimension of return vector
 	std::map<double,mvec> m;		//< cache for evaluated function points
 	
+	std::string nm;					//< name describing integration, for error display
 	static bool verbose;			//< whether to display pts during integration
 };
 
@@ -40,7 +42,7 @@ public:
 class Integrator {
 public:
 	/// Constructor
-	Integrator(): gslIntegrationWS(gsl_integration_workspace_alloc(512)) { gsl_set_error_handler_off(); }
+	Integrator(): adaptive(true), rel_err(1e-3), abs_err(1e-4), gslIntegrationWS(gsl_integration_workspace_alloc(2048)) { gsl_set_error_handler_off(); }
 	/// Destructor
 	virtual ~Integrator() { gsl_integration_workspace_free(gslIntegrationWS); }
 	/// Integrates a vector-valued function \f$ \int_a^b \vec f(x)dx\f$ using GSL numerical integration routines for each component
@@ -50,9 +52,24 @@ public:
 	 \param params additional parameters for the integrated function */
 	mvec integrate(mvec (*f)(mdouble,void*), mdouble a, mdouble b, void* params = 0x0);
 
+	bool adaptive;	//< whether to use the adaptive GSL integrator or not
+	double rel_err;
+	double abs_err;
+	
+	std::vector<double> singularities;	//< known singular points, sorted
+	
+	/// print meanings of error codes
+	static void printErrorCodes();
+	
 protected:
 	/// internal calls to GSL integration
 	mvec _integrate(integratingParams& p, double (*integf)(double,void*), mdouble a, mdouble b);
+	
+	/// set list of interesting singularities
+	virtual void setup_singularities(mdouble a, mdouble b);
+	unsigned int sng_0;
+	unsigned int sng_1;
+	std::vector<double> _singularities;	//< singularities in integrating range
 	
 	gsl_integration_workspace* gslIntegrationWS; //< needed by GSL integration routines called in integrate()
 };
@@ -71,6 +88,14 @@ public:
 	 \param y1 upper y bound of integration
 	 \param params additional parameters for the integrated function */
 	mvec integrate(mvec (*f)(mdouble,mdouble,void*), mdouble x0, mdouble x1, mdouble y0, mdouble y1, void* params = 0x0);
+	
+	
+	std::vector<vec2> xysingularities;	//< known singularities
+	
+protected:
+	
+	/// set list of interesting singularities
+	virtual void setup_singularities(mdouble a, mdouble b);
 };
 
 

@@ -15,8 +15,8 @@ public:
 	/// evaluate function
 	virtual vec3 operator()(const vec2& x) const = 0;
 	
-	/// surface normal at point p; magnitude is dA / dl1 dl2
-	virtual vec3 snorm(const vec2& p) const;
+	/// surface normal at point p; when not normalized, magnitude is dA
+	virtual vec3 snorm(const vec2& p, bool normalized = false) const;
 	
 	/// calculate rotation to surface local coordinates v_local = M*v
 	Matrix<3,3,mdouble> rotToLocal(const vec2& x) const;

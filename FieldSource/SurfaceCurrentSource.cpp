@@ -1,5 +1,6 @@
 #include "SurfaceCurrentSource.hh"
 #include "Color.hh"
+#include <cmath>
 
 vec3 SurfaceCurrentSource::dipoleContrib(mdouble x, mdouble y, vec3& xout) const {
 	assert(mySurface && sj);
@@ -18,17 +19,21 @@ vec3 SurfaceCurrentSource::dipoleContrib(mdouble x, mdouble y, vec3& xout) const
 	double ml1 = dl1.mag();
 	double dA = cross(dl0,dl1).mag();
 	
-	return vec3(dl0 * sdl[0]/ml0 + dl1 * sdl[1]/ml1)*dA;
+	return vec3(dl0/ml0 * sdl[0] + dl1/ml1 * sdl[1])*dA;
 }
 
 vec3 SurfaceCurrentSource::fieldAt_contrib_from(const vec3& v, mdouble x, mdouble y) const {
 	vec3 x0;
 	vec3 dl = dipoleContrib(x,y,x0);
 		
-	// Biot-Savart law
+	// Biot-Savart law, transitioning to near-field constant field approximation TODO
 	vec3 r = x0-v;
-	double magr = r.mag();
-	return cross(dl,r)/(magr*magr*magr);
+	double mr = r.mag();
+	return cross(dl,r)/(4.*M_PI*mr*mr*mr);
+	//if(mr > 0.05)
+	//if(mr > 0.02) return vec3();
+	//return vec3();
+	
 }
 
 void SurfaceCurrentSource::_visualize() const {

@@ -22,14 +22,14 @@ public:
 	/// destructor
 	virtual ~DataSequence() {}
 	/// data retreival
-	virtual double valueAt(int i, void* xopts) = 0;
+	virtual double valueAt(int i, void* xopts) const = 0;
 	/// get number of internal points
 	virtual int getNpts() { return npts; }
 	/// display state
 	virtual void display() const { printf("<Generic DataSequence>\n"); }
 protected:
 	/// coerce data point into actual data range
-	virtual unsigned int coerce(int i) {
+	virtual unsigned int coerce(int i) const {
 		if(bc == BC_CYCLIC) {
 			if(i>=0)
 				return i%npts;
@@ -55,7 +55,7 @@ class DoubleSequence: public DataSequence {
 public:
 	DoubleSequence(BoundaryCondition b = BC_CYCLIC): DataSequence(b) {}
 	/// value at given grid location
-	virtual double valueAt(int i, void*) { return pts[coerce(i)]; }
+	virtual double valueAt(int i, void*) const { return pts[coerce(i)]; }
 	/// add data point
 	void addPoint(double p) { pts.push_back(p); npts++; }
 	/// display state
@@ -73,11 +73,11 @@ protected:
 class Interpolator {
 public:
 	/// constructor, with input scale factor s, offset o (where interpolator '0' point is placed on input axis)
-	Interpolator(DataSequence* L, double s = 1.0, double o = 0.0): myData(L), scale(s), offset(o) {}
+	Interpolator(DataSequence* L, double s = 1.0, double o = 0.0): scale(s), offset(o), myData(L) {}
 	/// destructor
 	virtual ~Interpolator() {}
 	/// subclass interpolation method here; nearest-neighbor interpolation used by default
-	virtual double eval(double* x) { 
+	virtual double eval(const double* x) const {
 		double y;
 		int i = locate(*x,&y);
 		if(y<=0.5)
@@ -85,19 +85,22 @@ public:
 		return myData->valueAt(i+1,(void*)(x+1));
 	}
 	/// make a new interpolator (interchangeable function pointer)
-	static Interpolator* newInterpolator(DataSequence* L, double s = 1.0, double o = 0.0) { return new Interpolator(L,s,o); }
+	static Interpolator* newInterpolator(DataSequence* L) { return new Interpolator(L); }
+	/// set half-space offset for symmetric distribution in o0 to o0+s
+	void setSymmetricOffset(double o0 = 0) { offset = o0 + 0.5*scale/myData->getNpts(); }
+	
+	double scale;			//< internal length scale
+	double offset;			//< zero point coordinate offset
 	
 protected:
 	/// locate position in data coordinates, remainder in [0,1)
-	virtual int locate(double x, double* remainder = NULL) {
+	virtual int locate(double x, double* remainder = NULL) const {
 		double l = (x-offset)*myData->getNpts()/scale;
 		if(remainder)
 			*remainder = l-floor(l);
 		return int(floor(l));
 	}
 	DataSequence* myData;	//< sequence to be interpolated
-	double scale;			//< internal length scale
-	double offset;			//< zero point coordinate offset
 };
 
 /// linear interpolator
@@ -106,13 +109,13 @@ public:
 	/// constructor, with scale factor s, offset o
 	LinTerpolator(DataSequence* L, double s = 1.0, double o = 0.0): Interpolator(L,s,o) {}
 	/// evaluation by linear interpolation
-	virtual double eval(double* x) {
+	virtual double eval(const double* x) const {
 		double y;
 		int i = locate(*x,&y);
 		return myData->valueAt(i,(void*)(x+1))*(1-y)+myData->valueAt(i+1,(void*)(x+1))*y;
 	}
 	/// make a new interpolator (interchangeable function pointer)
-	static Interpolator* newLinTerpolator(DataSequence* L, double s = 1.0, double o = 0.0) { return new LinTerpolator(L,s,o); }
+	static Interpolator* newLinTerpolator(DataSequence* L) { return new LinTerpolator(L); }
 };
 
 
@@ -123,7 +126,7 @@ public:
 	/// constructor, with scale factor s, offset o, 'sharpening' a
 	CubiTerpolator(DataSequence* L, double s = 1.0, double o = 0.0, double a = -0.5): Interpolator(L,s,o), A(a) { }
 	/// evaluation by linear interpolation
-	virtual double eval(double* x) {
+	virtual double eval(const double* x) const {
 		double y;
 		int i = locate(*x,&y);
 		double p0 = myData->valueAt(i-1,(void*)(x+1));
@@ -137,7 +140,7 @@ public:
 
 	}
 	/// make a new interpolator (interchangeable function pointer)
-	static Interpolator* newCubiTerpolator(DataSequence* L, double s = 1.0, double o = 0.0) { return new CubiTerpolator(L,s,o); }
+	static Interpolator* newCubiTerpolator(DataSequence* L) { return new CubiTerpolator(L); }
 	
 protected:
 	double A;	//< "sharpening" coefficient, default = -0.5
@@ -151,7 +154,7 @@ public:
 	/// add data point
 	void addPoint(Interpolator* i) { myInterpolators.push_back(i); npts++; }
 	/// data retreival
-	virtual double valueAt(int i, void* xopts) { return myInterpolators[coerce(i)]->eval((double*)xopts); }
+	virtual double valueAt(int i, void* xopts) const { return myInterpolators[coerce(i)]->eval((const double*)xopts); }
 protected:
 	std::vector<Interpolator*> myInterpolators;	//< interpolators in sequence
 };

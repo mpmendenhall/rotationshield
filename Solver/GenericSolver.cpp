@@ -33,7 +33,7 @@ void GenericSolver::buildInteractionMatrix(ReactiveSet& R) {
 	R.startInteractionScan();
 	for(unsigned int n=0; n<R.nDF()*R.nDF(); n++) {
 		mdouble v = R.nextInteractionTerm(i,j);
-		gsl_matrix_set(the_GF, i, j, v);
+		gsl_matrix_set(the_GF, i, j, i==j ? 1-v : -v);
 	}
 }
 

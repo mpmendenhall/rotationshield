@@ -35,6 +35,10 @@ public:
 	T& operator[](unsigned int i) { return vv[i]; }
 	/// const vector element access
 	const T& operator[](unsigned int i) const { return vv[i]; }
+	/// row vector
+	Vec<M,T> row(unsigned int i) const;
+	/// column vector
+	Vec<N,T> col(unsigned int i) const;
 	
 	/// transpose
 	Matrix<M,N,T> transposed() const;
@@ -98,6 +102,21 @@ Matrix<M,N,T> Matrix<N,M,T>::transposed() const {
 			foo(c,r) = (*this)(r,c);
 	return foo;
 }
+
+template<unsigned int N, unsigned int M, typename T>
+Vec<M,T> Matrix<N,M,T>::row(unsigned int i) const {
+	Vec<M,T> v;
+	for(unsigned int j=0; j<M; j++) v[i] = (*this)(i,j);
+	return v;
+}
+
+template<unsigned int N, unsigned int M, typename T>
+Vec<N,T> Matrix<N,M,T>::col(unsigned int i) const {
+	Vec<N,T> v;
+	for(unsigned int j=0; j<N; j++) v[i] = (*this)(j,i);
+	return v;
+}
+
 
 template<unsigned int N, unsigned int M, typename T>
 const Matrix<N,M,T> Matrix<N,M,T>::operator-() const {

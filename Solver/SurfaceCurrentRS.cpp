@@ -22,6 +22,8 @@ SurfaceCurrentRS::SurfaceCurrentRS(unsigned int nph, unsigned int nz): Interpola
 	iv = InterplDF.getSubHelpers(2);
 	for(std::vector<InterpolationHelper*>::iterator it = iv.begin(); it != iv.end(); it++)
 		(*it)->getInterpolator()->setSymmetricOffset();
+		
+	set_protocol(BField_Protocol::BFP);
 }
 
 bool SurfaceCurrentRS::set_protocol(void* ip) {
@@ -30,8 +32,74 @@ bool SurfaceCurrentRS::set_protocol(void* ip) {
 }
 
 void SurfaceCurrentRS::queryInteraction() {
-	if(ixn_ptcl == BField_Protocol::BFP)
-		BField_Protocol::BFP->B = fieldAt(BField_Protocol::BFP->x);
+	if(ixn_ptcl == BField_Protocol::BFP) {
+		unsigned int el = ixn_df%(nZ*nPhi);
+		vec2 l = surf_coords(el);
+		vec2 dl(2.1/nZ, 2.1/nPhi);
+		BField_Protocol::BFP->B = fieldAt(BField_Protocol::BFP->x, l-dl, l+dl);
+	}
+}
+
+
+struct ResponseIntegParams {
+	const SurfaceSource* S;
+	vec3 v;					//< position in local field
+	Matrix<2,3,mdouble> RM;	//< response transform to local field
+	
+};
+
+mvec SRdA(mdouble x, mdouble y, void* params) {
+	ResponseIntegParams& p = *(ResponseIntegParams*)params;
+	return mvec(p.RM * p.S->fieldAt_contrib_from(p.v,x,y));
+}
+
+mdouble clamp1(mdouble m) { return m<0? 0 : m<1? m : 1; }
+
+vec2 SurfaceCurrentRS::subelReaction() {
+	if(ixn_ptcl == BField_Protocol::BFP) {
+		vec2 l = surf_coords(ic_i);	//< position on this surface
+	
+		// warn integrator about singular point
+		myIntegrator.xysingularities.clear();
+		myIntegrator.xysingularities.push_back(l);
+		
+		ResponseIntegParams p;
+		p.S = this;
+		p.v = (*mySurface)(l);
+		p.RM = sdefs[ic_i].rmat * mySurface->rotToLocal(l);
+		
+		vec2 dl(2.01/nZ, 2.01/nPhi);
+		vec2 ll = l-dl;
+		vec2 ur = l+dl;
+		mvec RB = myIntegrator.integrate(&SRdA, clamp1(ll[0]), clamp1(ur[0]), clamp1(ll[1]), clamp1(ur[1]), &p);
+		
+		return vec2(RB[0],RB[1]);
+	}
+	assert(false);
+	return vec2();
+}
+
+mdouble SurfaceCurrentRS::nextInteractionTerm(unsigned int& i, unsigned int& j) {
+	// get previous cached term
+	mdouble v = ic_v[ic_di];
+	i = ic_i + nZ*nPhi*ic_di;
+	j = ixn_df;
+	
+	// self-interaction
+	if(i==j) v = 0;
+	
+	// step to next term
+	ic_di = (ic_di+1)%2;
+	if(!ic_di) {
+		setInteractionDF((ixn_df+1)%nDF());
+		if(!ixn_df) {
+			ic_i = (ic_i+nPhi)%(nZ*nPhi);
+			if(ic_i < nPhi) ic_i = (ic_i+1)%nPhi;
+		}
+		ic_v = subelReaction();
+	}
+	
+	return v;
 }
 
 void SurfaceCurrentRS::setSurfaceResponse(SurfaceI_Response r) {

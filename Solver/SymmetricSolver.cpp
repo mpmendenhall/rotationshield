@@ -25,7 +25,7 @@ void SymmetricSolver::buildInteractionMatrix(ReactiveSet& R) {
 	R.startInteractionScan();
 	for(unsigned int n=0; n<R.nDF()*R.nDF()/R.nPhi; n++) {
 		mdouble v = R.nextInteractionTerm(i,j);
-		the_GF.getBlock(i/R.nPhi, j/R.nPhi)[j%R.nPhi] = v;
+		the_GF.getBlock(i/R.nPhi, j/R.nPhi)[j%R.nPhi] = i==j ? 1-v : -v;
 		pb.update(n);
 	}
 }

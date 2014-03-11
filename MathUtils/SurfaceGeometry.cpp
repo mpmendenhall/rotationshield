@@ -1,8 +1,14 @@
 #include "SurfaceGeometry.hh"
 #include <cmath>
 
-vec3 SurfaceGeometry::snorm(const vec2& p) const {
-	return cross(deriv(p,0),deriv(p,1));
+vec3 SurfaceGeometry::snorm(const vec2& p, bool normalized) const {
+	if(normalized) {
+		vec3 dx = deriv(p,0).normalized();
+		vec3 dy = deriv(p,1).normalized();
+		return cross(dx,dy);
+	} else {
+		return cross(deriv(p,0), deriv(p,0));
+	}
 }
 
 Matrix<3,3,mdouble> SurfaceGeometry::rotToLocal(const vec2& x) const {

@@ -21,12 +21,12 @@ void ReactiveSet::_setDF(const mvec& v) {
 
 mdouble ReactiveUnitSet::nextInteractionTerm(unsigned int& i, unsigned int& j) {
 	// get previous cached term
-	mdouble v = -ic_v[ic_di];	// NOTE - sign; TODO put this somewhere better
+	mdouble v = ic_v[ic_di];
 	i = df_subindex(ic_i, ic_di);
 	j = ixn_df;
 	
-	// self-interaction TODO put this somewhere better
-	if(i==j) v = 1.;
+	// self-interaction
+	if(i==j) v = 0;
 	
 	// step to next term
 	ic_di = (ic_di+1)%ic_v.size();

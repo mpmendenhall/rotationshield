@@ -104,6 +104,7 @@ bool reference_simpleshield() {
 	SB->makeOptCyl(10, 2, .6223, -3.9624/2, 3.9624/2, new PlaneSource(Plane(),10000.0), &fe);
 	
 	SB->calculateIncident(MxS);
+	std::cout << "Incident Response Origin field" << SB->fieldAt(vec3(0,0,0)) << std::endl;
 	SB->visualize();
 	vsr::pause();
 	
@@ -166,6 +167,8 @@ public:
 
 bool csurface_test() {
 	
+	Integrator::printErrorCodes();
+	
 	CylSurfaceGeometry SG;
 	//SG.fprofile = new WavyThing;
 	SG.fprofile = new Line2D(vec2(-3.9624/2,.6223), vec2(3.9624/2,.6223));
@@ -175,7 +178,7 @@ bool csurface_test() {
 	SSC.visualize();
 	vsr::pause();
 	
-	SurfaceCurrentRS RS(128,50);
+	SurfaceCurrentRS RS(64,20);
 	RS.mySurface = &SG;
 	
 	MixedSource* MxS = new MixedSource();
@@ -185,8 +188,41 @@ bool csurface_test() {
 	
 	RS.setSurfaceResponse(SurfaceI_Response(10000));
 	RS.calculateIncident(*MxS);
+	
+	// Incident Response Origin field< 0.683759 -3.96547e-16 5.57686e-18 >
+	RS.displayContribGrid(vec3(0,0,0),5,5);
+	std::cout << "Origin field" << RS.fieldAt(vec3(0,0,0)) << std::endl;
+	
 	RS.visualize();
 	vsr::pause();
 	
-	return true;
+	//return true;
+	
+	SymmetricSolver SS;
+	SS.solve(RS);
+	SS.calculateResult(RS);
+	
+	MxS->addsource(&RS);
+	
+	printf("Testing shielded fields...\n");
+	//center scan lines
+	vec3 origin(0,0,0);
+	vec3 xscan(0.15,0,0);
+	vec3 yscan(0,0.06,0);
+	vec3 zscan(0,0,0.25);
+
+	bool pass = true;
+	mdouble b0 = MxS->fieldAt(origin)[0];
+	pass &= compareResults(b0,1.59942943484446e+00,"origin");
+	pass &= compareResults(MxS->fieldAt(xscan)[0]-b0,2.62654994091771e-03,"+x");
+	pass &= compareResults(MxS->fieldAt(yscan)[0]-b0,-3.80699814184204e-04,"+y");
+	pass &= compareResults(MxS->fieldAt(zscan)[0]-b0,-2.60066781668566e-04,"+z");
+	pass &= compareResults(MxS->fieldAt(-xscan)[0]-b0,2.62654994091793e-03,"-x");
+	pass &= compareResults(MxS->fieldAt(-yscan)[0]-b0,-3.80699814183982e-04,"-y");
+	pass &= compareResults(MxS->fieldAt(-zscan)[0]-b0,-2.60066781561097e-04,"-z");
+	
+	MxS->visualize();
+	vsr::pause();
+	
+	return pass;
 }
