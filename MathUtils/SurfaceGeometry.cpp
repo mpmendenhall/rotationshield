@@ -8,33 +8,28 @@ vec3 SurfaceGeometry::snorm(const vec2& p) const {
 //--------------------------------------
 
 vec3 CylSurfaceGeometry::operator()(const vec2& p) const {
-	assert(fr);
-	
-	mdouble z = (fz ? (*fz)(p[0]) : p[0]);
-	mdouble r = (*fr)(p[0]);
+	assert(fprofile);
+	vec2 zr = (*fprofile)(p[0]);
 	mdouble phi = 2*M_PI*p[1];
 	mdouble c = cos(phi);
 	mdouble s = sin(phi);
-	
-	return vec3(r*c,r*s,z);
+	return vec3(zr[1]*c, zr[1]*s, zr[0]);
 }
 
 vec3 CylSurfaceGeometry::deriv(const vec2& p, unsigned int i) const {
-	assert(fr);
-	
-	mdouble z = (fz ? (*fz)(p[0]) : p[0]);
+
+	assert(fprofile);
+	vec2 zr = (*fprofile)(p[0]);
 	mdouble phi = 2*M_PI*p[1];
 	mdouble c = cos(phi);
 	mdouble s = sin(phi);
 	
 	if(i==0) {
-		mdouble dzdl = (fz ? fz->deriv(p[0]) : 1.);
-		mdouble drdl = fr->deriv(p[0]);
-		return vec3(drdl*c,drdl*s,dzdl);
+		vec2 dzr = fprofile->deriv(p[0]);
+		return vec3(dzr[1]*c, dzr[1]*s, dzr[0]);
 	}
 	if(i==1) {
-		mdouble r = (*fr)(z);
-		return vec3(-r*s*2*M_PI, r*c*2*M_PI, 0);
+		return vec3(-zr[1]*s*2*M_PI, zr[1]*c*2*M_PI, 0);
 	}
 	
 	assert(false);

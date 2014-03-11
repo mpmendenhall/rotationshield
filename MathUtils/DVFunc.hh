@@ -27,6 +27,28 @@ Vec<N2,T> DVFunc<N1,N2,T>::deriv(const Vec<N1,T>& x, unsigned int i) const {
 	return ((*this)(x+dh)-(*this)(x-dh)) / (2.*h);
 }
 
+/// virtual base class for a vector-valued differential function of 1 variable
+template<unsigned int N, typename T>
+class DVFunc1 {
+public:
+	/// constructor
+	DVFunc1() {}
+	/// destructor
+	virtual ~DVFunc1() {}
+
+	/// evaluate function
+	virtual Vec<N,T> operator()(T x) const = 0;
+	
+	/// derivative
+	virtual Vec<N,T> deriv(T x) const;
+};
+
+template<unsigned int N, typename T>
+Vec<N,T> DVFunc1<N,T>::deriv(T x) const {
+	double h = 1e-6;
+	return ((*this)(x+h)-(*this)(x-h)) / (2.*h);
+}
+
 /// virtual base class for a differentiable univariate function
 template<typename T>
 class DFunc {

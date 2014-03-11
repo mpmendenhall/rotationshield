@@ -12,7 +12,7 @@ InterpolationHelper::~InterpolationHelper() {
 	if(myInterpolator) delete myInterpolator;
 }
 
-double InterpolationHelper::eval(double* x) const {
+double InterpolationHelper::eval(const double* x) const {
 	assert(x);
 	return myInterpolator->eval(x);
 }
@@ -30,6 +30,14 @@ void InterpolationHelper::setInterpolatorMethod(Interpolator* (*makeInterp)(Data
 			delete myInterpolator;
 		}
 		myInterpolator = makeInterp(this,s,o);
+	}
+}
+
+void InterpolationHelper::setBoundaryCondition(BoundaryCondition b, unsigned int nDeep) {
+	if(!nDeep) bc = b;
+	else {
+		for(std::vector<InterpolationHelper*>::iterator it = subInterpolators.begin(); it != subInterpolators.end(); it++)
+			(*it)->setBoundaryCondition(b, nDeep-1);
 	}
 }
 

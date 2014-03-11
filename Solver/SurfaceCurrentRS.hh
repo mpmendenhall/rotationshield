@@ -42,7 +42,13 @@ public:
 	/// set surface response at all points
 	void setSurfaceResponse(SurfaceI_Response r);
 	
+	/// get interpolated surface response
+	vec2 eval(const vec2& p) const;
+	
 	const unsigned int nZ;	//< number of z divisions
+	
+	/// visualization routine
+	virtual void _visualize() const;
 	
 protected:
 	std::vector<SurfaceI_Response> sdefs;

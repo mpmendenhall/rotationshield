@@ -8,6 +8,7 @@
 #include "CosThetaBuilder.hh"
 #include "Integrator.hh"
 #include "SurfaceCurrentSource.hh"
+#include "SurfaceCurrentRS.hh"
 
 bool compareResults(mdouble a, mdouble b, const char* label) {
 	bool pass = true;
@@ -158,25 +159,31 @@ vec2 sdens(vec2 x, void*) {
 	return vec2(x[0], x[1]);
 }
 
-class WavyThing: public DFunc<mdouble> {
+class WavyThing: public DVFunc1<2,mdouble> {
 public:
-	virtual mdouble operator()(mdouble x) const { return 0.5 + 0.25*x + 0.1*sin(9*M_PI*x); }
+	virtual vec2 operator()(mdouble x) const { return vec2(x*x-0.5, 0.5 + 0.25*x + 0.1*sin(9*M_PI*x)); }
 };
 
-class zDist: public DFunc<mdouble> {
-public:
-	virtual mdouble operator()(mdouble x) const { return x*x - 0.5; }
-};
 
 bool csurface_test() {
 	
 	CylSurfaceGeometry SG;
-	SG.fr = new WavyThing;
-	SG.fz = new zDist;
+	SG.fprofile = new WavyThing;
 	SurfaceCurrentSource SSC(&SG);
 	SSC.sj = &sdens;
 
 	SSC.visualize();
+	vsr::pause();
+	
+	SurfaceCurrentRS RS(7,13);
+	RS.mySurface = &SG;
+	
+	mvec rv(7*13*2);
+	rv.random();
+	rv -= 0.5;
+	RS.setFinalState(rv);
+	
+	RS.visualize();
 	vsr::pause();
 	
 	return true;

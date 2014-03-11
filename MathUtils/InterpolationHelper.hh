@@ -28,15 +28,19 @@ public:
 	
 	
 	/// evaluation at given x
-	double eval(double* x) const;
+	double eval(const double* x) const;
 	
 	/// directly address sub-InterpolationHelper
 	InterpolationHelper& getSubHelper(unsigned int nDeep, const unsigned int* n);
 	/// get sub-InterpolationHelper list
 	std::vector<InterpolationHelper*>& getSubHelpers() { return subInterpolators; }
+	/// get sub-InterpolationHelper list, const version
+	const std::vector<InterpolationHelper*>& getSubHelpers() const { return subInterpolators; }
 	
 	/// set interpolation method for all InterpolationHelpers at given depth
 	void setInterpolatorMethod(Interpolator* (*makeInterp)(DataSequence*, double, double), unsigned int nDeep = 0);
+	/// set boundary condition at indicated depth
+	void setBoundaryCondition(BoundaryCondition b, unsigned int nDeep = 0);
 	
 	/// get number of underlying datapoints
 	unsigned int n_pts() const { return cum_sum_dpts.back(); }

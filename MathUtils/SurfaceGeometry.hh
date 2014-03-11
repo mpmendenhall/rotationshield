@@ -25,7 +25,7 @@ public:
 class CylSurfaceGeometry: public SurfaceGeometry {
 public:
 	/// constructor
-	CylSurfaceGeometry(): fz(NULL), fr(NULL) {}
+	CylSurfaceGeometry(): fprofile(NULL) {}
 	
 	/// evaluate function
 	virtual vec3 operator()(const vec2& x) const;
@@ -34,9 +34,16 @@ public:
 	virtual vec3 deriv(const vec2& x, unsigned int i) const;
 	
 	// geometry-defining functions
-	DFunc<mdouble>* fz;	//< z position as a function of l1 in [0,1]
-	DFunc<mdouble>* fr;	//< radius as a function of z position
+	DVFunc1<2,mdouble>* fprofile;	//< z,r (l) profile
 };
 
+/// Convenience linear sweep DFunc
+class Line2D: public DVFunc1<2,mdouble> {
+public:
+	Line2D(vec2 a, vec2 b): x0(a), x1(b) {}
+	vec2 x0,x1;
+	virtual vec2 operator()(mdouble x) const { return x0*(1-x) + x1*x; }
+	virtual vec2 deriv(mdouble) const { return x1-x0; }
+};
 
 #endif
