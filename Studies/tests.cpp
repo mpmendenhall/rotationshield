@@ -9,6 +9,7 @@
 #include "Integrator.hh"
 #include "SurfaceCurrentSource.hh"
 #include "SurfaceCurrentRS.hh"
+#include "FieldAdaptiveSurface.hh"
 
 bool compareResults(mdouble a, mdouble b, const char* label) {
 	bool pass = true;
@@ -155,11 +156,6 @@ bool integrator_tests() {
 	return pass;
 }
 
-vec2 sdens(vec2 x, void*) {
-	x = vec2(cos(2.3*M_PI*x[0]),sin(3*M_PI*x[1]));
-	return vec2(x[0], x[1]);
-}
-
 class WavyThing: public DVFunc1<2,mdouble> {
 public:
 	virtual vec2 operator()(mdouble x) const { return vec2( (x*x-0.5)*3.9624, .6223 + 0.1*(1-x) + 0.04*sin(9*M_PI*x)); }
@@ -169,33 +165,30 @@ bool csurface_test() {
 	
 	Integrator::printErrorCodes();
 	
-	CylSurfaceGeometry SG;
-	//SG.fprofile = new WavyThing;
-	SG.fprofile = new Line2D(vec2(-3.9624/2,.6223), vec2(3.9624/2,.6223));
-	SurfaceCurrentSource SSC(&SG);
-	SSC.sj = &sdens;
-
-	SSC.visualize();
-	vsr::pause();
-	
-	SurfaceCurrentRS RS(64,20);
-	RS.mySurface = &SG;
-	
 	MixedSource* MxS = new MixedSource();
 	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 3.92);
 	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_LINE;
 	b.buildCoil(*MxS);
+	FieldEstimator2Dfrom3D fe(MxS);
 	
+	CylSurfaceGeometry SG;
+	//SG.zr_profile = new WavyThing;
+	Line2D L2D(vec2(-3.9624/2,.6223), vec2(3.9624/2,.6223));
+	FieldAdaptiveSurface FAS(L2D);
+	SG.zr_profile = &FAS;
+	
+	SurfaceCurrentRS RS(64,20);
+	RS.mySurface = &SG;
 	RS.setSurfaceResponse(SurfaceI_Response(10000));
+		
+	FAS.optimizeSpacing(fe,0.5);
 	RS.calculateIncident(*MxS);
-	
 	// Incident Response Origin field< 0.683759 -3.96547e-16 5.57686e-18 >
-	RS.displayContribGrid(vec3(0,0,0),5,5);
+	// RS.displayContribGrid(vec3(0,0,0),5,5);
 	std::cout << "Origin field" << RS.fieldAt(vec3(0,0,0)) << std::endl;
-	
 	RS.visualize();
 	vsr::pause();
-	
+		
 	//return true;
 	
 	SymmetricSolver SS;

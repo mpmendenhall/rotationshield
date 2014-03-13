@@ -63,7 +63,7 @@ obj_FieldSource = FieldSource.o MixedSource.o InfiniteLineSource.o LineSource.o 
 
 obj_Solver = ReactiveSet.o InterpolatingRS.o SurfaceCurrentRS.o GenericSolver.o InteractionSolver.o SymmetricSolver.o
 
-obj_Builder = CosThetaBuilder.o SurfacelCyl.o
+obj_Builder = CosThetaBuilder.o SurfacelCyl.o FieldAdaptiveSurface.o
 
 obj_Studies = tests.o Studies.o
 

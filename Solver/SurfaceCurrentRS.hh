@@ -60,6 +60,8 @@ public:
 	/// get surface coordinates for i^th element
 	vec2 surf_coords(unsigned int i) const { return vec2(((i/nPhi)+0.5)/nZ, ((i%nPhi)+0.5)/nPhi); }
 	
+	CubiTerpolator Cref;
+	
 protected:
 
 	/// calculate element interaction

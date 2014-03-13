@@ -12,11 +12,11 @@ public:
 	/// constructor
 	SurfaceCurrentSource(SurfaceGeometry* SG = NULL): SurfaceSource(), mySurface(SG), vis_n1(100), vis_n2(200) {}
 	
-	/// current element dipole dl from surface coordinate x,y
-	vec3 dipoleContrib(mdouble x, mdouble y, vec3& xout) const;
+	/// current element dl from surface coordinate l; returns vecfor dI and position xout
+	vec3 dI_contrib(const vec2& l, vec3& xout) const;
 	
 	/// field contribution f(x,y)dA; x,y in [0,1]^2
-	virtual vec3 fieldAt_contrib_from(const vec3& v, mdouble x, mdouble y) const;
+	virtual vec3 fieldAt_contrib_from(const vec3& v, const vec2& l) const;
 
 	SurfaceGeometry* mySurface;	//< surface over which current is distributed
 	vec2 (*sj)(vec2, void*);	//< surface current density as a function of surface coordinate

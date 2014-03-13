@@ -2,10 +2,10 @@
 /// make sure this file is loaded only once
 #define INTERPOLATOR_HH 1
 
-#include <math.h>
 #include <vector>
 #include <cassert>
 #include <stdio.h>
+#include <cmath>
 
 /// boundary conditions for interpolation
 enum BoundaryCondition {
@@ -84,6 +84,8 @@ public:
 			return myData->valueAt(i,(void*)(x+1));
 		return myData->valueAt(i+1,(void*)(x+1));
 	}
+	/// return interpolation basis function of distance from point
+	virtual double basisFunc(double x) const { return fabs(x)<0.5; }
 	/// make a new interpolator (interchangeable function pointer)
 	static Interpolator* newInterpolator(DataSequence* L) { return new Interpolator(L); }
 	/// set half-space offset for symmetric distribution in o0 to o0+s
@@ -114,6 +116,12 @@ public:
 		int i = locate(*x,&y);
 		return myData->valueAt(i,(void*)(x+1))*(1-y)+myData->valueAt(i+1,(void*)(x+1))*y;
 	}
+	/// return interpolation basis function of distance from point
+	virtual double basisFunc(double x) const {
+		x = fabs(x);
+		if(x<1) return 1-x;
+		return x;
+	}
 	/// make a new interpolator (interchangeable function pointer)
 	static Interpolator* newLinTerpolator(DataSequence* L) { return new LinTerpolator(L); }
 };
@@ -138,6 +146,13 @@ public:
 				-p2*y*(A*(1-y)*(1-y)+y*(2*y-3))
 				+A*p3*(1-y)*y*y );
 
+	}
+	/// return interpolation basis function of distance from point
+	virtual double basisFunc(double x) const {
+		x = fabs(x);
+		if(x<1) return (1-x)*(1-x*((2+A)*x-1));
+		else if(x<2) return A*(2-x)*(2-x)*(x-1);
+		else return 0;
 	}
 	/// make a new interpolator (interchangeable function pointer)
 	static Interpolator* newCubiTerpolator(DataSequence* L) { return new CubiTerpolator(L); }
