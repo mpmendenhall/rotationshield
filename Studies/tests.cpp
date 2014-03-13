@@ -177,40 +177,48 @@ bool csurface_test() {
 	b.buildCoil(*MxS);
 	FieldEstimator2Dfrom3D fe(MxS);
 	
-	CylSurfaceGeometry SG;
-	//SG.zr_profile = new WavyThing;
-	Line2D L2D(vec2(-3.9624/2,.6223), vec2(3.9624/2,.6223));
-	FieldAdaptiveSurface FAS(L2D);
-	SG.zr_profile = &FAS;
-	//SG.zr_profile = new Ball(2.2);
+	unsigned int nPhi = 8;
 	
-	SurfaceCurrentRS RS(16,10);
+	MagRSCombiner RSC(nPhi);
+	
+	double zh = 3.9624/2;
+	double r0 = .6223;
+	
+	// main shield
+	Line2D L2D(vec2(-zh,r0), vec2(zh,r0));
+	FieldAdaptiveSurface FAS(L2D);
+	FAS.optimizeSpacing(fe,0.5);
+	CylSurfaceGeometry SG(&FAS);
+	SurfaceCurrentRS RS(nPhi,7);
 	RS.mySurface = &SG;
 	RS.setSurfaceResponse(SurfaceI_Response(10000));
-	//RS.setSurfaceResponse(SurfaceI_Response(0));
-		
-	FAS.optimizeSpacing(fe,0.5);
-	
-	
-	ReactiveSetCombiner RSC(16);
 	RSC.addSet(&RS);
 	
-	RS.calculateIncident(*MxS);
+	// rear SC endcap
+	Line2D L_Endcap(vec2(-zh,0), vec2(-zh,r0));
+	FieldAdaptiveSurface FAS_EC(L_Endcap);
+	FAS_EC.optimizeSpacing(fe,0.5);
+	CylSurfaceGeometry SG_EC(&FAS_EC);
+	SurfaceCurrentRS RS_EC(nPhi,7);
+	RS_EC.mySurface = &SG_EC;
+	RS_EC.setSurfaceResponse(SurfaceI_Response(0));
+	RSC.addSet(&RS_EC);
+	
+	
+	RSC.calculateIncident(*MxS);
 	// Incident Response Origin field< 0.683759 -3.96547e-16 5.57686e-18 >
 	// RS.displayContribGrid(vec3(0,0,0),5,5);
-	std::cout << "Origin field" << RS.fieldAt(vec3(0,0,0)) << std::endl;
-	RS.visualize();
+	std::cout << "Origin field" << RSC.fieldAt(vec3(0,0,0)) << std::endl;
+	RSC.visualize();
 	vsr::pause();
 		
 	//return true;
 	
 	SymmetricSolver SS;
-	//SS.solve(RS);
-	//SS.calculateResult(RS);
 	SS.solve(RSC);
 	SS.calculateResult(RSC);
 	
-	MxS->addsource(&RS);
+	MxS->addsource(&RSC);
 	
 	printf("Testing shielded fields...\n");
 	//center scan lines

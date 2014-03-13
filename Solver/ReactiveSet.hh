@@ -30,9 +30,9 @@ public:
 	//=====================================
 	
 	/// clear states; start with only 1 active DF
-	virtual void startInteractionScan() { setZeroState(); setInteractionDF(0); }
+	virtual void startInteractionScan() { setZeroState(); }
 	/// set single degree of freedom to produce interactions from, clearing previous DF
-	virtual void setInteractionDF(unsigned int DF, double v=1.0);
+	virtual void setInteractionDF(unsigned int DF, double v);
 	/// set a DF without clearing previous DF
 	virtual void setDF(unsigned int DF, double v) { finalState[DF] = v; _setDF(DF,v); }
 	/// set zero state
@@ -127,7 +127,7 @@ public:
 	/// constructor
 	ReactiveSetCombiner(unsigned int nph=1): ReactiveSet(nph) { set_cum_df.push_back(0); }
 	/// append a new ReactiveSet
-	void addSet(ReactiveSet* R);
+	virtual void addSet(ReactiveSet* R);
 	
 	
 	//=====================================
@@ -140,7 +140,7 @@ public:
 	/// prepare incident state vector
 	virtual void prepareIncident();
 	/// set single degree of freedom to produce interactions from, clearing previous DF
-	void setInteractionDF(unsigned int DF, double v);
+	virtual void setInteractionDF(unsigned int DF, double v);
 	//=====================================
 	
 	/// reset interaction term counter

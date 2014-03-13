@@ -2,6 +2,9 @@
 #include <iostream>
 
 void ReactiveSet::setInteractionDF(unsigned int DF, double v) {
+
+	//std::cout << this << " Setting Interaction DF " << DF << " of " << nDF() << " to " << v << std::endl;
+
 	assert(DF < finalState.size() && ixn_df < finalState.size());
 	finalState[ixn_df] = 0;
 	finalState[DF] = v;
@@ -57,12 +60,16 @@ void ReactiveSetCombiner::addSet(ReactiveSet* R) {
 }
 
 void ReactiveSetCombiner::setInteractionDF(unsigned int DF, double v) {
+
+	//std::cout << "RSC Setting Interaction DF " << DF << " of " << nDF() << " to " << v << std::endl;
+
 	assert(DF < finalState.size() && ixn_df < finalState.size());
 	finalState[ixn_df] = 0;
 	finalState[DF] = v;
 	
 	ixn_set = df_set[ixn_df];
-	mySets[ixn_set]->setInteractionDF(DF-set_cum_df[ixn_set],0);
+	mySets[ixn_set]->setInteractionDF(ixn_df-set_cum_df[ixn_set],0);
+	
 	ixn_set = df_set[DF];
 	mySets[ixn_set]->setInteractionDF(DF-set_cum_df[ixn_set],v);
 	
@@ -71,8 +78,8 @@ void ReactiveSetCombiner::setInteractionDF(unsigned int DF, double v) {
 
 void ReactiveSetCombiner::_setDF(unsigned int DF, double v) {
 	assert(DF<nDF());
-	ixn_set = df_set[DF];
-	mySets[ixn_set]->setDF(DF-set_cum_df[ixn_set],v);
+	unsigned int is = df_set[DF];
+	mySets[is]->setDF(DF-set_cum_df[is],v);
 }
 
 void ReactiveSetCombiner::_setDF(const mvec& v) {
@@ -90,7 +97,7 @@ mvec ReactiveSetCombiner::getReactionTo(ReactiveSet* R, unsigned int phi) {
 	mvec v(nDF()/nPhi);
 	for(unsigned int i=0; i<mySets.size(); i++) {
 		mvec vi = mySets[i]->getReactionTo(R,phi);
-		v.load_subvec(vi, set_cum_df[i]);
+		v.load_subvec(vi, set_cum_df[i]/nPhi);
 	}
 	return v;
 }

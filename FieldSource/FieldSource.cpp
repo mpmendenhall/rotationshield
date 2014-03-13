@@ -2,7 +2,6 @@
 
 Integrator FieldSource::lineIntegrator = Integrator();
 Integrator FieldSource::planeIntegrator = Integrator();
-BField_Protocol* BField_Protocol::BFP = new BField_Protocol();
 
 /// Used for numerical integration of magnetic fields over Lines/Planes
 struct fieldIntegratorParams {

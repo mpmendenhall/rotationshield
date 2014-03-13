@@ -37,7 +37,7 @@ protected:
 class CylSurfaceGeometry: public SurfaceGeometry {
 public:
 	/// constructor
-	CylSurfaceGeometry(): zr_profile(NULL) {}
+	CylSurfaceGeometry(DVFunc1<2,mdouble>* f = NULL): zr_profile(f) {}
 	
 	/// evaluate function
 	virtual vec3 operator()(const vec2& x) const;

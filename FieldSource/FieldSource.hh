@@ -36,16 +36,4 @@ private:
 	static Integrator planeIntegrator; //< Integrator for averaging over planes
 };
 
-/// Magnetic field interaction protocol class singleton
-class BField_Protocol {
-public:
-	vec3 x;	//< position
-	vec3 B;	//< magnetic field
-	const Matrix<2,3,mdouble>* M;	//< optional transform matrix
-	vec2 MB;						//< transformed field
-	const void* caller;				//< pointer to caller
-	static BField_Protocol* BFP;
-};
-
-
 #endif

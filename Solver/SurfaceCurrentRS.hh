@@ -6,6 +6,7 @@
 
 #include "SurfaceCurrentSource.hh"
 #include "InterpolatingRS.hh"
+#include "MagRS.hh"
 
 /// defines surface boundary condition by producing surface current in response to applied magnetic field
 class SurfaceI_Response {
@@ -28,7 +29,7 @@ public:
 
 
 /// Continuous surface current responding to magnetic field
-class SurfaceCurrentRS: public SurfaceCurrentSource, public InterpolatingRS {
+class SurfaceCurrentRS: public MagF_Responder, public SurfaceCurrentSource, public InterpolatingRS {
 public:
 	/// constructor
 	SurfaceCurrentRS(unsigned int nph, unsigned int nz);

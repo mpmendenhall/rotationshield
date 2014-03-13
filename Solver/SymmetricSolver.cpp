@@ -22,7 +22,7 @@ void SymmetricSolver::buildInteractionMatrix(ReactiveSet& R) {
 	
 	R.startInteractionScan();
 	for(unsigned int DF=0; DF<R.nDF(); DF++) {
-		R.setInteractionDF(DF);
+		R.setInteractionDF(DF,1.0);
 		mvec v = R.getReactionTo(&R);
 		assert(v.size() == R.nDF()/R.nPhi);
 		for(unsigned int i=0; i<v.size(); i++)

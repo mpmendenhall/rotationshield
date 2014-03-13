@@ -30,7 +30,7 @@ void GenericSolver::buildInteractionMatrix(ReactiveSet& R) {
 	the_GF = gsl_matrix_alloc(R.nDF(),R.nDF());
 	R.startInteractionScan();
 	for(unsigned int DF=0; DF<R.nDF(); DF++) {
-		R.setInteractionDF(DF);
+		R.setInteractionDF(DF,1.0);
 		for(unsigned int phi=0; phi<R.nPhi; phi++) {
 			mvec v = R.getReactionTo(&R,phi);
 			assert(v.size() == R.nDF()/R.nPhi);
