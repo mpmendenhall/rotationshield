@@ -190,6 +190,11 @@ bool csurface_test() {
 	//RS.setSurfaceResponse(SurfaceI_Response(0));
 		
 	FAS.optimizeSpacing(fe,0.5);
+	
+	
+	ReactiveSetCombiner RSC(16);
+	RSC.addSet(&RS);
+	
 	RS.calculateIncident(*MxS);
 	// Incident Response Origin field< 0.683759 -3.96547e-16 5.57686e-18 >
 	// RS.displayContribGrid(vec3(0,0,0),5,5);
@@ -200,8 +205,10 @@ bool csurface_test() {
 	//return true;
 	
 	SymmetricSolver SS;
-	SS.solve(RS);
-	SS.calculateResult(RS);
+	//SS.solve(RS);
+	//SS.calculateResult(RS);
+	SS.solve(RSC);
+	SS.calculateResult(RSC);
 	
 	MxS->addsource(&RS);
 	

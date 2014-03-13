@@ -33,6 +33,7 @@ void SymmetricSolver::buildInteractionMatrix(ReactiveSet& R) {
 
 void SymmetricSolver::calculateResult(ReactiveSet& R) {
 	if(verbose) printf("Calculating resulting surface current..."); fflush(stdout);
+	R.prepareIncident();
 	R.setFinalState(the_GF * R.incidentState);
 	if(verbose) printf(" Done.\n");
 }

@@ -30,8 +30,6 @@ SurfaceCurrentRS::SurfaceCurrentRS(unsigned int nph, unsigned int nz): Interpola
 	myIntegrator.setMethod(INTEG_GSL_QAG);
 }
 
-
-
 mvec SurfaceCurrentRS::getReactionTo(ReactiveSet* R, unsigned int phi) {
 	mvec v(nDF()/nPhi);
 	for(ixn_el = phi; ixn_el < nDF()/2; ixn_el+=nPhi) {
@@ -43,8 +41,6 @@ mvec SurfaceCurrentRS::getReactionTo(ReactiveSet* R, unsigned int phi) {
 }
 
 vec2 SurfaceCurrentRS::subelReaction(ReactiveSet* R) {
-	if(R == this && ixn_el == ixn_df%(nZ*nPhi)) return vec2(0,0); // TODO proper self-interaction
-	
 	vec2 sc = surf_coords(ixn_el);
 	BField_Protocol::BFP->x = (*mySurface)(sc);
 	Matrix<2,3,mdouble> RM = sdefs[ixn_el].rmat * mySurface->rotToLocal(sc);
@@ -61,20 +57,20 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 	BField_Protocol::BFP->B = vec3(0,0,0);
 	BField_Protocol::BFP->MB = vec2(0,0);
 	
+	// z and phi numbers of active and responding element
+	unsigned int el = ixn_df % (nZ*nPhi);
+	if(BField_Protocol::BFP->caller == this && el == ixn_el) return true; // TODO proper self-interaction
+	int c_nz = el/nPhi;
+	int c_np = el%nPhi;
+	int i_nz = ixn_el/nPhi;
+	int i_nphi = ixn_el%nPhi;
+	
 	// How to slice up integration range; TODO allow 3x3 region with internal singularities
 	//const unsigned int n_integ_domains = 3;					//< number of integration domains in each direction
 	//const int integ_domains[n_integ_domains+1] = {-2,-1,1,2};	//< integration domain divisions
 	const unsigned int n_integ_domains = 4;						//< number of integration domains in each direction
 	const int integ_domains[n_integ_domains+1] = {-2,-1,0,1,2};	//< integration domain divisions
 
-
-	// z and phi numbers of active and responding element
-	unsigned int el = ixn_df % (nZ*nPhi);
-	int c_nz = el/nPhi;
-	int c_np = el%nPhi;
-	int i_nz = ixn_el/nPhi;
-	int i_nphi = ixn_el%nPhi;
-	
 	// save previous integration method
 	Integration_Method im = myIntegrator.getMethod();
 	

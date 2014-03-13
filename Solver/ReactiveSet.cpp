@@ -47,27 +47,59 @@ void ReactiveUnitSet::add_DF_group(unsigned int N) {
 
 //----------------------------------------------
 
-/*
-
 void ReactiveSetCombiner::addSet(ReactiveSet* R) {
+	assert(R);
 	assert(R->nPhi == nPhi);
+	for(unsigned int i=0; i<R->nDF(); i++)
+		df_set.push_back(mySets.size());
 	mySets.push_back(R);
-	add_DF_group(R->nDF()/nPhi);
+	set_cum_df.push_back(set_cum_df.back()+R->nDF());
 }
 
-void ReactiveSetCombiner::setSubelDF(unsigned int el, unsigned int df, mdouble v) {
-	mySets[el]->setDF(df,v);
+void ReactiveSetCombiner::setInteractionDF(unsigned int DF, double v) {
+	assert(DF < finalState.size() && ixn_df < finalState.size());
+	finalState[ixn_df] = 0;
+	finalState[DF] = v;
+	
+	ixn_set = df_set[ixn_df];
+	mySets[ixn_set]->setInteractionDF(DF-set_cum_df[ixn_set],0);
+	ixn_set = df_set[DF];
+	mySets[ixn_set]->setInteractionDF(DF-set_cum_df[ixn_set],v);
+	
+	ixn_df = DF;
+}
+
+void ReactiveSetCombiner::_setDF(unsigned int DF, double v) {
+	assert(DF<nDF());
+	ixn_set = df_set[DF];
+	mySets[ixn_set]->setDF(DF-set_cum_df[ixn_set],v);
 }
 
 void ReactiveSetCombiner::_setDF(const mvec& v) {
 	for(unsigned int i=0; i<mySets.size(); i++)
-		mySets[i]->setDF(v.subvec(group_start[i], group_start[i+1]));
+		mySets[i]->setFinalState(v.subvec(set_cum_df[i], set_cum_df[i+1]));
 }
 
 void ReactiveSetCombiner::startInteractionScan() {
-	ReactiveUnitSet::startInteractionScan();
+	ReactiveSet::startInteractionScan();
 	for(std::vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++)
 		(*it)->startInteractionScan();
 }
 
-*/
+mvec ReactiveSetCombiner::getReactionTo(ReactiveSet* R, unsigned int phi) {
+	mvec v(nDF()/nPhi);
+	for(unsigned int i=0; i<mySets.size(); i++) {
+		mvec vi = mySets[i]->getReactionTo(R,phi);
+		v.load_subvec(vi, set_cum_df[i]);
+	}
+	return v;
+}
+
+void ReactiveSetCombiner::prepareIncident() {
+	if(incidentState.size() != nDF())
+		incidentState = mvec(nDF());
+	for(unsigned int i=0; i<mySets.size(); i++) {
+		mySets[i]->prepareIncident();
+		incidentState.load_subvec(mySets[i]->incidentState, set_cum_df[i]);
+	}
+}

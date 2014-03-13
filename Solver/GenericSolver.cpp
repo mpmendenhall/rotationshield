@@ -27,19 +27,22 @@ void GenericSolver::solve(ReactiveSet& R) {
 }
 
 void GenericSolver::buildInteractionMatrix(ReactiveSet& R) {
-	/*
 	the_GF = gsl_matrix_alloc(R.nDF(),R.nDF());
-	unsigned int i;
-	unsigned int j;
 	R.startInteractionScan();
-	for(unsigned int n=0; n<R.nDF()*R.nDF(); n++) {
-		mdouble v = R.nextInteractionTerm(i,j);
-		gsl_matrix_set(the_GF, i, j, i==j ? 1-v : -v);
+	for(unsigned int DF=0; DF<R.nDF(); DF++) {
+		R.setInteractionDF(DF);
+		for(unsigned int phi=0; phi<R.nPhi; phi++) {
+			mvec v = R.getReactionTo(&R,phi);
+			assert(v.size() == R.nDF()/R.nPhi);
+			for(unsigned int i=0; i<v.size(); i++)
+				gsl_matrix_set(the_GF, i*R.nPhi+phi, DF, (i*R.nPhi+phi==DF) ? 1-v[i] : -v[i]);
+		}
 	}
-	*/
 }
 
 void GenericSolver::calculateResult(ReactiveSet& R) {
+	R.prepareIncident();
+	
 	assert(the_GF);
 	gsl_vector* inc = gsl_vector_alloc(R.nDF());
 	gsl_vector* fin = gsl_vector_alloc(R.nDF());
