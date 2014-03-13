@@ -161,10 +161,16 @@ public:
 	virtual vec2 operator()(mdouble x) const { return vec2( (x*x-0.5)*3.9624, .6223 + 0.1*(1-x) + 0.04*sin(9*M_PI*x)); }
 };
 
+class Ball: public DVFunc1<2,mdouble> {
+public:
+	Ball(double rr): r(rr) {}
+	virtual vec2 operator()(mdouble x) const { return vec2(-r*cos(M_PI*x), r*sin(M_PI*x)); }
+	double r;
+};
+
+
 bool csurface_test() {
-	
-	Integrator::printErrorCodes();
-	
+		
 	MixedSource* MxS = new MixedSource();
 	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 3.92);
 	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_LINE;
@@ -176,10 +182,12 @@ bool csurface_test() {
 	Line2D L2D(vec2(-3.9624/2,.6223), vec2(3.9624/2,.6223));
 	FieldAdaptiveSurface FAS(L2D);
 	SG.zr_profile = &FAS;
+	SG.zr_profile = new Ball(2.2);
 	
-	SurfaceCurrentRS RS(64,20);
+	SurfaceCurrentRS RS(16,10);
 	RS.mySurface = &SG;
-	RS.setSurfaceResponse(SurfaceI_Response(10000));
+	//RS.setSurfaceResponse(SurfaceI_Response(10000));
+	RS.setSurfaceResponse(SurfaceI_Response(0));
 		
 	FAS.optimizeSpacing(fe,0.5);
 	RS.calculateIncident(*MxS);

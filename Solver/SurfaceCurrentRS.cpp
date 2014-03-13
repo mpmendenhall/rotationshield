@@ -108,7 +108,6 @@ vec2 SurfaceCurrentRS::subelReaction() {
 		int i_nz = ic_i/nPhi;
 		int i_nphi = ic_i%nPhi;
 		
-		// save previous integration method
 		Integration_Method im = myIntegrator.getMethod();
 		
 		//const unsigned int n_integ_domains = 3;						//< number of integration domains in each direction
@@ -124,7 +123,7 @@ vec2 SurfaceCurrentRS::subelReaction() {
 		for(unsigned int dmz = 0; dmz < n_integ_domains; dmz++) {
 			int z0 = integ_domains[dmz];
 			int z1 = integ_domains[dmz+1];
-			if(p.c_nz + z1 < -1 || p.c_nz + z0 >= (int)nZ) continue; // skip past-edges domains
+			if(p.c_nz + z1 < 0 || p.c_nz + z0 >= (int)nZ) continue; // skip past-edges domains
 			for(unsigned int dmp = 0; dmp < n_integ_domains; dmp++) {
 				int p0 = integ_domains[dmp];
 				int p1 = integ_domains[dmp+1];
@@ -138,12 +137,13 @@ vec2 SurfaceCurrentRS::subelReaction() {
 				if( (nz0 <= i_nz && i_nz <= nz1) && ( (i_nphi - np0 + nPhi)%nPhi <= (np1 - np0 + nPhi)%nPhi ) )
 					myIntegrator.setMethod(INTEG_GSL_QAGS);
 				else
-					myIntegrator.setMethod(INTEG_GSL_QNG);
+					myIntegrator.setMethod(INTEG_GSL_QAG);
 				
-				mvec RB = myIntegrator.integrate2D(&SRdA, vec2(nz0<0 ? -0.5 : nz0, np0), vec2(nz1>=(int)nZ ? nZ-0.5 : nz1, np1), &p);
-				
-				//std::cout << vec2(nz0,np0) << vec2(nz1,np1) << " " << RB << std::endl;
-				
+				vec2 ll(nz0<0 ? -0.5 : nz0, np0);
+				vec2 ur(nz1 >= int(nZ) ? int(nZ)-0.5 : nz1, np1);
+				//std::cout << ll << "--" << ur << std::endl;
+				mvec RB = myIntegrator.integrate2D(&SRdA, ll, ur, &p);
+								
 				vResp += vec2(RB[0],RB[1]);
 			}
 		}

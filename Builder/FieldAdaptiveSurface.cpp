@@ -3,7 +3,8 @@
 FieldAdaptiveSurface::FieldAdaptiveSurface(const DVFunc1<2,mdouble>& f): F(f) {
 	unsigned int npts = 100;
 	Ilz.setupDataGrid(&npts,&npts+1);
-	Ilz.getInterpolator()->scale = float(npts+1)/float(npts);
+	Ilz.getInterpolator()->scale = float(npts)/float(npts-3);
+	Ilz.getInterpolator()->offset = -1./float(npts-3);
 	setConstantSpacing();
 }
 
@@ -25,22 +26,30 @@ vec2 FieldAdaptiveSurface::deriv(mdouble x) const {
 }
 
 void FieldAdaptiveSurface::setConstantSpacing() {
-	const unsigned int ngridpts = Ilz.n_pts();
-	double a[ngridpts];
-	for(unsigned int i=0; i<ngridpts; i++)
-		a[i] = float(i)/float(ngridpts-1);
+	const unsigned int npts = Ilz.n_pts();
+	double a[npts];
+	for(unsigned int i=0; i<npts; i++)
+		a[i] = (double(i)-1.)/double(npts-3);
 	Ilz.setData(a);
 }
 
+void FieldAdaptiveSurface::symmetry_test() const {
+	for(int i=0; i<21; i++) {
+		double l = float(i)/20.;
+		double v =Ilz.eval(&l);
+		printf("l=%g:\tv=%g\t%g\n",l,v,1-v);
+	}
+}
+
 void FieldAdaptiveSurface::optimizeSpacing(const FieldEstimator2D& fes, double pfixed) {
-		
-	const unsigned int ngridpts = Ilz.n_pts();
+	
+	const unsigned int npts = Ilz.n_pts();
 	
 	// cumulative parameter across length
-	double fstr[ngridpts];
-	fstr[0]=0;
-	for(unsigned int i=1; i<ngridpts; i++) {
-		mdouble l = float(i)/(ngridpts-1.);
+	double fstr[npts];
+	fstr[1]=0;
+	for(unsigned int i=2; i <= npts-2; i++) {
+		mdouble l = float(i-1.5)/(npts-3.);
 		vec2 zr = F(l);
 		vec2 dv = F.deriv(l);
 		// bunch up at high field derivatives along profile curve
@@ -49,14 +58,18 @@ void FieldAdaptiveSurface::optimizeSpacing(const FieldEstimator2D& fes, double p
 	
 	// add "slope" to cumulative curve for fixed partitions
 	pfixed = pfixed<=1e-3 ? 1e-3 : (pfixed>=0.999 ? 0.999:pfixed);
-	mdouble slope = (fstr[ngridpts-1]+1e-8) * pfixed/(1.-pfixed) / float(ngridpts);
-	printf("Optimized surface z spacing: to accumulated x=%g, adding slope %g\n",fstr[ngridpts-1],slope*ngridpts);
-	for(unsigned int i=0; i<ngridpts; i++)
-		fstr[i] += i*slope;
+	mdouble slope = (fstr[npts-2]+1e-8) * pfixed/(1.-pfixed) / float(npts);
+	printf("Optimized surface z spacing: to accumulated x=%g, adding slope %g\n",fstr[npts-2],slope*npts);
+	for(unsigned int i=2; i <= npts-2; i++)
+		fstr[i] += (i-1)*slope;
 	
-	// convert to cumulative curve; set interpolator
-	for(unsigned int i=0; i<ngridpts; i++)
-		fstr[i] /= fstr[ngridpts-1];
+	// convert to cumulative curve;
+	for(unsigned int i=2; i<=npts-2; i++)
+		fstr[i] /= fstr[npts-2];
+	// special endpoints for linear approach
+	fstr[0] = -fstr[2];
+	fstr[npts-1] = 2-fstr[npts-3];
+	// set interpolator
 	Ilz.setData(fstr);
 }
 

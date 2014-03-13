@@ -44,7 +44,7 @@ double Integrator::_integrate(gsl_function* F, double a, double b) {
 		
 	if(myMethod == INTEG_GSL_QNG) {
 		er = gsl_integration_qng(F, a, b, abs_err, rel_err, &r, &e, &neval);
-		if(er) printf("(*Integration Warning %i\t(%g:\t%i evals, %g err)*)\n",er,r,(int)neval,e);
+		if(er) printf("(*Integration Error %i '%s'\t(%g:\t%i evals, %g err)*)\n",er,gsl_strerror(er),r,(int)neval,e);
 	} else {
 		if(myMethod == INTEG_GSL_QAG)
 			er = gsl_integration_qag(F, a, b, abs_err, rel_err, 256, GSL_INTEG_GAUSS15, gslIntegrationWS, &r, &e);
@@ -60,7 +60,7 @@ double Integrator::_integrate(gsl_function* F, double a, double b) {
 			}
 			er = gsl_integration_qagp(F, &_singularities[0], _singularities.size(), abs_err, rel_err, 256, gslIntegrationWS, &r, &e);
 		} else { assert(false); }
-		if(er) printf("(*Integration Warning %i\t(%g:\t%g err)*)\n",er,r,e);
+		if(er) printf("(*Integration Warning %i '%s'\t(%g:\t%g err)*)\n",er,gsl_strerror(er),r,e);
 	}
 	return r;
 }
@@ -125,11 +125,12 @@ mvec Integrator::_integrate_v(integratingParams& p, double (*integf)(double,void
 }
 
 void Integrator::printErrorCodes() {
-	printf("GSL Integrator error codes:\n");
+	printf("------------------------------\nGSL Integrator error codes:\n");
 	printf("%i: the maximum number of subdivisions was exceeded.\n",GSL_EMAXITER);
     printf("%i: cannot reach tolerance because of roundoff error, or roundoff error was detected in the extrapolation table.\n",GSL_EROUND);
     printf("%i: a non-integrable singularity or other bad integrand behavior was found in the integration interval.\n",GSL_ESING);
 	printf("%i: the integral is divergent, or too slowly convergent to be integrated numerically.\n",GSL_EDIVERGE);
+	printf("\n");
 }
 
 

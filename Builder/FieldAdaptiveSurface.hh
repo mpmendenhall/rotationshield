@@ -23,6 +23,9 @@ public:
 	/// set constant spacing
 	void setConstantSpacing();
 	
+	/// print out test points
+	void symmetry_test() const;
+	
 protected:
 	/// derivative of l distortion parameter
 	mdouble l_dist_deriv(mdouble l) const;
