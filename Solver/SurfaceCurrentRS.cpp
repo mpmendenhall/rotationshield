@@ -8,7 +8,7 @@ vec2 surfaceJ(vec2 v, void* p) {
 	return ((SurfaceCurrentRS*)p)->eval(v);
 }
 
-SurfaceCurrentRS::SurfaceCurrentRS(unsigned int nph, unsigned int nz): InterpolatingRS(nph), nZ(nz), Cref(NULL) {
+SurfaceCurrentRS::SurfaceCurrentRS(unsigned int nph, unsigned int nz): InterpolatingRS(nph), nZ(nz) {
 	// surface current function
 	sj = &surfaceJ;
 	sjparams = this;
@@ -28,157 +28,98 @@ SurfaceCurrentRS::SurfaceCurrentRS(unsigned int nph, unsigned int nz): Interpola
 	dflt_integrator_ndivs_y = nPhi>8? nPhi/8 : 1;
 	// use adaptive integration by default
 	myIntegrator.setMethod(INTEG_GSL_QAG);
-				
-	set_protocol(BField_Protocol::BFP);
 }
 
-bool SurfaceCurrentRS::set_protocol(void* ip) {
-	InterpolatingRS::set_protocol(ip);
-	return ixn_ptcl==BField_Protocol::BFP;
-}
 
-void SurfaceCurrentRS::queryInteraction() {
-	if(ixn_ptcl == BField_Protocol::BFP) {
-		unsigned int el = ixn_df%(nZ*nPhi);
-		vec2 l = surf_coords(el);
-		vec2 dl(2.1/nZ, 2.1/nPhi);
-		BField_Protocol::BFP->B = fieldAt(BField_Protocol::BFP->x, l-dl, l+dl);
+
+mvec SurfaceCurrentRS::getReactionTo(ReactiveSet* R, unsigned int phi) {
+	mvec v(nDF()/nPhi);
+	for(ixn_el = phi; ixn_el < nDF()/2; ixn_el+=nPhi) {
+		vec2 vs = subelReaction(R);
+		v[ixn_el/nPhi] = vs[0];
+		v[ixn_el/nPhi + nZ] = vs[1];
 	}
-}
-
-
-struct ResponseIntegParams {
-	const SurfaceCurrentRS* S;	//< surface being integrated over
-	vec2 ll0;					//< surface coordinate of active DF
-	vec2 dlz;					//< offset of 1 unit in z coordinate
-	vec2 dlp;					//< offset of 1 unit in phi coordinate
-	int c_nz;					//< integrated element center nz
-	int c_np;					//< integrated element center nphi
-	bool pdir;					//< whether this is a response to current in the phi direction
-	vec3 v;						//< position of interacting spot
-	Matrix<2,3,mdouble> RM;		//< response transform to local field
-};
-
-mvec SRdA(vec2 l, void* params) {
-	ResponseIntegParams& p = *(ResponseIntegParams*)params;
-	
-	vec2 lli = p.ll0 + vec2(l[0]/p.S->nZ, l[1]/p.S->nPhi);	//< surface coordinates of current source
-	
-	if(true) { //!p.c_nz || p.c_nz+1 == p.S->nZ) {
-		// edge elements case --- don't try any shortcuts
-		return mvec( p.RM * p.S->fieldAt_contrib_from(p.v, lli) );
-	}
-	
-	// TODO make this agree with general method above
-	
-	vec3 xi = (*p.S->mySurface)(lli);		//< physical coordinates of current source
-	vec3 r = xi - p.v;						//< r vector to integration pt.
-	mdouble mr = r.mag();					//< distance between points
-	if(mr < 1e-8) return mvec(2);
-	
-	vec3 dl = p.S->mySurface->deriv(lli,p.pdir);
-	mdouble dw = p.S->mySurface->deriv(lli,!p.pdir).mag();
-	mdouble interpl = p.S->Cref.basisFunc(l[0]-p.c_nz)*p.S->Cref.basisFunc(l[1]-p.c_np);
-	
-	return mvec( (p.RM * cross(dl,r)) * (interpl*dw/(4.*M_PI*mr*mr*mr)) );
-}
-
-vec2 SurfaceCurrentRS::subelReaction() {
-	if(ixn_ptcl == BField_Protocol::BFP) {
-		
-		unsigned int el = ixn_df%(nZ*nPhi);
-		vec2 sc = surf_coords(ic_i);
-		
-		// TODO proper self-interaction
-		if(ic_i == el) return vec2(0,0);
-
-		// set up integration info
-		ResponseIntegParams p;
-		p.S = this;
-		p.v = (*mySurface)(sc);
-		p.RM = sdefs[ic_i].rmat * mySurface->rotToLocal(sc);
-		p.ll0 = surf_coords(0);
-		p.c_nz = el/nPhi;
-		p.c_np = el%nPhi;
-		p.dlz = vec2(1./nZ,0);
-		p.dlp = vec2(0,1./nPhi);
-		p.pdir = ixn_df >= nZ*nPhi;
-		
-				
-		int i_nz = ic_i/nPhi;
-		int i_nphi = ic_i%nPhi;
-		
-		Integration_Method im = myIntegrator.getMethod();
-		
-		//const unsigned int n_integ_domains = 3;						//< number of integration domains in each direction
-		//const int integ_domains[n_integ_domains+1] = {-2,-1,1,2};	//< integration domain divisions
-		// TODO allow 3x3 region with internal singularities
-		
-		const unsigned int n_integ_domains = 4;						//< number of integration domains in each direction
-		const int integ_domains[n_integ_domains+1] = {-2,-1,0,1,2};	//< integration domain divisions
-
-
-		// integrate over each of 16 interpolation regions
-		vec2 vResp;
-		for(unsigned int dmz = 0; dmz < n_integ_domains; dmz++) {
-			int z0 = integ_domains[dmz];
-			int z1 = integ_domains[dmz+1];
-			if(p.c_nz + z1 < 0 || p.c_nz + z0 >= (int)nZ) continue; // skip past-edges domains
-			for(unsigned int dmp = 0; dmp < n_integ_domains; dmp++) {
-				int p0 = integ_domains[dmp];
-				int p1 = integ_domains[dmp+1];
-		
-				int nz0 = p.c_nz + z0;
-				int nz1 = p.c_nz + z1;
-				int np0 = p.c_np + p0;
-				int np1 = p.c_np + p1;
-				
-				// set integration method depending on whether there will be edge singularities
-				if( (nz0 <= i_nz && i_nz <= nz1) && ( (i_nphi - np0 + nPhi)%nPhi <= (np1 - np0 + nPhi)%nPhi ) )
-					myIntegrator.setMethod(INTEG_GSL_QAGS);
-				else
-					myIntegrator.setMethod(INTEG_GSL_QAG);
-				
-				vec2 ll(nz0<0 ? -0.5 : nz0, np0);
-				vec2 ur(nz1 >= int(nZ) ? int(nZ)-0.5 : nz1, np1);
-				//std::cout << ll << "--" << ur << std::endl;
-				mvec RB = myIntegrator.integrate2D(&SRdA, ll, ur, &p);
-								
-				vResp += vec2(RB[0],RB[1]);
-			}
-		}
-		
-		// restore previous integration method
-		myIntegrator.setMethod(im);
-		
-		//std::cout << vec2(i_nz,i_nPhi) << " to " << vec2(p.c_nz,p.c_nphi) << p.pdir << ":\t" << vResp / (nZ * nPhi) << std::endl;
-		
-		return vResp / (nZ * nPhi);	//< note adjust for integrating over [0,nZ]*[0,nPhi] insead of [0,1]^2
-		
-	}
-	assert(false);
-	return vec2();
-}
-
-mdouble SurfaceCurrentRS::nextInteractionTerm(unsigned int& i, unsigned int& j) {
-	// get previous cached term
-	mdouble v = ic_v[ic_di];
-	i = ic_i + nZ*nPhi*ic_di;
-	j = ixn_df;
-	
-	// step to next term
-	ic_di = (ic_di+1)%2;
-	if(!ic_di) {
-		setInteractionDF((ixn_df+1)%nDF());
-		if(!ixn_df) {
-			ic_i = (ic_i+nPhi)%(nZ*nPhi);
-			if(ic_i < nPhi) ic_i = (ic_i+1)%nPhi;
-		}
-		ic_v = subelReaction();
-	}
-	
 	return v;
 }
+
+vec2 SurfaceCurrentRS::subelReaction(ReactiveSet* R) {
+	if(R == this && ixn_el == ixn_df%(nZ*nPhi)) return vec2(0,0); // TODO proper self-interaction
+	
+	vec2 sc = surf_coords(ixn_el);
+	BField_Protocol::BFP->x = (*mySurface)(sc);
+	Matrix<2,3,mdouble> RM = sdefs[ixn_el].rmat * mySurface->rotToLocal(sc);
+	BField_Protocol::BFP->M = &RM;
+	BField_Protocol::BFP->caller = this;
+	if(!R->queryInteraction(BField_Protocol::BFP)) { assert(false); return vec2(0,0); }
+	return BField_Protocol::BFP->MB;
+}
+	
+bool SurfaceCurrentRS::queryInteraction(void* ip) {
+
+	if(ip != BField_Protocol::BFP) return false;
+	
+	BField_Protocol::BFP->B = vec3(0,0,0);
+	BField_Protocol::BFP->MB = vec2(0,0);
+	
+	// How to slice up integration range; TODO allow 3x3 region with internal singularities
+	//const unsigned int n_integ_domains = 3;					//< number of integration domains in each direction
+	//const int integ_domains[n_integ_domains+1] = {-2,-1,1,2};	//< integration domain divisions
+	const unsigned int n_integ_domains = 4;						//< number of integration domains in each direction
+	const int integ_domains[n_integ_domains+1] = {-2,-1,0,1,2};	//< integration domain divisions
+
+
+	// z and phi numbers of active and responding element
+	unsigned int el = ixn_df % (nZ*nPhi);
+	int c_nz = el/nPhi;
+	int c_np = el%nPhi;
+	int i_nz = ixn_el/nPhi;
+	int i_nphi = ixn_el%nPhi;
+	
+	// save previous integration method
+	Integration_Method im = myIntegrator.getMethod();
+	
+	// integrate over each region
+	vec2 vResp;
+	for(unsigned int dmz = 0; dmz < n_integ_domains; dmz++) {
+		int z0 = integ_domains[dmz];
+		int z1 = integ_domains[dmz+1];
+		if(c_nz + z1 < 0 || c_nz + z0 >= (int)nZ) continue; // skip past-edges domains
+		for(unsigned int dmp = 0; dmp < n_integ_domains; dmp++) {
+			int p0 = integ_domains[dmp];
+			int p1 = integ_domains[dmp+1];
+	
+			int nz0 = c_nz + z0;
+			int nz1 = c_nz + z1;
+			int np0 = c_np + p0;
+			int np1 = c_np + p1;
+			
+			// set integration method depending on whether there will be edge singularities
+			if( BField_Protocol::BFP->caller == this && (nz0 <= i_nz && i_nz <= nz1) && ( (i_nphi - np0 + nPhi)%nPhi <= (np1 - np0 + nPhi)%nPhi ) )
+				myIntegrator.setMethod(INTEG_GSL_QAGS);
+			else
+				myIntegrator.setMethod(INTEG_GSL_QAG);
+			
+			vec2 ll(double(nz0)/double(nZ), double(np0)/double(nPhi));
+			vec2 ur(double(nz1)/double(nZ), double(np1)/double(nPhi));
+						
+			if(BField_Protocol::BFP->M) {
+				BField_Protocol::BFP->MB += fieldAtWithTransform(BField_Protocol::BFP->x, *BField_Protocol::BFP->M, ll, ur, 1, 1);
+			} else {
+				BField_Protocol::BFP->B += fieldAt(BField_Protocol::BFP->x, ll, ur, 1, 1);
+			}
+		}
+	}
+	
+	// restore previous integration method
+	myIntegrator.setMethod(im);
+	
+	return true;
+}
+
+
+//
+// Response to incident magnetic fields
+//
 
 void SurfaceCurrentRS::setSurfaceResponse(SurfaceI_Response r) {
 	sdefs.resize(nZ*nPhi);
@@ -199,8 +140,6 @@ vec2 SurfaceCurrentRS::eval(const vec2& p) const {
 	mdouble jy = InterplDF.getSubHelper(1,&one).eval(&p[0]);
 	return vec2(jx,jy);
 }
-
-
 
 struct AverageFieldIntegParams {
 	const FieldSource* f;			//< field source
@@ -257,7 +196,6 @@ void SurfaceCurrentRS::calculateIncident(const FieldSource& f) {
 	
 	// restore previous integration method
 	myIntegrator.setMethod(im);
-		
-	
+			
 	_setDF(incidentState);
 }

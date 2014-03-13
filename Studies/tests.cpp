@@ -170,7 +170,7 @@ public:
 
 
 bool csurface_test() {
-		
+	
 	MixedSource* MxS = new MixedSource();
 	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 3.92);
 	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_LINE;
@@ -182,12 +182,12 @@ bool csurface_test() {
 	Line2D L2D(vec2(-3.9624/2,.6223), vec2(3.9624/2,.6223));
 	FieldAdaptiveSurface FAS(L2D);
 	SG.zr_profile = &FAS;
-	SG.zr_profile = new Ball(2.2);
+	//SG.zr_profile = new Ball(2.2);
 	
 	SurfaceCurrentRS RS(16,10);
 	RS.mySurface = &SG;
-	//RS.setSurfaceResponse(SurfaceI_Response(10000));
-	RS.setSurfaceResponse(SurfaceI_Response(0));
+	RS.setSurfaceResponse(SurfaceI_Response(10000));
+	//RS.setSurfaceResponse(SurfaceI_Response(0));
 		
 	FAS.optimizeSpacing(fe,0.5);
 	RS.calculateIncident(*MxS);

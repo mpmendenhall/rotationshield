@@ -42,26 +42,21 @@ void SurfacelSet::calculateIncident(FieldSource* f) {
 	}
 }
 
-bool SurfacelSet::set_protocol(void* ip) {
-	ReactiveUnitSet::set_protocol(ip);
-	return ixn_ptcl==BField_Protocol::BFP || ixn_ptcl==Surfacel_Protocol::SP;
-}
-
-void SurfacelSet::queryInteraction() {
-	if(ixn_ptcl == Surfacel_Protocol::SP)
+bool SurfacelSet::queryInteraction(void* ip) {
+	if(ip == Surfacel_Protocol::SP) {
 		Surfacel_Protocol::SP->e = surfacels[ixn_el];
-	else if(ixn_ptcl == BField_Protocol::BFP)
-		BField_Protocol::BFP->B = surfacels[ixn_el]->fieldAt(BField_Protocol::BFP->x);
+		return true;
+	}
+	return false;
 }
 
-mvec SurfacelSet::subelReaction() {
-	if(ixn_ptcl == Surfacel_Protocol::SP) {
-		queryInteraction();
-		return surfacels[ic_i]->interactionWith(Surfacel_Protocol::SP->e);
-	} else if(ixn_ptcl == BField_Protocol::BFP) {
-		assert(false);
+mvec SurfacelSet::subelReaction(unsigned int el, ReactiveSet* R) {
+	if( R->queryInteraction(Surfacel_Protocol::SP) ) {
+		if(surfacels[el] == Surfacel_Protocol::SP->e) return mvec(surfacels[el]->nDF()); // zero self-interaction
+		return surfacels[el]->interactionWith(Surfacel_Protocol::SP->e);
 	}
-	return mvec(surfacels[ic_i]->nDF());
+	assert(false);	// you probably want things interacting!
+	return mvec(surfacels[el]->nDF());
 }
 
 //----------------------------------------------

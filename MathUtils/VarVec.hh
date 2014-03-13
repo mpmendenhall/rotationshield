@@ -36,18 +36,20 @@ public:
 	const T& operator[](unsigned int i) const { assert(i<data.size()); return data[i]; }
 	/// immutable access to the whole data vector
 	const std::vector<T>& getData() const { return data; }
+	/// mutable access to the whole data vector
+	std::vector<T>& getData() { return data; }
 	/// pointer to beginning of array
 	T* getDataPtr() { return &data.front(); }
 	/// pointer to beginning of array
 	const T* getDataPtr() const { return &data.front(); }
-	/// mutable access to the whole data vector
-	std::vector<T>& getData() { return data; }
 	/// immutable access to the whole data vector
-	const std::vector<T>& getDataC() const { return data; }
+	//const std::vector<T>& getDataC() const { return data; }
 	/// append
 	void push_back(const T& x) { data.push_back(x); }
 	/// generate sub-vector
 	VarVec<T> subvec(unsigned int a, unsigned int b) const { VarVec<T> V; V.data = std::vector<T>(&data[a],&data[b]); return V; }
+	/// copy data from a sub-vector, starting at position i
+	void load_subvec(const VarVec<T>& V, unsigned int i) { assert(i+V.size()<=size()); std::copy(V.getData().begin(), V.getData().end(), &data[i]); }
 	
 	/// size of vector
 	unsigned int size() const { return data.size(); }

@@ -16,8 +16,6 @@ public:
 		
 	/// total number of degrees of freedom
 	virtual unsigned int nDF() const { return InterplDF.n_pts(); }
-	/// possibly arbitrarily ordered interaction matrix entries
-	virtual mdouble nextInteractionTerm(unsigned int& i, unsigned int& j) { assert(false); }
 	
 protected:
 

@@ -21,7 +21,7 @@ public:
 class SurfacelSet: public ReactiveUnitSet, public FieldSource {
 public:
 	/// constructor
-	SurfacelSet(unsigned int nph): ReactiveUnitSet(nph), FieldSource(), verbose(true) { set_protocol(Surfacel_Protocol::SP); }
+	SurfacelSet(unsigned int nph): ReactiveUnitSet(nph), FieldSource(), verbose(true) { }
 	/// destructor
 	virtual ~SurfacelSet();
 	
@@ -37,25 +37,28 @@ public:
 	/// calculate response to incident field
 	virtual void calculateIncident(FieldSource* f);
 	
-	/// set state for i^th sub-element
-	virtual void setState(unsigned int i, const mvec& v) { surfacels[i]->setState(v); }
-	
-	/// set interaction protocol to use; respond whether accepted
-	virtual bool set_protocol(void* ip);
-	/// respond to interaction protocol
-	virtual void queryInteraction();
+	/// respond to interaction protocol; respond if protocol identified
+	virtual bool queryInteraction(void* ip);
 	
 	bool verbose;	//< whether to display calculation progress
 	
 protected:
 	std::vector<ReactiveElement*> surfacels;	//< the surface elements
 	
+	//======================================
 	/// set state for i^th sub-element
 	virtual void setSubelDF(unsigned int el, unsigned int df, mdouble v) { surfacels[el]->setState(df,v); }
-	
 	/// sub-element reaction to RS via protocol
-	virtual mvec subelReaction();
+	virtual mvec subelReaction(unsigned int el, ReactiveSet* R);
+	//======================================
 };
+
+
+
+//--------------------------------------------------
+//--------------------------------------------------
+//--------------------------------------------------
+
 
 /// segment of a shield, generates a ring of PlanarElements
 class ShieldSegment: public RefCounter {

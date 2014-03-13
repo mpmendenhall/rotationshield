@@ -8,7 +8,8 @@
 #include "Typedefs.hh"
 #include "RefCounter.hh"
 #include "Integrator.hh"
-					
+#include "Matrix.hh"
+
 /// Base (virtual) class for magnetic field sources due to current distributions
 class FieldSource: public RefCounter, public Visualizable {
 public:
@@ -19,6 +20,8 @@ public:
 	
 	/// Magnetic field at a specified point
 	virtual vec3 fieldAt(const vec3& v) const = 0;
+	/// Magnetic field at a point, with interaction matrix (optionally subclass for improved numerics)
+	virtual vec2 fieldAtWithTransform(const vec3& v, const Matrix<2,3,mdouble>& M) const { return M*fieldAt(v); }
 	/// Magnetic field averaged over specified line
 	virtual vec3 fieldOverLine(Line l) const;
 	/// Magnetic field averaged over specified plane
@@ -38,6 +41,9 @@ class BField_Protocol {
 public:
 	vec3 x;	//< position
 	vec3 B;	//< magnetic field
+	const Matrix<2,3,mdouble>* M;	//< optional transform matrix
+	vec2 MB;						//< transformed field
+	const void* caller;				//< pointer to caller
 	static BField_Protocol* BFP;
 };
 

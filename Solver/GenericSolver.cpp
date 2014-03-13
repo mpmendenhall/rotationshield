@@ -27,6 +27,7 @@ void GenericSolver::solve(ReactiveSet& R) {
 }
 
 void GenericSolver::buildInteractionMatrix(ReactiveSet& R) {
+	/*
 	the_GF = gsl_matrix_alloc(R.nDF(),R.nDF());
 	unsigned int i;
 	unsigned int j;
@@ -35,6 +36,7 @@ void GenericSolver::buildInteractionMatrix(ReactiveSet& R) {
 		mdouble v = R.nextInteractionTerm(i,j);
 		gsl_matrix_set(the_GF, i, j, i==j ? 1-v : -v);
 	}
+	*/
 }
 
 void GenericSolver::calculateResult(ReactiveSet& R) {

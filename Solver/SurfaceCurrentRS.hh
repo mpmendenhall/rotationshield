@@ -28,23 +28,21 @@ public:
 
 
 /// Continuous surface current responding to magnetic field
-/// things needing to be set to implement:
-///		SurfaceGeometry* mySurface
 class SurfaceCurrentRS: public SurfaceCurrentSource, public InterpolatingRS {
 public:
 	/// constructor
 	SurfaceCurrentRS(unsigned int nph, unsigned int nz);
 
-	/// set interaction protocol to use; respond whether accepted
-	virtual bool set_protocol(void* ip);
-	/// respond to interaction protocol
-	virtual void queryInteraction();
+	// ReactiveSet subclassed functions
+	//=====================================
+	/// get DF for given phi reacting to state R
+	virtual mvec getReactionTo(ReactiveSet* R, unsigned int phi = 0);
+	/// respond to interaction protocol; return whether protocol recognized
+	virtual bool queryInteraction(void* ip);
+	//=====================================
+	
 	/// calculate response to incident field
 	virtual void calculateIncident(const FieldSource& f);
-	/// reset interaction term counter
-	virtual void startInteractionScan() { ReactiveSet::startInteractionScan(); ic_i = ic_di = 0; ic_v = subelReaction(); }
-	/// possibly arbitrarily ordered interaction matrix entries
-	virtual mdouble nextInteractionTerm(unsigned int& i, unsigned int& j);
 	
 	/// set surface response at all points
 	void setSurfaceResponse(SurfaceI_Response r);
@@ -59,18 +57,13 @@ public:
 	
 	/// get surface coordinates for i^th element
 	vec2 surf_coords(unsigned int i) const { return vec2(((i/nPhi)+0.5)/nZ, ((i%nPhi)+0.5)/nPhi); }
-	
-	CubiTerpolator Cref;
-	
+		
 protected:
-
-	/// calculate element interaction
-	vec2 subelReaction();
 	
-	// interaction calculator cache variables
-	mvec ic_v;				//< cached interaction matrix between sub-elements
-	unsigned int ic_i;		//< interaction scan element being examined
-	unsigned int ic_di;		//< interaction scan element DF being examined
+	/// one surface element's reaction
+	vec2 subelReaction(ReactiveSet* R);
+	
+	unsigned int ixn_el;	//< interacting element currently being probed
 	
 	std::vector<SurfaceI_Response> sdefs;
 };

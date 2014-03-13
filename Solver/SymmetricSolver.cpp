@@ -17,16 +17,17 @@ void SymmetricSolver::solve(ReactiveSet& R) {
 
 void SymmetricSolver::buildInteractionMatrix(ReactiveSet& R) {
 	if(verbose) printf("Building interaction matrix for %i DF in groups of %i...\n", R.nDF(), R.nPhi);
-	ProgressBar pb = ProgressBar(R.nDF()*R.nDF()/R.nPhi,R.nDF(),verbose);
+	ProgressBar pb = ProgressBar(R.nDF(),R.nDF()/R.nPhi,verbose);
 	the_GF = BlockCMat<mdouble>(R.nDF()/R.nPhi,R.nDF()/R.nPhi,R.nPhi);
 	
-	unsigned int i;
-	unsigned int j;
 	R.startInteractionScan();
-	for(unsigned int n=0; n<R.nDF()*R.nDF()/R.nPhi; n++) {
-		mdouble v = R.nextInteractionTerm(i,j);
-		the_GF.getBlock(i/R.nPhi, j/R.nPhi)[j%R.nPhi] = i==j ? 1-v : -v;
-		pb.update(n);
+	for(unsigned int DF=0; DF<R.nDF(); DF++) {
+		R.setInteractionDF(DF);
+		mvec v = R.getReactionTo(&R);
+		assert(v.size() == R.nDF()/R.nPhi);
+		for(unsigned int i=0; i<v.size(); i++)
+			the_GF.getBlock(i, DF/R.nPhi)[DF%R.nPhi] = i*R.nPhi==DF ? 1-v[i] : -v[i];
+		pb.update(DF);
 	}
 }
 
