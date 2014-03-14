@@ -19,7 +19,7 @@ public:
 	virtual vec2 deriv(mdouble x) const { return F.deriv(l_remap(x)) * l_remap.deriv(x); }
 	
 	/// optimize for field configuration
-	void optimizeSpacing(const FieldEstimator2D& fes, double pfixed = 0.5);
+	void optimizeSpacing(const FieldEstimator2D& fes, double pfixed = 0.5, bool useDeriv = true);
 	/// set constant spacing
 	void setConstantSpacing();
 	

@@ -2,12 +2,9 @@
 #include "Color.hh"
 #include <cmath>
 
-vec3 SurfaceCurrentSource::dI_contrib(const vec2& l, vec3& xout) const {
+vec3 SurfaceCurrentSource::dI_contrib(const vec2& l) const {
 	assert(mySurface && sj);
 	
-	// position of surface element
-	xout = (*mySurface)(l);
-
 	// surface current element dl
 	vec2 sdl = (*sj)(l, sjparams);
 	vec3 dl0 = mySurface->deriv(l,0);
@@ -20,8 +17,10 @@ vec3 SurfaceCurrentSource::dI_contrib(const vec2& l, vec3& xout) const {
 }
 
 vec3 SurfaceCurrentSource::fieldAt_contrib_from(const vec3& v, const vec2& l) const {
-	vec3 x0;
-	vec3 dl = dI_contrib(l,x0);
+	assert(mySurface);
+	
+	vec3 x0 = (*mySurface)(l);
+	vec3 dl = dI_contrib(l);
 		
 	// Biot-Savart law, transitioning to near-field constant field approximation TODO
 	vec3 r = v - x0;
@@ -84,4 +83,16 @@ void SurfaceCurrentSource::vis_coords(const vec2& l, double s) const {
 	vsr::line(o, o+dy*s);
 	vsr::line(o, o+dz*s);
 }
+
+mvec J_dA(vec2 l, void* params) {
+	SurfaceCurrentSource& S = *(SurfaceCurrentSource*)params;
+	return mvec(S.dI_contrib(l));
+}
+
+vec3 SurfaceCurrentSource::netCurrent(vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
+	mvec J = subdividedIntegral(&J_dA, (void*)this, ll, ur, ndx, ndy);
+	return vec3(J[0],J[1],J[2]);
+}
+
+
 

@@ -205,7 +205,7 @@ bool csurface_test() {
 	// main shield
 	Line2D L2D(vec2(-zh,r0), vec2(zh,r0));
 	FieldAdaptiveSurface FAS(L2D);
-	FAS.optimizeSpacing(sfe,0.8);
+	FAS.optimizeSpacing(sfe,0.3, false);
 	FAS.symmetry_test();
 	CylSurfaceGeometry SG(&FAS);
 	SurfaceCurrentRS RS(nPhi,12);
@@ -213,7 +213,6 @@ bool csurface_test() {
 	RS.setSurfaceResponse(SurfaceI_Response(10000));
 	RSC.addSet(&RS);
 	
-	/*
 	// rear SC endcap
 	Line2D L_Endcap(vec2(-zh,0), vec2(-zh,r0));
 	FieldAdaptiveSurface FAS_EC(L_Endcap);
@@ -223,9 +222,9 @@ bool csurface_test() {
 	RS_EC.mySurface = &SG_EC;
 	RS_EC.setSurfaceResponse(SurfaceI_Response(0));
 	RSC.addSet(&RS_EC);
-	*/
 	
 	RSC.calculateIncident(*MxS);
+	std::cout << "Net shield current: " << RSC.dipole() << std::endl;
 	
 	bool pass = true;
 	mdouble b0 = RSC.fieldAt(origin)[0];
@@ -248,6 +247,7 @@ bool csurface_test() {
 	
 	MxS->addsource(&RSC);
 	
+	std::cout << "Net shield current: " << RSC.dipole() << std::endl;
 	printf("Testing shielded fields...\n");
 
 	b0 = MxS->fieldAt(origin)[0];
@@ -291,7 +291,7 @@ bool csurface_test_B() {
 	MagRSCombiner RSC(128);
 	Line2D L2D(vec2(-zh,r0), vec2(zh,r0));
 	FieldAdaptiveSurface FAS(L2D);
-	FAS.optimizeSpacing(*fe,0.5);
+	FAS.optimizeSpacing(*fe,0.2);
 	CylSurfaceGeometry SG(&FAS);
 	SurfaceCurrentRS RS(128,50);
 	RS.mySurface = &SG;

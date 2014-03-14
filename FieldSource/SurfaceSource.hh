@@ -27,7 +27,7 @@ public:
 	virtual vec3 fieldAt(const vec3& v) const { return fieldAt(v,vec2(0,0),vec2(1,1)); }
 	/// Magnetic field at a point, with interaction matrix
 	virtual vec2 fieldAtWithTransform(const vec3& v, const Matrix<2,3,mdouble>& M) const { return fieldAtWithTransform(v,M,vec2(0,0),vec2(1,1)); }
-	
+		
 	/// Display field contributions over grid to given point
 	void displayContribGrid(const vec3& v, unsigned int nx = 7, unsigned int ny = 7) const;
 	
@@ -36,6 +36,9 @@ public:
 	
 protected:
 	mutable Integrator2D myIntegrator;	//< surface field integrator
+
+	/// convenience mechanism for integrations split over may divisions, limited to surface [0,1]->[0,1] // TODO the problem??
+	mvec subdividedIntegral(mvec (*f)(vec2, void*), void* fparams, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const;
 };
 
 

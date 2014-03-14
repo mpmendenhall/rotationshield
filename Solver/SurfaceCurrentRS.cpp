@@ -3,6 +3,14 @@
 #include "VisSurface.hh"
 #include <algorithm>
 
+void SurfaceCurrentRS::element_surface_range(unsigned int i, vec2& ll, vec2& ur) const {
+	unsigned int zn = i/nPhi;
+	unsigned int pn = i%nPhi;
+	ll = vec2( double(zn)/nZ, double(pn)/nPhi );
+	ur = vec2( double(zn+1)/nZ, double(pn+1)/nPhi );
+}
+
+
 // SurfaceCurrent from interpolators of SurfaceCurrentRS
 vec2 surfaceJ(vec2 v, void* p) {
 	assert(p);
@@ -51,46 +59,47 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 	BField_Protocol::BFP->MB = vec2(0,0);
 	
 	// z and phi numbers of active and responding element
-	unsigned int el = ixn_df % (nZ*nPhi);
+	unsigned int el = ixn_df % (nZ*nPhi);	//< active element
 	if(BField_Protocol::BFP->caller == this && el == ixn_el) return true; // TODO proper self-interaction
-	int c_nz = el/nPhi;
-	int c_np = el%nPhi;
-	int i_nz = ixn_el/nPhi;
-	int i_nphi = ixn_el%nPhi;
+	int c_nz = el/nPhi;			//< center z of active element
+	int c_np = el%nPhi;			//< center phi of active element
+	
+	int i_nz = ixn_el/nPhi;		//< responding element z
+	int i_nphi = ixn_el%nPhi;	//< responding element phi
+	
 	
 	// How to slice up integration range; TODO allow 3x3 region with internal singularities
-	//const unsigned int n_integ_domains = 3;					//< number of integration domains in each direction
-	//const int integ_domains[n_integ_domains+1] = {-2,-1,1,2};	//< integration domain divisions
-	const unsigned int n_integ_domains = 4;						//< number of integration domains in each direction
-	const int integ_domains[n_integ_domains+1] = {-2,-1,0,1,2};	//< integration domain divisions
+	const unsigned int n_integ_domains = 3;					//< number of integration domains in each direction
+	const int integ_domains[n_integ_domains+1] = {-2,-1,1,2};	//< integration domain divisions
+	//const unsigned int n_integ_domains = 4;						//< number of integration domains in each direction
+	//const int integ_domains[n_integ_domains+1] = {-2,-1,0,1,2};	//< integration domain divisions
 
 	// save previous integration method
 	Integration_Method im = myIntegrator.getMethod();
 	
 	// integrate over each region
-	vec2 vResp;
 	for(unsigned int dmz = 0; dmz < n_integ_domains; dmz++) {
-		int z0 = integ_domains[dmz];
-		int z1 = integ_domains[dmz+1];
-		if(c_nz + z1 < 0 || c_nz + z0 >= (int)nZ) continue; // skip past-edges domains
 		for(unsigned int dmp = 0; dmp < n_integ_domains; dmp++) {
-			int p0 = integ_domains[dmp];
-			int p1 = integ_domains[dmp+1];
-	
-			int nz0 = c_nz + z0;
-			int nz1 = c_nz + z1;
-			int np0 = c_np + p0;
-			int np1 = c_np + p1;
-			
-			// set integration method depending on whether there will be edge singularities
-			if( BField_Protocol::BFP->caller == this && (nz0 <= i_nz && i_nz <= nz1) && ( (i_nphi - np0 + nPhi)%nPhi <= (np1 - np0 + nPhi)%nPhi ) )
-				myIntegrator.setMethod(INTEG_GSL_QAGS);
-			else
-				myIntegrator.setMethod(INTEG_GSL_QAG);
+
+			int nz0 = c_nz + integ_domains[dmz];
+			int nz1 = c_nz + integ_domains[dmz+1];
+			int np0 = c_np + integ_domains[dmp];
+			int np1 = c_np + integ_domains[dmp+1];
+			if(nz1 <= 0 || nz0 >= (int)nZ) continue; // skip past-edges domains; note, we are allowed to wrap around in phi
 			
 			vec2 ll(double(nz0)/double(nZ), double(np0)/double(nPhi));
 			vec2 ur(double(nz1)/double(nZ), double(np1)/double(nPhi));
-						
+			if(ll[0]<0) ll[0]=0;
+			if(ur[0]>1) ur[0]=1;
+			
+			// set integration method depending on whether there will be edge singularities (target point inside integration range)
+			if( BField_Protocol::BFP->caller == this
+					&& (nz0 <= i_nz && i_nz <= nz1)
+					&& ( (i_nphi - np0 + nPhi)%nPhi <= (np1 - np0 + nPhi)%nPhi ) )
+				myIntegrator.setMethod(INTEG_GSL_QAGS);
+			else
+				myIntegrator.setMethod(INTEG_GSL_QAG);
+												
 			if(BField_Protocol::BFP->M) {
 				BField_Protocol::BFP->MB += fieldAtWithTransform(BField_Protocol::BFP->x, *BField_Protocol::BFP->M, ll, ur, 1, 1);
 			} else {
@@ -118,21 +127,34 @@ void SurfaceCurrentRS::setSurfaceResponse(SurfaceI_Response r) {
 void SurfaceCurrentRS::_visualize() const {
 	SurfaceCurrentSource::_visualize();
 	assert(mySurface);
+	vsr::setColor(0,0,0);
 	for(unsigned int el = 0; el < nZ*nPhi; el++)
 		vis_coords(surf_coords(el));
-	vsr::setColor(0,0,0);
-	vis_i_vectors(0.1);
+	vis_i_vectors();
 }
 
-void SurfaceCurrentRS::vis_i_vectors(double s) const {
+void SurfaceCurrentRS::vis_i_vectors(double s, double mx) const {
 	for(unsigned int el = 0; el < nZ*nPhi; el++) {
 		vec2 l = surf_coords(el);
 		vec3 o = (*mySurface)(l);
+		
+		vec2 ll,ur;
+		element_surface_range(el, ll, ur);
+		vec3 j = netCurrent(ll, ur, 1, 1)*s/mySurface->area(ll,ur);
+		double m = j.mag();
+		j *= mx*atan(s*m/mx)/(m*0.5*M_PI);
+		
+		vsr::setColor(0,0,1);
+		vsr::line(o-j*0.5, o);
+		vsr::setColor(1,0,0);
+		vsr::line(o, o+j*0.5);
+		
+		/*
 		vec3 dx = mySurface->deriv(l,0).normalized();
 		vec3 dy = mySurface->deriv(l,1).normalized();
 		vec2 j = eval(l)*s;
-		vsr::line(o, o+dx*j[0]);
-		vsr::line(o, o+dy*j[1]);
+		vsr::line(o, o+dx*j[0]+dy*j[1]);
+		*/
 	}
 }
 

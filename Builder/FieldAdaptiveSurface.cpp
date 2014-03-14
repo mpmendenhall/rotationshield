@@ -18,7 +18,7 @@ void FieldAdaptiveSurface::symmetry_test() const {
 	}
 }
 
-void FieldAdaptiveSurface::optimizeSpacing(const FieldEstimator2D& fes, double pfixed) {
+void FieldAdaptiveSurface::optimizeSpacing(const FieldEstimator2D& fes, double pfixed, bool useDeriv) {
 	
 	const unsigned int npts = 500;
 	
@@ -28,9 +28,14 @@ void FieldAdaptiveSurface::optimizeSpacing(const FieldEstimator2D& fes, double p
 	for(unsigned int i=1; i < npts; i++) {
 		mdouble l = float(i-0.5)/float(npts-1.);
 		vec2 zr = F(l);
-		vec2 dv = F.deriv(l).normalized();
-		// bunch up at high field derivatives along profile curve
-		fstr[i] = fstr[i-1] + fabs(fes.derivAt(zr,dv*0.0002).dot(dv));
+		if(useDeriv) {
+			// bunch up at high field derivatives along profile curve
+			vec2 dv = F.deriv(l).normalized();
+			fstr[i] = fstr[i-1] + fabs(fes.derivAt(zr,dv*0.0002).dot(dv));
+		} else {
+			// bunch up at high fields
+			fstr[i] = fstr[i-1] + fes.estimateAt(zr).mag();
+		}
 	}
 	
 	// add "slope" to cumulative curve for fixed partitions
