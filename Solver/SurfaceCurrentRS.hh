@@ -24,6 +24,7 @@ public:
 	void setRmat() {
 		rmat = Matrix<2,3,mdouble>();
 		rmat(0,1) = rmat(1,0) = 2.0*(1.0-murel)/(1.0+murel);
+		rmat(1,0) = -rmat(0,1);
 	}
 };
 

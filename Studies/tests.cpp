@@ -90,6 +90,12 @@ bool reference_sanity_check() {
 
 bool reference_simpleshield() {
 	
+	//center scan lines
+	vec3 origin(0,0,0);
+	vec3 xscan(0.15,0,0);
+	vec3 yscan(0,0.06,0);
+	vec3 zscan(0,0,0.25);
+	
 	MixedSource* MxS = new MixedSource();
 	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 3.92);
 	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_LINE;
@@ -104,8 +110,17 @@ bool reference_simpleshield() {
 	SB->retain();
 	SB->makeOptCyl(10, 2, .6223, -3.9624/2, 3.9624/2, new PlaneSource(Plane(),10000.0), &fe);
 	
+	// non-interacting field reaction
 	SB->calculateIncident(MxS);
-	std::cout << "Incident Response Origin field" << SB->fieldAt(vec3(0,0,0)) << std::endl;
+	bool pass = true;
+	mdouble b0 = SB->fieldAt(origin)[0];
+	pass &= compareResults(b0,6.83758710057794e-01,"origin - noninteracting");
+	pass &= compareResults(SB->fieldAt(xscan)[0]-b0,1.11572338749721e-03,"+x");
+	pass &= compareResults(SB->fieldAt(yscan)[0]-b0,-9.86029434321134e-05,"+y");
+	pass &= compareResults(SB->fieldAt(zscan)[0]-b0,-1.33717928505817e-03,"+z");
+	pass &= compareResults(SB->fieldAt(-xscan)[0]-b0,1.11572338749666e-03,"-x");
+	pass &= compareResults(SB->fieldAt(-yscan)[0]-b0,-9.86029434315583e-05,"-y");
+	pass &= compareResults(SB->fieldAt(-zscan)[0]-b0,-1.33717928543731e-03,"-z");
 	SB->visualize();
 	vsr::pause();
 	
@@ -115,15 +130,8 @@ bool reference_simpleshield() {
 	
 	MxS->addsource(SB);
 	MxS->visualize();
-	
-	//center scan lines
-	vec3 origin(0,0,0);
-	vec3 xscan(0.15,0,0);
-	vec3 yscan(0,0.06,0);
-	vec3 zscan(0,0,0.25);
 
-	bool pass = true;
-	mdouble b0 = MxS->fieldAt(origin)[0];
+	b0 = MxS->fieldAt(origin)[0];
 	pass &= compareResults(b0,1.59942943484446e+00,"origin");
 	pass &= compareResults(MxS->fieldAt(xscan)[0]-b0,2.62654994091771e-03,"+x");
 	pass &= compareResults(MxS->fieldAt(yscan)[0]-b0,-3.80699814184204e-04,"+y");
@@ -170,12 +178,22 @@ public:
 
 
 bool csurface_test() {
+
+	//center scan lines
+	vec3 origin(0,0,0);
+	vec3 xscan(0.15,0,0);
+	vec3 yscan(0,0.06,0);
+	vec3 zscan(0,0,0.25);
 	
 	MixedSource* MxS = new MixedSource();
 	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 3.92);
 	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_LINE;
 	b.buildCoil(*MxS);
 	FieldEstimator2Dfrom3D fe(MxS);
+	
+	FieldEstimator2D sfe;
+	sfe.addsource(vec2(-3.92/2,0.61),1.0);
+	sfe.addsource(vec2(3.92/2,0.61),1.0);
 	
 	unsigned int nPhi = 32;
 	
@@ -187,7 +205,7 @@ bool csurface_test() {
 	// main shield
 	Line2D L2D(vec2(-zh,r0), vec2(zh,r0));
 	FieldAdaptiveSurface FAS(L2D);
-	FAS.optimizeSpacing(fe,0.5);
+	FAS.optimizeSpacing(sfe,0.8);
 	FAS.symmetry_test();
 	CylSurfaceGeometry SG(&FAS);
 	SurfaceCurrentRS RS(nPhi,12);
@@ -208,9 +226,17 @@ bool csurface_test() {
 	*/
 	
 	RSC.calculateIncident(*MxS);
-	// Incident Response Origin field< 0.683759 -3.96547e-16 5.57686e-18 >
-	// RS.displayContribGrid(vec3(0,0,0),5,5);
-	std::cout << "Origin field" << RSC.fieldAt(vec3(0,0,0)) << std::endl;
+	
+	bool pass = true;
+	mdouble b0 = RSC.fieldAt(origin)[0];
+	pass &= compareResults(b0,6.83758710057794e-01,"origin - noninteracting");
+	pass &= compareResults(RSC.fieldAt(xscan)[0]-b0,1.11572338749721e-03,"+x");
+	pass &= compareResults(RSC.fieldAt(yscan)[0]-b0,-9.86029434321134e-05,"+y");
+	pass &= compareResults(RSC.fieldAt(zscan)[0]-b0,-1.33717928505817e-03,"+z");
+	pass &= compareResults(RSC.fieldAt(-xscan)[0]-b0,1.11572338749666e-03,"-x");
+	pass &= compareResults(RSC.fieldAt(-yscan)[0]-b0,-9.86029434315583e-05,"-y");
+	pass &= compareResults(RSC.fieldAt(-zscan)[0]-b0,-1.33717928543731e-03,"-z");
+
 	RSC.visualize();
 	vsr::pause();
 		
@@ -223,14 +249,8 @@ bool csurface_test() {
 	MxS->addsource(&RSC);
 	
 	printf("Testing shielded fields...\n");
-	//center scan lines
-	vec3 origin(0,0,0);
-	vec3 xscan(0.15,0,0);
-	vec3 yscan(0,0.06,0);
-	vec3 zscan(0,0,0.25);
 
-	bool pass = true;
-	mdouble b0 = MxS->fieldAt(origin)[0];
+	b0 = MxS->fieldAt(origin)[0];
 	pass &= compareResults(b0,1.59942943484446e+00,"origin");
 	pass &= compareResults(MxS->fieldAt(xscan)[0]-b0,2.62654994091771e-03,"+x");
 	pass &= compareResults(MxS->fieldAt(yscan)[0]-b0,-3.80699814184204e-04,"+y");

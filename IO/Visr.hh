@@ -15,6 +15,8 @@ namespace vsr {
 	
 	/// reset view to default
 	void resetViewTransformation();
+	/// update view window after changes
+	void updateViewWindow();
 	/// start recording a series of draw commands; newseg=true to erase all previous series
 	void startRecording(bool newseg = false);
 	/// stop recording a series of draw commands

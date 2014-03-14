@@ -8,7 +8,7 @@
 #include <GL/freeglut.h>
 
 namespace vsr {
-		
+
 	struct qcmd {
 		qcmd(void (*f)(std::vector<float>&)): fcn(f) {}
 		void (*fcn)(std::vector<float>&);
@@ -105,9 +105,7 @@ namespace vsr {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glTranslatef(0,0,1.0*viewrange);
-		glMatrixMode(GL_PROJECTION);	
-		glLoadIdentity();
-		glOrtho(-viewrange*ar, viewrange*ar, -viewrange, viewrange, 10, -10);
+		updateViewWindow();
 	}
 	
 	void _startRecording(std::vector<float>& v) {
@@ -275,10 +273,28 @@ namespace vsr {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE_MINUS_DST_ALPHA,GL_DST_ALPHA);
 		glEnable(GL_DEPTH_TEST);
+		
 		glEnable(GL_FOG);
+		
+		// fade to dark
 		float fadecolor[4] = {0,0,0,1.0};
 		glFogfv(GL_FOG_COLOR,fadecolor);
-		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		
+		GLint fog_mode = GL_LINEAR;
+		glFogiv(GL_FOG_MODE, &fog_mode);
+		
+		float fog_start = 2;
+		float fog_end = -2;
+		glFogfv(GL_FOG_START, &fog_start);
+		glFogfv(GL_FOG_END, &fog_end);
+		
+		//float fog_dens = 0.7;
+		//glFogfv(GL_FOG_DENSITY,&fog_dens);
+		
+		//GLint fog_coord = GL_FRAGMENT_DEPTH; //GL_FOG_COORD;
+		//glFogiv(GL_FOG_COORD_SRC,&fog_coord);
+		
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		
 		glutDisplayFunc(&redrawDisplay);
 		glutMouseFunc(&startMouseTracking);
@@ -304,12 +320,18 @@ namespace vsr {
 		glViewport(0,0,width,height);
 		winwidth = width; winheight = height;
 		ar = float(width)/float(height);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(-viewrange*ar+xtrans, viewrange*ar+xtrans, -viewrange+ytrans, viewrange+ytrans, 1000, -1000);
+		updateViewWindow();
 		glFlush();
 		glFinish();
-	}	
+	}
+	
+	void updateViewWindow() {
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glTranslated(0,0,1); // viewer sits at z=+1, looking in -z direction
+		// 		left,					right,					bottom,				top,				distance to near,	distance to far
+		glOrtho(-viewrange*ar + xtrans, viewrange*ar + xtrans, -viewrange + ytrans, viewrange + ytrans, 0, 					10);
+	}
 	
 	void redrawIfUnlocked() {
 		if(kill_flag) exit(0);
@@ -349,17 +371,13 @@ namespace vsr {
 		if(modifier == GLUT_ACTIVE_SHIFT) {
 			float s = (1 - 0.005*(x-clickx0));
 			if( (viewrange > 1.0e-2 || s > 1.0) && (viewrange < 1.0e3 || s < 1.0) ) viewrange *= s;
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-			glOrtho(-viewrange*ar+xtrans, viewrange*ar+xtrans, -viewrange+ytrans, viewrange+ytrans, 1000, -1000);
+			updateViewWindow();
 			glLineWidth(1.5/viewrange);
 			
 		} else if(modifier == GLUT_ACTIVE_CTRL) {
 			xtrans -= ar*2.0*(x-clickx0)*viewrange/winwidth;
 			ytrans += 2.0*(y-clicky0)*viewrange/winheight;
-			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
-			glOrtho(-viewrange*ar+xtrans, viewrange*ar+xtrans, -viewrange+ytrans, viewrange+ytrans, 1000, -1000);
+			updateViewWindow();
 		} else {
 			
 			glMatrixMode(GL_MODELVIEW);
@@ -370,8 +388,8 @@ namespace vsr {
 			if(modifier == (GLUT_ACTIVE_CTRL | GLUT_ACTIVE_SHIFT))
 				glRotatef( -0.2*(x-clickx0),0,0,1);
 			else {
-				glRotatef( -0.2*(y-clicky0),m[0],m[4],m[8]);
-				glRotatef( -0.2*(x-clickx0),m[1],m[5],m[9]);
+				glRotatef( 0.2*(y-clicky0),m[0],m[4],m[8]);
+				glRotatef( 0.2*(x-clickx0),m[1],m[5],m[9]);
 			}
 		}
 		
@@ -388,6 +406,7 @@ namespace vsr {
 	void initWindow(const std::string& title) { }
 	void clearWindow() {}
 	void resetViewTransformation() {}
+	void updateViewWindow() {}
 	void startRecording(bool newseg) {}
 	void stopRecording() {}
 	void pause() {}

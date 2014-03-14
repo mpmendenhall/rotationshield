@@ -307,7 +307,7 @@ T cross( const Vec<2,T>& v1, const Vec<2,T>& v2 ) { return v1[0]*v2[1]-v1[1]*v2[
 /// cross product of 3-vectors
 template<typename T>
 Vec<3,T> cross( const Vec<3,T>& a, const Vec<3,T>& b ) {
-	return Vec<3,T>(a[1]*b[2]-b[1]*a[2],a[2]*b[0]-b[2]*a[0],a[0]*b[1]-b[0]*a[1]);
+	return Vec<3,T>(a[1]*b[2]-b[1]*a[2], a[2]*b[0]-b[2]*a[0], a[0]*b[1]-b[0]*a[1]);
 }
 
 /// rotation of a 2-vector 90 degrees counterclockwise
