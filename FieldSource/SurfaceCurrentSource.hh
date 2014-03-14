@@ -10,7 +10,7 @@
 class SurfaceCurrentSource: public SurfaceSource {
 public:
 	/// constructor
-	SurfaceCurrentSource(SurfaceGeometry* SG = NULL): SurfaceSource(), mySurface(SG), vis_n1(100), vis_n2(200) {}
+	SurfaceCurrentSource(SurfaceGeometry* SG = NULL): SurfaceSource(), mySurface(SG), vis_n1(200), vis_n2(200) {}
 	
 	/// current element dl from surface coordinate l; returns vecfor dI and position xout
 	vec3 dI_contrib(const vec2& l, vec3& xout) const;

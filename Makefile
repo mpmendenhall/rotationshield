@@ -54,7 +54,7 @@ endif
 VPATH = ./:MathUtils/:FieldSource/:Solver/:Builder/:Studies/:IO/
 
 # things to build
-obj_IO = Visr.o strutils.o ControlMenu.o QFile.o SMExcept.o PathUtils.o
+obj_IO = Visr.o strutils.o ControlMenu.o QFile.o SMExcept.o PathUtils.o VisSurface.o
 
 obj_MathUtils = Geometry.o Integrator.o MiscUtils.o RefCounter.o analysis.o linmin.o SurfaceGeometry.o InterpolationHelper.o BicubicGrid.o
 

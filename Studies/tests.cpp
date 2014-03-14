@@ -177,7 +177,7 @@ bool csurface_test() {
 	b.buildCoil(*MxS);
 	FieldEstimator2Dfrom3D fe(MxS);
 	
-	unsigned int nPhi = 8;
+	unsigned int nPhi = 32;
 	
 	MagRSCombiner RSC(nPhi);
 	
@@ -188,22 +188,24 @@ bool csurface_test() {
 	Line2D L2D(vec2(-zh,r0), vec2(zh,r0));
 	FieldAdaptiveSurface FAS(L2D);
 	FAS.optimizeSpacing(fe,0.5);
+	FAS.symmetry_test();
 	CylSurfaceGeometry SG(&FAS);
-	SurfaceCurrentRS RS(nPhi,7);
+	SurfaceCurrentRS RS(nPhi,12);
 	RS.mySurface = &SG;
 	RS.setSurfaceResponse(SurfaceI_Response(10000));
 	RSC.addSet(&RS);
 	
+	/*
 	// rear SC endcap
 	Line2D L_Endcap(vec2(-zh,0), vec2(-zh,r0));
 	FieldAdaptiveSurface FAS_EC(L_Endcap);
 	FAS_EC.optimizeSpacing(fe,0.5);
 	CylSurfaceGeometry SG_EC(&FAS_EC);
-	SurfaceCurrentRS RS_EC(nPhi,7);
+	SurfaceCurrentRS RS_EC(nPhi,12);
 	RS_EC.mySurface = &SG_EC;
 	RS_EC.setSurfaceResponse(SurfaceI_Response(0));
 	RSC.addSet(&RS_EC);
-	
+	*/
 	
 	RSC.calculateIncident(*MxS);
 	// Incident Response Origin field< 0.683759 -3.96547e-16 5.57686e-18 >
@@ -240,5 +242,67 @@ bool csurface_test() {
 	MxS->visualize();
 	vsr::pause();
 	
+	return pass;
+}
+
+bool csurface_test_B() {
+	
+	//center scan lines
+	vec3 origin(0,0,0);
+	vec3 xscan(0.15,0,0);
+	vec3 yscan(0,0.06,0);
+	vec3 zscan(0,0,0.25);
+	
+	MixedSource* MxS = new MixedSource();
+	MxS->retain();
+	
+	CosThetaBuilder CB(17, 0.61, 3.92);
+	CB.myCap[0] = CB.myCap[1] = CosThetaBuilder::CAP_LINE;
+	CB.buildCoil(*MxS);
+	MxS->visualize();
+	
+	FieldEstimator2D* fe = new FieldEstimator2D();
+	fe->addsource(vec2(-3.92/2,0.61),1.0);
+	fe->addsource(vec2(3.92/2,0.61),1.0);
+
+	// main shield
+	double zh = 3.9624/2;
+	double r0 = .6223;
+	MagRSCombiner RSC(128);
+	Line2D L2D(vec2(-zh,r0), vec2(zh,r0));
+	FieldAdaptiveSurface FAS(L2D);
+	FAS.optimizeSpacing(*fe,0.5);
+	CylSurfaceGeometry SG(&FAS);
+	SurfaceCurrentRS RS(128,50);
+	RS.mySurface = &SG;
+	RS.setSurfaceResponse(SurfaceI_Response(10000));
+	RSC.addSet(&RS);
+
+	RSC.calculateIncident(*MxS);
+	std::cout << "Origin field" << RSC.fieldAt(vec3(0,0,0)) << std::endl;
+	RSC.visualize();
+	vsr::pause();
+			
+	SymmetricSolver SS;
+	SS.solve(RSC);
+	SS.calculateResult(RSC);
+	
+	MxS->addsource(&RSC);
+
+	printf("Testing shielded fields...\n");
+	bool pass = true;
+	double b0 = MxS->fieldAt(origin)[0];
+	pass &= compareResults(b0,1.60059633351831e+00,"all origin");
+	pass &= compareResults(MxS->fieldAt(xscan)[0]-b0,4.89741926812615e-04,"all +x edge");
+	pass &= compareResults(MxS->fieldAt(yscan)[0]-b0,-6.08234419476883e-05,"all +y edge");
+	pass &= compareResults(MxS->fieldAt(zscan)[0]-b0,-1.87974966410431e-04,"all +z edge");
+	pass &= compareResults(MxS->fieldAt(xscan*-1.0)[0]-b0,4.89741926807952e-04,"all -x edge");
+	pass &= compareResults(MxS->fieldAt(yscan*-1.0)[0]-b0,-6.08234419501308e-05,"all -y edge");
+	pass &= compareResults(MxS->fieldAt(zscan*-1.0)[0]-b0,-1.87974966387339e-04,"all -z edge");
+	
+	vsr::pause();
+	MxS->visualize();
+	vsr::pause();
+
 	return pass;
 }

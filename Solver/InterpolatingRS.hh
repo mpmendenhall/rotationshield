@@ -23,7 +23,7 @@ protected:
 	/// additional routines for setting a DF value
 	virtual void _setDF(unsigned int DF, double v) { InterplDF[DF] = v; }
 	/// additional routines for setting entire state vector
-	virtual void _setDF(const mvec& v) { assert(v.size() == nDF()); InterplDF.setData(&v[0]); }
+	virtual void _setDFv(const mvec& v) { assert(v.size() == nDF()); InterplDF.setData(&v[0]); }
 	
 	InterpolationHelper InterplDF;	//< degrees of freedom in InterpolatingHelper grid
 };
@@ -32,9 +32,9 @@ protected:
 class InterpolatingRS2D: public ReactiveSet {
 public:
 	/// constructor
-	InterpolatingRS2D(unsigned int nph): ReactiveSet(nph), nZ(0) { G[0]=G[1]=NULL; }
+	InterpolatingRS2D(unsigned int nph): ReactiveSet(nph), nZ(0) { }
 	/// destructor
-	~InterpolatingRS2D() { clear_data(); }
+	virtual ~InterpolatingRS2D() { clear_data(); }
 	
 	/// total number of degrees of freedom
 	virtual unsigned int nDF() const { return nZ*nPhi*nDFi; }
@@ -45,6 +45,8 @@ protected:
 	
 	/// additional routines for setting a DF value
 	virtual void _setDF(unsigned int DF, double v);
+	
+	//virtual void _setDFv(const mvec& v) { ReactiveSet::_setDFv(v); G[0]->printData(); }
 	
 	/// delete previous grids
 	virtual void clear_data();

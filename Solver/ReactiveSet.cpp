@@ -13,7 +13,7 @@ void ReactiveSet::setInteractionDF(unsigned int DF, double v) {
 	ixn_df = DF;
 }
 
-void ReactiveSet::_setDF(const mvec& v) {
+void ReactiveSet::_setDFv(const mvec& v) {
 	assert(v.size() == nDF());
 	for(unsigned int DF = 0; DF < nDF(); DF++)
 		_setDF(DF,v[DF]);
@@ -82,7 +82,7 @@ void ReactiveSetCombiner::_setDF(unsigned int DF, double v) {
 	mySets[is]->setDF(DF-set_cum_df[is],v);
 }
 
-void ReactiveSetCombiner::_setDF(const mvec& v) {
+void ReactiveSetCombiner::_setDFv(const mvec& v) {
 	for(unsigned int i=0; i<mySets.size(); i++)
 		mySets[i]->setFinalState(v.subvec(set_cum_df[i], set_cum_df[i+1]));
 }

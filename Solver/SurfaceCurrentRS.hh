@@ -29,7 +29,7 @@ public:
 
 
 /// Continuous surface current responding to magnetic field
-class SurfaceCurrentRS: public MagF_Responder, public SurfaceCurrentSource, public InterpolatingRS {
+class SurfaceCurrentRS: public MagF_Responder, public SurfaceCurrentSource, public InterpolatingRS2D {
 public:
 	/// constructor
 	SurfaceCurrentRS(unsigned int nph, unsigned int nz);
@@ -49,15 +49,13 @@ public:
 	void setSurfaceResponse(SurfaceI_Response r);
 	
 	/// get interpolated surface response
-	vec2 eval(const vec2& p) const;
-	
-	const unsigned int nZ;	//< number of z divisions
-	
+	vec2 eval(const vec2& p) const { return vec2( (*G[0])(p[0],p[1]), (*G[1])(p[0],p[1]) ); }
+		
 	/// visualization routine
 	virtual void _visualize() const;
 	
 	/// get surface coordinates for i^th element
-	vec2 surf_coords(unsigned int i) const { return vec2(((i/nPhi)+0.5)/nZ, ((i%nPhi)+0.5)/nPhi); }
+	vec2 surf_coords(unsigned int i) const { return vec2( ((i/nPhi)+0.5)/nZ, ((i%nPhi)+0.5)/nPhi); }
 		
 protected:
 	

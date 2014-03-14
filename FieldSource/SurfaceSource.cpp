@@ -1,4 +1,5 @@
 #include "SurfaceSource.hh"
+#include "VisSurface.hh"
 #include <iostream>
 
 struct SurfaceSourceIntegParams {
@@ -17,10 +18,6 @@ mvec SSdA(vec2 l, void* params) {
 mdouble clamp(mdouble m) { return m<0? 0 : m<1? m : 1; }
 
 vec3 SurfaceSource::fieldAt(const vec3& v, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
-	SurfaceSourceIntegParams p;
-	p.S = this;
-	p.v = v;
-	p.M = NULL;
 	
 	ndx = ndx?ndx:dflt_integrator_ndivs_x;
 	ndy = ndy?ndx:dflt_integrator_ndivs_y;
@@ -29,7 +26,11 @@ vec3 SurfaceSource::fieldAt(const vec3& v, vec2 ll, vec2 ur, unsigned int ndx, u
 		ur[i] = (clamp(ur[i])-ll[i])/(i?ndy:ndx);
 	}
 	
-	vec3 B;
+	SurfaceSourceIntegParams p;
+	p.S = this;
+	p.v = v;
+	p.M = NULL;
+	vec3 B(0,0,0);
 	for(unsigned int nx=0; nx<ndx; nx++) {
 		for(unsigned int ny=0; ny<ndy; ny++) {
 			vec2 lll =ll + vec2(nx*ur[0],ny*ur[1]);
@@ -41,22 +42,23 @@ vec3 SurfaceSource::fieldAt(const vec3& v, vec2 ll, vec2 ur, unsigned int ndx, u
 }
 
 vec2 SurfaceSource::fieldAtWithTransform(const vec3& v, const Matrix<2,3,mdouble>& M, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
-	SurfaceSourceIntegParams p;
-	p.S = this;
-	p.v = v;
-	p.M = &M;
+	
 	
 	ndx = ndx?ndx:dflt_integrator_ndivs_x;
-	ndy = ndy?ndx:dflt_integrator_ndivs_y;
+	ndy = ndy?ndy:dflt_integrator_ndivs_y;
 	for(unsigned int i=0; i<2; i++) {
 		ll[i] = clamp(ll[i]);
 		ur[i] = (clamp(ur[i])-ll[i])/(i?ndy:ndx);
 	}
 	
-	vec2 MB;
+	SurfaceSourceIntegParams p;
+	p.S = this;
+	p.v = v;
+	p.M = &M;
+	vec2 MB(0,0);
 	for(unsigned int nx=0; nx<ndx; nx++) {
 		for(unsigned int ny=0; ny<ndy; ny++) {
-			vec2 lll =ll + vec2(nx*ur[0],ny*ur[1]);
+			vec2 lll = ll + vec2(nx*ur[0], ny*ur[1]);
 			mvec Bi = myIntegrator.integrate2D(&SSdA, lll, lll+ur, &p);
 			MB += vec2(Bi[0],Bi[1]);
 		}

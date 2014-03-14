@@ -38,7 +38,7 @@ public:
 	/// set zero state
 	virtual void setZeroState() { setFinalState(mvec(nDF())); }
 	/// set final state
-	virtual void setFinalState(const mvec& v) { assert(v.size()==nDF()); finalState = v; _setDF(v); }
+	virtual void setFinalState(const mvec& v) { assert(v.size()==nDF()); finalState = v; _setDFv(v); }
 	
 	const unsigned int nPhi;	//< internal periodic symmetry
 	mvec incidentState; 		//< non-interacting initial state vector
@@ -51,7 +51,7 @@ protected:
 	/// called when a DF is set
 	virtual void _setDF(unsigned int DF, double v) = 0;
 	/// optional routine for setting entire state vector at once
-	virtual void _setDF(const mvec& v);
+	virtual void _setDFv(const mvec& v);
 	//=====================================
 	
 	unsigned int ixn_df;				//< interaction DF currently set
@@ -152,7 +152,7 @@ protected:
 	/// called when a DF is set
 	virtual void _setDF(unsigned int DF, double v);
 	/// optional routine for setting entire state vector at once
-	virtual void _setDF(const mvec& v);
+	virtual void _setDFv(const mvec& v);
 	//=====================================
 	
 	unsigned int ixn_set;					//< set currently responsible for interacting

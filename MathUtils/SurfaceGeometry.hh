@@ -55,6 +55,16 @@ public:
 	DVFunc1<2,mdouble>* zr_profile;	//< z,r (l) profile
 };
 
+/// Convenience 2D vector surface
+class Plane3D: public SurfaceGeometry {
+public:
+	Plane3D(vec3 lx = vec3(1,0,0), vec3 ly = vec3(0,1,0), vec3 o = vec3(-0.5,-0.5,0)): dx(lx), dy(ly), origin(o) {}
+	virtual vec3 operator()(const vec2& l) const { return origin + dx*l[0] + dy*l[1]; }
+	vec3 dx;
+	vec3 dy;
+	vec3 origin;
+};
+
 /// Convenience linear sweep DFunc
 class Line2D: public DVFunc1<2,mdouble> {
 public:
