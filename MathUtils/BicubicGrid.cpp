@@ -13,7 +13,7 @@ double eval_cubic(double y, const double* d) {
 
 double eval_cubic_deriv(double y, const double* d) {
 	return ( -d[0]*(1.5*y*y -2*y +0.5)
-			+d[1]*(4.5*y*y -0.5*y)
+			+d[1]*(4.5*y*y -5.*y)
 			+d[3]*(1.5*y*y -y)
 			-d[2]*(4.5*y*y -4*y -0.5));
 }
@@ -35,7 +35,7 @@ double CubicGrid::operator()(double x) const {
 }
 
 double CubicGrid::deriv(double x) const {
-	return _deriv(sx*(x-ox))/sx;
+	return _deriv(sx*(x-ox))*sx;
 }
 
 void CubicGrid::setUserRange(double r0, double r1, double e) {
