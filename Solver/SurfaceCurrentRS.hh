@@ -23,7 +23,7 @@ public:
 	/// generate correct response matrix to applied fields
 	void setRmat() {
 		rmat = Matrix<2,3,mdouble>();
-		rmat(0,1) = rmat(1,0) = 2.0*(1.0-murel)/(1.0+murel);
+		rmat(0,1) = -2.0*(1.0-murel)/(1.0+murel);
 		rmat(1,0) = -rmat(0,1);
 	}
 };
@@ -54,6 +54,8 @@ public:
 		
 	/// visualization routine
 	virtual void _visualize() const;
+	/// visualize current vectors
+	virtual void vis_i_vectors(double s = 1.0) const;
 	
 	/// get surface coordinates for i^th element
 	vec2 surf_coords(unsigned int i) const { return vec2( ((i/nPhi)+0.5)/nZ, ((i%nPhi)+0.5)/nPhi); }

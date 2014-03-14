@@ -24,7 +24,7 @@ vec3 SurfaceCurrentSource::fieldAt_contrib_from(const vec3& v, const vec2& l) co
 	vec3 dl = dI_contrib(l,x0);
 		
 	// Biot-Savart law, transitioning to near-field constant field approximation TODO
-	vec3 r = x0-v;
+	vec3 r = v - x0;
 	double mr = r.mag();
 	
 	if(mr < 1e-9) return vec3(0,0,0);	//< zero out singularity

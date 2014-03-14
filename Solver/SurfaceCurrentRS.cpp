@@ -120,6 +120,20 @@ void SurfaceCurrentRS::_visualize() const {
 	assert(mySurface);
 	for(unsigned int el = 0; el < nZ*nPhi; el++)
 		vis_coords(surf_coords(el));
+	vsr::setColor(0,0,0);
+	vis_i_vectors(0.1);
+}
+
+void SurfaceCurrentRS::vis_i_vectors(double s) const {
+	for(unsigned int el = 0; el < nZ*nPhi; el++) {
+		vec2 l = surf_coords(el);
+		vec3 o = (*mySurface)(l);
+		vec3 dx = mySurface->deriv(l,0).normalized();
+		vec3 dy = mySurface->deriv(l,1).normalized();
+		vec2 j = eval(l)*s;
+		vsr::line(o, o+dx*j[0]);
+		vsr::line(o, o+dy*j[1]);
+	}
 }
 
 struct AverageFieldIntegParams {
