@@ -5,10 +5,7 @@
 #define STUDIES_HH 1
 
 #include "CosThetaBuilder.hh"
-#include "SymmetricSolver.hh"
-#include "PlaneSource.hh"
-#include "SurfacelCyl.hh"
-#include "analysis.hh"
+#include "MixedSource.hh"
 #include "QFile.hh"
 #include <vector>
 

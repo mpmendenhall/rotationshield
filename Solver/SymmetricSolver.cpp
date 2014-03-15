@@ -16,7 +16,7 @@ void SymmetricSolver::solve(ReactiveSet& R) {
 }
 
 void SymmetricSolver::buildInteractionMatrix(ReactiveSet& R) {
-	if(verbose) printf("Building interaction matrix for %i DF in groups of %i...\n", R.nDF(), R.nPhi);
+	if(verbose) printf("Building interaction matrix for %i = %i x %i DF...\n", R.nDF(), R.nPhi, R.nDF()/R.nPhi);
 	ProgressBar pb = ProgressBar(R.nDF(),R.nDF()/R.nPhi,verbose);
 	the_GF = BlockCMat<mdouble>(R.nDF()/R.nPhi,R.nDF()/R.nPhi,R.nPhi);
 	

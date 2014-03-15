@@ -29,7 +29,7 @@ public:
 	void loadSourcesFile(FILE* f, mdouble scale);
 	
 	/// Net current of the arrangement
-	vec3 dipole() const { vec3 d = vec3(); for(unsigned int i=0; i<sources.size(); i++) d += sources[i]->dipole(); return d; }
+	vec3 net_current() const { vec3 d = vec3(); for(unsigned int i=0; i<sources.size(); i++) d += sources[i]->net_current(); return d; }
 	
 	/// Add an arc of current (approximated by many LineSource segments)
 	void arc(vec3 start, vec3 end, mdouble j, int nsegs = 1);

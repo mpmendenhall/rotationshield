@@ -177,7 +177,7 @@ public:
 };
 
 
-bool csurface_test() {
+bool csurface_test_B() {
 
 	//center scan lines
 	vec3 origin(0,0,0);
@@ -213,7 +213,6 @@ bool csurface_test() {
 	RS.setSurfaceResponse(SurfaceI_Response(10000));
 	RSC.addSet(&RS);
 	
-	/*
 	// rear SC endcap
 	Line2D L_Endcap(vec2(-zh,0), vec2(-zh,r0));
 	FieldAdaptiveSurface FAS_EC(L_Endcap);
@@ -223,10 +222,9 @@ bool csurface_test() {
 	RS_EC.mySurface = &SG_EC;
 	RS_EC.setSurfaceResponse(SurfaceI_Response(0));
 	RSC.addSet(&RS_EC);
-	*/
 	
 	RSC.calculateIncident(*MxS);
-	std::cout << "Net shield current: " << RSC.dipole() << std::endl;
+	std::cout << "Net shield current: " << RSC.net_current() << std::endl;
 	
 	bool pass = true;
 	mdouble b0 = RSC.fieldAt(origin)[0];
@@ -249,7 +247,7 @@ bool csurface_test() {
 	
 	MxS->addsource(&RSC);
 	
-	std::cout << "Net shield current: " << RSC.dipole() << std::endl;
+	std::cout << "Net shield current: " << RSC.net_current() << std::endl;
 	printf("Testing shielded fields...\n");
 
 	b0 = MxS->fieldAt(origin)[0];
@@ -267,7 +265,7 @@ bool csurface_test() {
 	return pass;
 }
 
-bool csurface_test_B() {
+bool csurface_test() {
 	
 	//center scan lines
 	vec3 origin(0,0,0);

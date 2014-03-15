@@ -31,6 +31,9 @@ public:
 protected:
 
 	Integrator2D myIntegrator;	//< integrator for internal calculations
+	
+	// cache trig functions, since repeated calls will likely be for same values
+	void cache_sincos(double theta, double& s, double& c) const;
 };
 
 /// cylindrically symmetric surface geometry
@@ -53,6 +56,10 @@ public:
 	
 	// geometry-defining functions
 	DVFunc1<2,mdouble>* zr_profile;	//< z,r (l) profile
+	
+protected:
+	// cache profile calls, since likely to be for same value
+	vec2 cache_profile(mdouble l) const;
 };
 
 /// Convenience 2D vector surface

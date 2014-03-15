@@ -20,7 +20,7 @@ public:
 	/// Get the LineSource's Line #l
 	Line getLine() { return l; }
 	/// Total vector current of the LineSource
-	vec3 dipole() const { return (l.e- l.s)*j; }
+	vec3 net_current() const { return (l.e- l.s)*j; }
 	/// Print info to stdout
 	void display() const { printf("Linesource (j=%g):\n\t",(double)j); l.display(); }
 	/// Visualize the field source

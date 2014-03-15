@@ -4,41 +4,28 @@
 #include <stdio.h>
 #include <string>
 
+/// class for printing a progress bar to stdout
 class ProgressBar {
 public:
-	ProgressBar(unsigned int nt, unsigned int nm, bool v, const std::string& label=""): ntotal(nt), nsteps(nt/nm), nmod(nm), c(0), s(0), verbose(v) {
-		if(verbose) {
-			printf("%s+",label.c_str()); 
-			for(unsigned int i=0; i<nsteps; i++)
-				printf("-");
-			printf("\n|");
-			fflush(stdout);
-		}
-	}
+
+	/// constructor
+	ProgressBar(unsigned int nt, unsigned int nm=1, bool v=true, const std::string& label="");
 	
+	/// destructor
 	~ProgressBar() { if(verbose) printf("* Done.\n"); }
 	
-	void update(unsigned int i) {
-		if(i<=c) return;
-		c = i;
-		
-		for(; s<c/nmod; s++) {
-			if(verbose) {
-				printf("*");
-				fflush(stdout);
-			}
-		}
-		
-	}
+	/// update status at i items completed
+	void update(unsigned int i);
 	
 protected:
-	const unsigned int ntotal;
-	const unsigned int nsteps;
-	const unsigned int nmod;
+
+	const unsigned int ntotal;	//< total number of items to completion
+	const unsigned int nsteps;	//< number of steps to mark = ntotal/nmod
+	const unsigned int nmod;	//< number of items per marked step
 	
-	unsigned int c;
-	unsigned int s;
-	const bool verbose;
+	unsigned int c;				//< number of items completed
+	unsigned int s;				//< steps displayed
+	const bool verbose;			//< whether to display the progress bar
 };
 
 #endif

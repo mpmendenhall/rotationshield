@@ -9,9 +9,13 @@ def make_asym_shortcoil_base(nm,r,dz=-0.783,r0=0.70):
 	S = StudySetup(nm,r)
 	S.set_csgeom(clen = 2.5, crad = 1.0, dlen = 0.05, drad = 0.1)
 	
-	S.shsects.append(ShieldSection(0,12,6,"nax","nrd"))
-	S.shsects.append(ShieldSection(10000,10,20,"nrd","prd"))
-	S.shsects.append(ShieldSection(0,12,6,"prd","pax"))
+	#S.shsects.append(ShieldSection(0,12,6,"nax","nrd"))
+	#S.shsects.append(ShieldSection(10000,10,20,"nrd","prd"))
+	#S.shsects.append(ShieldSection(0,12,6,"prd","pax"))
+	
+	S.shsects.append(ShieldSection(0,6,4,"nax","nrd"))
+	S.shsects.append(ShieldSection(10000,5,10,"nrd","prd"))
+	S.shsects.append(ShieldSection(0,6,4,"prd","pax"))
 	S.shsects[2].off[1][1] = r0
 		
 	S.measGrid = (7,11,7)
@@ -35,7 +39,6 @@ def make_closed_ends(nm,r,dz=0):
 	S.set_csgeom(clen = 2.5, crad = 1.0, dlen = 0.01, drad = 0.1)
 	S.cend = ["none","none"]
 	S.dist = []
-	S.nPhi = 256
 	
 	return S
 
@@ -211,13 +214,13 @@ if __name__=="__main__":
 				FI.BC.plotFields(2,0,1,2)
 		else:
 			
-			FI = FieldInfo(outdir+"/"+stname+"_ECdz/X_0.009167/")
+			FI = FieldInfo(outdir+"/"+stname+"_ECdz/X_0.050000/")
 			
 			if 1:
 				FI.BC.plotFields(2,0,1,2) # Bz along z
 				FI.BC.plotFields(0,0,2,1) # Bx along y
 				FI.BC.plotFields(0,0,1,2) # Bx along z
-			if 0:
+			if 1:
 				FI.BC.plotCellProjection(1,0)
 				FI.BC.plotCellProjection(1,2)
 				FI.BC.plotCellProjection(0,2)

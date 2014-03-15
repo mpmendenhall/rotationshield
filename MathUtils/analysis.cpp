@@ -1,5 +1,5 @@
 #include "analysis.hh"
-
+#include "ProgressBar.hh"
 
 mdouble FieldAnalyzer::simpsonCoeff(int n, int ntot) {
 	if(ntot == 1) return 1.0;
@@ -23,6 +23,8 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, int nX, int nY, int nZ, std::ostrea
 	gsl_vector* bfield[3];
 	for(int i=0; i<3; i++) bfield[i] = gsl_vector_alloc(nX*nY*nZ);
 	
+	ProgressBar pb(nX*nY);
+	
 	// scan over survey points
 	bsXYZ = vec3(); bssXYZ = vec3();
 	int c=0;
@@ -30,7 +32,7 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, int nX, int nY, int nZ, std::ostrea
 		bsYZ = vec3(); bssYZ = vec3();
 		for(n[1] = 0; n[1] < nY; n[1] ++) {
 			
-			printf("*"); fflush(stdout);
+			pb.update(n[0]*nY+n[1]);
 			
 			bsZ = vec3(); bssZ = vec3();
 			for(n[2] = 0; n[2] < nZ; n[2]++)

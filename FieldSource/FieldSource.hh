@@ -26,8 +26,8 @@ public:
 	virtual vec3 fieldOverLine(Line l) const;
 	/// Magnetic field averaged over specified plane
 	virtual vec3 fieldOverPlane(Plane pl) const;
-	/// Net current of the FieldSource
-	virtual vec3 dipole() const { return vec3(); }
+	/// Calculate effective net current of field source
+	virtual vec3 net_current() const { return vec3(); }
 	/// Print info to stdout
 	virtual void display() const { printf("[FieldSource]\n"); }
 		

@@ -1,6 +1,13 @@
 #include "Studies.hh"
 #include "strutils.hh"
 #include "PathUtils.hh"
+#include "SymmetricSolver.hh"
+#include "SurfaceCurrentRS.hh"
+#include "FieldAdaptiveSurface.hh"
+#include "SurfaceGeometry.hh"
+#include "SurfacelCyl.hh"
+#include "PlaneSource.hh"
+#include "analysis.hh"
 #include <cassert>
 
 shieldSection::shieldSection(): mu(10000) {
@@ -41,22 +48,50 @@ void shieldFrame::construct(MixedSource& ms, CosThetaBuilder* ct) const {
 
 	FieldEstimator2Dfrom3D fe(&ms);
 	
-	SurfacelCyl* G = new SurfacelCyl(pSegs);
+	bool quick_mode = false;
+	if(quick_mode) {
 	
-	for(std::vector<shieldSection>::const_iterator it = mySections.begin(); it != mySections.end(); it++) {
-		G->OptCone(it->cSegs, it->vSegs,
-					refPt(it->endpts[0])+it->endoff[0],
-					refPt(it->endpts[1])+it->endoff[1],
-					new PlaneSource(Plane(),it->mu), &fe);
+		// Legacy quicker rough mode
+		
+		SurfacelCyl* G = new SurfacelCyl(pSegs);
+	
+		for(std::vector<shieldSection>::const_iterator it = mySections.begin(); it != mySections.end(); it++) {
+			G->OptCone(it->cSegs, it->vSegs,
+						refPt(it->endpts[0])+it->endoff[0],
+						refPt(it->endpts[1])+it->endoff[1],
+						new PlaneSource(Plane(),it->mu), &fe);
+		}
+		SymmetricSolver SS;
+		
+		SS.solve(*G);
+		G->calculateIncident(&ms);
+		SS.calculateResult(*G);
+		
+		ms.addsource(G);
+		
+	} else {
+	
+		MagRSCombiner* RSC = new MagRSCombiner(pSegs);
+		
+		for(std::vector<shieldSection>::const_iterator it = mySections.begin(); it != mySections.end(); it++) {
+			Line2D* L2D = new Line2D(refPt(it->endpts[0])+it->endoff[0], refPt(it->endpts[1])+it->endoff[1]);
+			FieldAdaptiveSurface* FAS = new FieldAdaptiveSurface(*L2D);
+			FAS->optimizeSpacing(fe, float(it->cSegs)/(it->cSegs+it->vSegs));
+			CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
+			SurfaceCurrentRS* RS = new SurfaceCurrentRS(pSegs,it->cSegs+it->vSegs);
+			RS->mySurface = SG;
+			RS->setSurfaceResponse(SurfaceI_Response(it->mu));
+			RSC->addSet(RS);
+		}
+		
+		SymmetricSolver SS;
+		
+		SS.solve(*RSC);
+		RSC->calculateIncident(ms);
+		SS.calculateResult(*RSC);
+		
+		ms.addsource(RSC);
 	}
-	
-	SymmetricSolver SS;
-	
-	SS.solve(*G);
-	G->calculateIncident(&ms);
-	SS.calculateResult(*G);
-	
-	ms.addsource(G);
 }
 
 Stringmap shieldFrame::getInfo() const {

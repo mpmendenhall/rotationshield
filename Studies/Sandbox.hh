@@ -104,7 +104,7 @@ void shieldingFactorTest(std::ostream& outf, mdouble mu) {
 
 
 /// Test DipolePlane properties
-void dipoleTest() {
+void net_currentTest() {
 	
 	//Doublewall* w = new Doublewall(annulusSpec(vec2(0,0.5),vec2(0.5,0.5),1.0,0),1e5,0.01);
 	//GridBoxel* w = new GridBoxel(annulusSpec(vec2(0,0.5),vec2(0.5,0.5),1.0,0),1e4,0.1,8,5,4);

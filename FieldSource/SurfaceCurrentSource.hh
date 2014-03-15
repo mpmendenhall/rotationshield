@@ -21,7 +21,7 @@ public:
 	/// net current from specified region
 	virtual vec3 netCurrent(vec2 ll, vec2 ur, unsigned int ndx = 0, unsigned int ndy = 0) const;
 	/// Net current of the FieldSource
-	virtual vec3 dipole() const { return netCurrent(vec2(0,0),vec2(1,1)); }
+	virtual vec3 net_current() const { return netCurrent(vec2(0,0),vec2(1,1)); }
 	
 	SurfaceGeometry* mySurface;	//< surface over which current is distributed
 	vec2 (*sj)(vec2, void*);	//< surface current density as a function of surface coordinate

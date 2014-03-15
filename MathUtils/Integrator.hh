@@ -52,7 +52,7 @@ public:
 class Integrator {
 public:
 	/// Constructor
-	Integrator(): rel_err(1e-4), abs_err(1e-6), myMethod(INTEG_GSL_QNG),
+	Integrator(): rel_err(1e-4), abs_err(1e-5), myMethod(INTEG_GSL_QNG),
 		gslIntegrationWS(gsl_integration_workspace_alloc(512)),
 		gsl_cqd_ws(gsl_integration_cquad_workspace_alloc(512)) { gsl_set_error_handler_off(); }
 	/// Destructor
