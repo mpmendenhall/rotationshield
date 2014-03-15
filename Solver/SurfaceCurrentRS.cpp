@@ -85,10 +85,10 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 			int nz1 = c_nz + integ_domains[dmz+1];
 			int np0 = c_np + integ_domains[dmp];
 			int np1 = c_np + integ_domains[dmp+1];
-			if(nz1 <= 0 || nz0 >= (int)nZ) continue; // skip past-edges domains; note, we are allowed to wrap around in phi
+			if(nz1 < 0 || nz0 >= (int)nZ) continue; // skip past-edges domains; note, we are allowed to wrap around in phi
 			
-			vec2 ll(double(nz0)/double(nZ), double(np0)/double(nPhi));
-			vec2 ur(double(nz1)/double(nZ), double(np1)/double(nPhi));
+			vec2 ll((nz0+0.5)/double(nZ), (np0+0.5)/double(nPhi));
+			vec2 ur((nz1+0.5)/double(nZ), (np1+0.5)/double(nPhi));
 			if(ll[0]<0) ll[0]=0;
 			if(ur[0]>1) ur[0]=1;
 			
@@ -99,7 +99,7 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 				myIntegrator.setMethod(INTEG_GSL_QAGS);
 			else
 				myIntegrator.setMethod(INTEG_GSL_QAG);
-												
+			
 			if(BField_Protocol::BFP->M) {
 				BField_Protocol::BFP->MB += fieldAtWithTransform(BField_Protocol::BFP->x, *BField_Protocol::BFP->M, ll, ur, 1, 1);
 			} else {
