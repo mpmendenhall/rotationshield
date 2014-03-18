@@ -10,6 +10,8 @@
 #include "SurfaceCurrentSource.hh"
 #include "SurfaceCurrentRS.hh"
 #include "FieldAdaptiveSurface.hh"
+#include "Angles.hh"
+
 
 bool compareResults(mdouble a, mdouble b, const char* label) {
 	bool pass = true;
@@ -59,7 +61,7 @@ bool reference_sanity_check() {
 	SurfacelCyl* SB = new SurfacelCyl(128);
 	SB->retain();
 	SB->makeOptCyl(20, 30, .6223, -3.9624/2, 3.9624/2, new PlaneSource(Plane(),10000.0), fe);
-	SB->calculateIncident(MxS);
+	SB->calculateIncident(*MxS);
 	
 	SymmetricSolver SS;
 	SS.solve(*SB);
@@ -111,7 +113,7 @@ bool reference_simpleshield() {
 	SB->makeOptCyl(10, 2, .6223, -3.9624/2, 3.9624/2, new PlaneSource(Plane(),10000.0), &fe);
 	
 	// non-interacting field reaction
-	SB->calculateIncident(MxS);
+	SB->calculateIncident(*MxS);
 	bool pass = true;
 	mdouble b0 = SB->fieldAt(origin)[0];
 	pass &= compareResults(b0,6.83758710057794e-01,"origin - noninteracting");
@@ -145,23 +147,80 @@ bool reference_simpleshield() {
 	return pass;
 }
 
-vec3 f_integ2_test_1(mdouble x, mdouble y, void*) {
-	return vec3(x*x + y*y, x + y*y*y, 1 + (x+x*x)*y);
+mvec f_integ2_test_1(vec2 xy, void*) {
+	double x = xy[0];
+	double y = xy[1];
+	return mvec(vec3(x*x + y*y, x + y*y*y, 1 + (x+x*x)*y));
 }
 
 
 bool integrator_tests() {
 	Integrator2D I2;
-	bool pass = true;
+	I2.setMethod(INTEG_GSL_QAG);
 	
-	/*
-	vec3 v1 = I2.integrate(&f_integ2_test_1, -0.3, 4.6, -6, 7.2);
+	bool pass = true;
+		
+	mvec v1 = I2.integrate2D(&f_integ2_test_1, vec2(-0.3,-6), vec2(4.6, 7.2));
 	pass &= compareResults(v1[0], 1390.8356);
 	pass &= compareResults(v1[1], 1843.50936);
 	pass &= compareResults(v1[2], 405.15552);
-	*/
+
+	v1 = I2.polarIntegrate2D(&f_integ2_test_1, vec2(-0.3,-6), vec2(4.6, 7.2), vec2(-4,6), 0, 15);
+	pass &= compareResults(v1[0], 1390.8356);
+	pass &= compareResults(v1[1], 1843.50936);
+	pass &= compareResults(v1[2], 405.15552);
+	
+	v1 = I2.polarIntegrate2D(&f_integ2_test_1, vec2(-0.3,-6), vec2(4.6, 7.2), vec2(2,1), 0, 15);
+	pass &= compareResults(v1[0], 1390.8356);
+	pass &= compareResults(v1[1], 1843.50936);
+	pass &= compareResults(v1[2], 405.15552);
 	
 	return pass;
+}
+
+void angular_intervals_test() {
+	
+	Angular_Interval_Set AIS;
+	
+	AIS.add_interval(angular_interval(0.1*M_PI, 0.2*M_PI));
+	std::cout << AIS << std::endl;
+	
+	AIS.add_interval(angular_interval(0.3*M_PI, 0.4*M_PI));
+	std::cout << AIS << std::endl;
+	
+	AIS.add_interval(angular_interval(0.2*M_PI, 0.25*M_PI));
+	std::cout << AIS << std::endl;
+	
+	AIS.add_interval(angular_interval(0.25*M_PI, 0.3*M_PI));
+	std::cout << AIS << std::endl;
+	
+	AIS.add_interval(angular_interval(0.5*M_PI, 0.6*M_PI));
+	std::cout << AIS << std::endl;
+	
+	AIS.add_interval(angular_interval(0.42*M_PI, 0.48*M_PI));
+	std::cout << AIS << std::endl;
+	
+	AIS.add_interval(angular_interval(0.39*M_PI, 0.51*M_PI));
+	std::cout << AIS << std::endl;
+	
+	std::cout << std::endl;
+	
+	AIS.subtract_interval(angular_interval(0.3*M_PI, 0.5*M_PI));
+	std::cout << AIS << std::endl;
+	
+	AIS.subtract_interval(angular_interval(0.2*M_PI, 0.3*M_PI));
+	std::cout << AIS << std::endl;
+	
+	AIS.subtract_interval(angular_interval(0.1*M_PI, 0.21*M_PI));
+	std::cout << AIS << std::endl;
+	
+	AIS.subtract_interval(angular_interval(-0.1*M_PI, M_PI));
+	std::cout << AIS << std::endl;
+	
+	std::cout << std::endl;
+	
+	AIS.add_interval(angular_interval(-0.5*M_PI, 0.5*M_PI));
+	std::cout << AIS << std::endl;
 }
 
 class WavyThing: public DVFunc1<2,mdouble> {
@@ -177,7 +236,11 @@ public:
 };
 
 
-bool csurface_test_B() {
+bool csurface_test() {
+
+	angular_intervals_test();
+	return true;
+	
 
 	//center scan lines
 	vec3 origin(0,0,0);
@@ -202,6 +265,7 @@ bool csurface_test_B() {
 	double zh = 3.9624/2;
 	double r0 = .6223;
 	
+	/*
 	// main shield
 	Line2D L2D(vec2(-zh,r0), vec2(zh,r0));
 	FieldAdaptiveSurface FAS(L2D);
@@ -212,13 +276,14 @@ bool csurface_test_B() {
 	RS.mySurface = &SG;
 	RS.setSurfaceResponse(SurfaceI_Response(10000));
 	RSC.addSet(&RS);
+	*/
 	
-	// rear SC endcap
+	// rear SC endcap 
 	Line2D L_Endcap(vec2(-zh,0), vec2(-zh,r0));
 	FieldAdaptiveSurface FAS_EC(L_Endcap);
 	FAS_EC.optimizeSpacing(fe,0.5);
 	CylSurfaceGeometry SG_EC(&FAS_EC);
-	SurfaceCurrentRS RS_EC(nPhi,12);
+	SurfaceCurrentRS RS_EC(nPhi,12,1);
 	RS_EC.mySurface = &SG_EC;
 	RS_EC.setSurfaceResponse(SurfaceI_Response(0));
 	RSC.addSet(&RS_EC);
@@ -265,7 +330,7 @@ bool csurface_test_B() {
 	return pass;
 }
 
-bool csurface_test() {
+bool csurface_test_B() {
 	
 	//center scan lines
 	vec3 origin(0,0,0);

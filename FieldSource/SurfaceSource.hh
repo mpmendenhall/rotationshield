@@ -21,12 +21,16 @@ public:
 	/// Magnetic field at a certain point from a sub-domain
 	virtual vec3 fieldAt(const vec3& v, vec2 ll, vec2 ur, unsigned int ndx = 0, unsigned int ndy = 0) const;
 	/// Magnetic field with transform at a certain point from a sub-domain
-	virtual vec2 fieldAtWithTransform(const vec3& v, const Matrix<2,3,mdouble>& M, vec2 ll, vec2 ur, unsigned int ndx = 0, unsigned int ndy = 0) const;
+	virtual vec2 fieldAtWithTransform2(const vec3& v, const Matrix<2,3,mdouble>& M, vec2 ll, vec2 ur, unsigned int ndx = 0, unsigned int ndy = 0) const;
+	/// Magnetic field with transform at a certain point from a sub-domain
+	virtual vec3 fieldAtWithTransform3(const vec3& v, const Matrix<3,3,mdouble>& M, vec2 ll, vec2 ur, unsigned int ndx = 0, unsigned int ndy = 0) const;
 	
 	/// Magnetic field at a specified point
 	virtual vec3 fieldAt(const vec3& v) const { return fieldAt(v,vec2(0,0),vec2(1,1)); }
 	/// Magnetic field at a point, with interaction matrix
-	virtual vec2 fieldAtWithTransform(const vec3& v, const Matrix<2,3,mdouble>& M) const { return fieldAtWithTransform(v,M,vec2(0,0),vec2(1,1)); }
+	virtual vec2 fieldAtWithTransform2(const vec3& v, const Matrix<2,3,mdouble>& M) const { return fieldAtWithTransform2(v,M,vec2(0,0),vec2(1,1)); }
+	/// Magnetic field at a point, with interaction matrix
+	virtual vec3 fieldAtWithTransform3(const vec3& v, const Matrix<3,3,mdouble>& M) const { return fieldAtWithTransform3(v,M,vec2(0,0),vec2(1,1)); }
 		
 	/// Display field contributions over grid to given point
 	void displayContribGrid(const vec3& v, unsigned int nx = 7, unsigned int ny = 7) const;

@@ -50,6 +50,14 @@ void ReactiveUnitSet::add_DF_group(unsigned int N) {
 
 //----------------------------------------------
 
+ReactiveSetCombiner::~ReactiveSetCombiner() {
+	if(ownSets) {
+		for(std::vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++)
+			delete *it;
+	}
+	mySets.clear();
+}
+
 void ReactiveSetCombiner::addSet(ReactiveSet* R) {
 	assert(R);
 	assert(R->nPhi == nPhi);

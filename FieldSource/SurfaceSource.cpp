@@ -5,13 +5,15 @@
 struct SurfaceSourceIntegParams {
 	const SurfaceSource* S;
 	vec3 v;
-	const Matrix<2,3,mdouble>* M;
+	const Matrix<2,3,mdouble>* M2;
+	const Matrix<3,3,mdouble>* M3;
 };
 
 mvec SSdA(vec2 l, void* params) {
 	SurfaceSourceIntegParams& p = *(SurfaceSourceIntegParams*)params;
 	vec3 B = p.S->fieldAt_contrib_from(p.v,l);
-	if(p.M) return mvec( (*p.M)*B );
+	if(p.M2) return mvec( (*p.M2)*B );
+	if(p.M3) return mvec( (*p.M3)*B );
 	return mvec(B);
 }
 
@@ -40,22 +42,36 @@ vec3 SurfaceSource::fieldAt(const vec3& v, vec2 ll, vec2 ur, unsigned int ndx, u
 	SurfaceSourceIntegParams p;
 	p.S = this;
 	p.v = v;
-	p.M = NULL;
+	p.M2 = NULL;
+	p.M3 = NULL;
 	
 	mvec B = subdividedIntegral(&SSdA, &p, ll, ur, ndx, ndy);
 	return vec3(B[0],B[1],B[2]);
 
 }
 
-vec2 SurfaceSource::fieldAtWithTransform(const vec3& v, const Matrix<2,3,mdouble>& M, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
+vec2 SurfaceSource::fieldAtWithTransform2(const vec3& v, const Matrix<2,3,mdouble>& M, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
 	
 	SurfaceSourceIntegParams p;
 	p.S = this;
 	p.v = v;
-	p.M = &M;
+	p.M2 = &M;
+	p.M3 = NULL;
+	
 	mvec MB = subdividedIntegral(&SSdA, &p, ll, ur, ndx, ndy);
 	return vec2(MB[0],MB[1]);
+}
 
+vec3 SurfaceSource::fieldAtWithTransform3(const vec3& v, const Matrix<3,3,mdouble>& M, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
+	
+	SurfaceSourceIntegParams p;
+	p.S = this;
+	p.v = v;
+	p.M2 = NULL;
+	p.M3 = &M;
+	
+	mvec MB = subdividedIntegral(&SSdA, &p, ll, ur, ndx, ndy);
+	return vec3(MB[0],MB[1],MB[2]);
 }
 
 void SurfaceSource::displayContribGrid(const vec3& v, unsigned int nx, unsigned int ny) const {

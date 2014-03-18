@@ -1,5 +1,6 @@
 #include "Integrator.hh"
 #include <cassert>
+#include "Angles.hh"
 
 bool integratingParams::verbose = false;
 
@@ -47,18 +48,18 @@ double Integrator::_integrate(gsl_function* F, double a, double b) {
 		if(er) printf("(*Integration Error %i '%s'\t(%g:\t%i evals, %g err)*)\n",er,gsl_strerror(er),r,(int)neval,e);
 	} else {
 		if(myMethod == INTEG_GSL_QAG)
-			er = gsl_integration_qag(F, a, b, abs_err, rel_err, 256, GSL_INTEG_GAUSS15, gslIntegrationWS, &r, &e);
+			er = gsl_integration_qag(F, a, b, abs_err, rel_err, INTEG_WS_SIZE, GSL_INTEG_GAUSS15, gslIntegrationWS, &r, &e);
 		else if (myMethod == INTEG_GSL_CQUAD)
 			er = gsl_integration_cquad(F, a, b, abs_err, rel_err, gsl_cqd_ws, &r, &e, &neval);
 		else if(myMethod == INTEG_GSL_QAGS)
-			er = gsl_integration_qags(F, a, b, abs_err, rel_err, 256, gslIntegrationWS, &r, &e);
+			er = gsl_integration_qags(F, a, b, abs_err, rel_err, INTEG_WS_SIZE, gslIntegrationWS, &r, &e);
 		else if(myMethod == INTEG_GSL_QAGP) {
 			if(_singularities.size() < 2) {
 				_singularities.clear();
 				_singularities.push_back(a);
 				_singularities.push_back(b);
 			}
-			er = gsl_integration_qagp(F, &_singularities[0], _singularities.size(), abs_err, rel_err, 256, gslIntegrationWS, &r, &e);
+			er = gsl_integration_qagp(F, &_singularities[0], _singularities.size(), abs_err, rel_err, INTEG_WS_SIZE, gslIntegrationWS, &r, &e);
 		} else { assert(false); }
 		if(er) printf("(*Integration Warning %i '%s'\t(%g:\t%g err)*)\n",er,gsl_strerror(er),r,e);
 	}
@@ -208,7 +209,7 @@ mvec xslice_v(mdouble y, void* params) {
 }
 
 
-double generalIntegratingFunction2D(double x, void* params) {
+double xslice_v_integral(double x, void* params) {
 
 	integratingParams_V2D* p = (integratingParams_V2D*)params;
 	std::map<double,mvec>::iterator it = p->m.find(x);
@@ -244,6 +245,96 @@ mvec Integrator2D::integrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, void* pa
 	
 	p.y0 = ll[1];
 	p.y1 = ur[1];
-	return _integrate_v(p, &generalIntegratingFunction2D, ll[0], ur[0]);
+	return _integrate_v(p, &xslice_v_integral, ll[0], ur[0]);
+}
+
+// polar
+
+/// Contains arguments for polar 2D integrating function
+class integratingParams_V2D_P: public integratingParams {
+public:
+	mvec (*f2)(vec2,void *);	//< pointer to the 2D function being integrated
+	Integrator* yIntegrator;	//< Integrator for y-direction integrals
+	mdouble r;					//< r distance
+	vec2 c;						//< integration center point
+	vec2 ll;					//< integration rectangle lower corner
+	vec2 ur;					//< integration rectangle upper corner
+};
+
+// arc of a 2D function
+mvec polar_slice_v(mdouble y, void* params) {
+	integratingParams_V2D_P* p = (integratingParams_V2D_P*)params;
+	return p->f2( p->c + vec2(cos(y),sin(y))*p->r, p->fparams);
+}
+
+angular_interval clip_interval(double l, double r) {
+	if(fabs(r) <= fabs(l)) {
+		if(l>0) return angular_interval(0,0);
+		return angular_interval(0,2*M_PI);
+	}
+	double a = atan2(sqrt(r*r-l*l),l);
+	return angular_interval(-a,a);
+}
+
+// determine angular clipping
+std::vector<angular_interval> rectangle_clip(vec2 c, vec2 ll, vec2 ur, double r) {
+
+ 	Angular_Interval_Set AIS;
+	AIS.add_interval(0,2*M_PI);
+	
+	for(unsigned int d=0; d<2; d++) {
+		angular_interval a1 = clip_interval(c[d]-ll[d],r);
+		a1.add((1+0.5*d)*M_PI);
+		angular_interval a2 = clip_interval(ur[d]-c[d],r);
+		a2.add(0.5*d*M_PI);
+		
+		AIS.subtract_interval(a1);
+		AIS.subtract_interval(a2);
+	}
+			
+	return  AIS.get_intervals();
+}
+
+double polar_slice_v_integral(double x, void* params) {
+
+	integratingParams_V2D_P* p = (integratingParams_V2D_P*)params;
+	std::map<double,mvec>::iterator it = p->m.find(x);
+	if(it != p->m.end()) { return (it->second)[p->axis]; }
+
+	integratingParams_V2D_P p2;
+	p2.f2 = p->f2;
+	p2.fparams = p->fparams;
+	p2.r = x;
+	p2.yIntegrator = p->yIntegrator;
+	p2.c = p->c;
+	
+	std::vector<angular_interval> ii = rectangle_clip(p->c, p->ll, p->ur, x);
+	if(!ii.size()) return 0;
+	
+	mvec v;
+	for(std::vector<angular_interval>::iterator it = ii.begin(); it != ii.end(); it++) {
+		mvec vi = p->yIntegrator->integrate(&polar_slice_v, it->th0, it->th1, &p2);
+		if(it==ii.begin()) v = vi;
+		else v += vi;
+	}
+	v *= x;
+	
+	p->n_dim = v.size();
+	p->m[x] = v;
+	assert(p->axis < p->n_dim);
+	return v[p->axis];
+}
+
+mvec Integrator2D::polarIntegrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, vec2 c, mdouble r0, mdouble r1, void* params) {
+
+	integratingParams_V2D_P p;
+	p.yIntegrator = &yIntegrator;
+	p.f2 = f;
+	p.fparams = params;
+	p.ll = ll;
+	p.ur = ur;
+	p.c = c;
+	
+	return _integrate_v(p, &polar_slice_v_integral, r0, r1);
 }
 

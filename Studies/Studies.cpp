@@ -1,7 +1,6 @@
 #include "Studies.hh"
 #include "strutils.hh"
 #include "PathUtils.hh"
-#include "SymmetricSolver.hh"
 #include "SurfaceCurrentRS.hh"
 #include "FieldAdaptiveSurface.hh"
 #include "SurfaceGeometry.hh"
@@ -42,17 +41,19 @@ vec2 shieldFrame::refPt(GeomRefPt p) const {
 	return vec2(0,0);
 }
 	
-void shieldFrame::construct(MixedSource& ms, CosThetaBuilder* ct) const {
+void shieldFrame::construct(MixedSource& ms, CosThetaBuilder* ct, const std::string& fcache) {
 
 	if(!mySections.size() || !pSegs) return;
 
+	if(RSC) delete RSC;
+	RSC = new MagRSCombiner(pSegs);
+	RSC->ownSets = true;
+	
 	FieldEstimator2Dfrom3D fe(&ms);
 	
 	bool quick_mode = false;
 	if(quick_mode) {
-	
 		// Legacy quicker rough mode
-		
 		SurfacelCyl* G = new SurfacelCyl(pSegs);
 	
 		for(std::vector<shieldSection>::const_iterator it = mySections.begin(); it != mySections.end(); it++) {
@@ -61,17 +62,10 @@ void shieldFrame::construct(MixedSource& ms, CosThetaBuilder* ct) const {
 						refPt(it->endpts[1])+it->endoff[1],
 						new PlaneSource(Plane(),it->mu), &fe);
 		}
-		SymmetricSolver SS;
-		
-		SS.solve(*G);
-		G->calculateIncident(&ms);
-		SS.calculateResult(*G);
-		
-		ms.addsource(G);
+		RSC->addSet(G);
 		
 	} else {
-	
-		MagRSCombiner* RSC = new MagRSCombiner(pSegs);
+		
 		
 		for(std::vector<shieldSection>::const_iterator it = mySections.begin(); it != mySections.end(); it++) {
 			Line2D* L2D = new Line2D(refPt(it->endpts[0])+it->endoff[0], refPt(it->endpts[1])+it->endoff[1]);
@@ -83,15 +77,12 @@ void shieldFrame::construct(MixedSource& ms, CosThetaBuilder* ct) const {
 			RS->setSurfaceResponse(SurfaceI_Response(it->mu));
 			RSC->addSet(RS);
 		}
-		
-		SymmetricSolver SS;
-		
-		SS.solve(*RSC);
-		RSC->calculateIncident(ms);
-		SS.calculateResult(*RSC);
-		
-		ms.addsource(RSC);
 	}
+	
+	SS.cachedSolve(*RSC,fcache);
+	RSC->calculateIncident(ms);
+	SS.calculateResult(*RSC);
+	ms.addsource(RSC);
 }
 
 Stringmap shieldFrame::getInfo() const {

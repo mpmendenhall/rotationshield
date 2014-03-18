@@ -6,6 +6,8 @@
 
 #include "CosThetaBuilder.hh"
 #include "MixedSource.hh"
+#include "SymmetricSolver.hh"
+#include "MagRS.hh"
 #include "QFile.hh"
 #include <vector>
 
@@ -24,6 +26,7 @@ class shieldSection {
 public:
 	/// constructor
 	shieldSection();
+	
 	/// shield info as Stringmap
 	Stringmap getInfo() const;
 	
@@ -38,17 +41,21 @@ public:
 class shieldFrame {
 public:
 	/// constructor
-	shieldFrame(): pSegs(0), length(0), radius(0) {}
+	shieldFrame(): pSegs(0), length(0), radius(0), RSC(NULL) {}
+	/// destructor
+	virtual ~shieldFrame() { if(RSC) delete RSC; }
 	
 	unsigned int pSegs;						//< phi segments
 	mdouble length;							//< shield length
 	mdouble radius;							//< shield radius
 	std::vector<shieldSection> mySections;	//< sections of shield
+	MagRSCombiner* RSC;						//< shield system to be solved
+	SymmetricSolver SS;						//< solver for shield
 	
 	/// return reference point location
 	vec2 refPt(GeomRefPt p) const;
 	/// construct into mixed source
-	void construct(MixedSource& ms, CosThetaBuilder* ct) const;
+	void construct(MixedSource& ms, CosThetaBuilder* ct, const std::string& fcache = "");
 	/// shield info as Stringmap
 	Stringmap getInfo() const;
 };

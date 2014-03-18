@@ -29,6 +29,8 @@ enum Integration_Method {
 	INTEG_GSL_CQUAD= 4	//< adaptive CQUAD
 };
 
+const unsigned int INTEG_WS_SIZE = 512;	//< size of integrating workspace (max. number of evaluation intervals)
+
 /// Contains the arguments for generalIntegratingFunction()
 class integratingParams {
 public:
@@ -53,8 +55,8 @@ class Integrator {
 public:
 	/// Constructor
 	Integrator(): rel_err(1e-4), abs_err(1e-5), myMethod(INTEG_GSL_QNG),
-		gslIntegrationWS(gsl_integration_workspace_alloc(512)),
-		gsl_cqd_ws(gsl_integration_cquad_workspace_alloc(512)) { gsl_set_error_handler_off(); }
+		gslIntegrationWS(gsl_integration_workspace_alloc(INTEG_WS_SIZE)),
+		gsl_cqd_ws(gsl_integration_cquad_workspace_alloc(INTEG_WS_SIZE)) { gsl_set_error_handler_off(); }
 	/// Destructor
 	virtual ~Integrator() {
 		gsl_integration_workspace_free(gslIntegrationWS);
@@ -127,6 +129,9 @@ public:
 	 \param y1 upper y bound of integration
 	 \param params additional parameters for the integrated function */
 	mvec integrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, void* params = NULL);
+	
+	/// performs polar integral around point, clipped to specfied rectangle
+	mvec polarIntegrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, vec2 c, mdouble r0, mdouble r1, void* params = NULL);
 	
 	std::vector<vec2> xysingularities;	//< known singularities
 	

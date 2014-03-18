@@ -19,7 +19,7 @@ public:
 };
 
 /// Collections of magnetic-field-responding ReactiveSets
-class MagRSCombiner: public ReactiveSetCombiner, public FieldSource {
+class MagRSCombiner: public ReactiveSetCombiner, public MagF_Responder, public FieldSource {
 public:
 	/// constructor
 	MagRSCombiner(unsigned int nphi): ReactiveSetCombiner(nphi) {}
@@ -32,7 +32,6 @@ public:
 	virtual vec3 fieldAt(const vec3& v) const;
 	/// visualization reoutine
 	virtual void _visualize() const;
-	
 };
 
 /// Magnetic field interaction protocol class singleton
@@ -40,10 +39,11 @@ class BField_Protocol {
 public:
 	vec3 x;	//< position
 	vec3 B;	//< magnetic field
-	const Matrix<2,3,mdouble>* M;	//< optional transform matrix
-	vec2 MB;						//< transformed field
+	const Matrix<2,3,mdouble>* M2;	//< optional 3-to-2 transform matrix
+	const Matrix<3,3,mdouble>* M3;	//< optional 3-to-3 transform matrix
+	vec2 M2B;						//< transformed field
 	const void* caller;				//< pointer to caller
-	static BField_Protocol* BFP;
+	static BField_Protocol* BFP;	//< instance to use
 };
 
 #endif

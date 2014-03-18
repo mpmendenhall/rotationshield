@@ -30,13 +30,13 @@ void SurfacelSet::_visualize() const {
 		(*it)->_visualize();
 }
 
-void SurfacelSet::calculateIncident(FieldSource* f) {
+void SurfacelSet::calculateIncident(const FieldSource& f) {
 	if(verbose) printf("Calculating incident field on %i elements in %i groups...\n", n_subels(), n_subels()/nPhi);
 	ProgressBar pb = ProgressBar(n_subels(), nPhi, verbose);
 	incidentState = VarVec<mdouble>(nDF());
 	for(unsigned int i = 0; i<n_subels(); i++) {
 		pb.update(i);
-		surfacels[i]->reactTo(f);
+		surfacels[i]->reactTo(&f);
 		for(unsigned int j = 0; j<surfacels[i]->nDF(); j++)
 			incidentState[df_subindex(i,j)] = surfacels[i]->getState()[j];
 	}

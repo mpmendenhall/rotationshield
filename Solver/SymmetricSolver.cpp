@@ -1,6 +1,7 @@
 #include "SymmetricSolver.hh"
 #include "ProgressBar.hh"
 #include <cassert>
+#include <fstream>
 
 SymmetricSolver::SymmetricSolver(): InteractionSolver() {
 	verbose = true;
@@ -36,4 +37,36 @@ void SymmetricSolver::calculateResult(ReactiveSet& R) {
 	R.prepareIncident();
 	R.setFinalState(the_GF * R.incidentState);
 	if(verbose) printf(" Done.\n");
+}
+
+void SymmetricSolver::writeToFile(std::ostream& o) const {
+	the_GF.writeToFile(o);
+}
+
+void SymmetricSolver::readFromFile(std::istream& s) const {
+	the_GF.readFromFile(s);
+}
+
+void SymmetricSolver::cachedSolve(ReactiveSet& R, const std::string& fname) {
+	
+	if(!fname.size()) {
+		solve(R);
+		return;
+	}
+	
+	std::ifstream ifs(fname.c_str(), std::ifstream::in | std::ifstream::binary);
+	if(ifs.good()) {
+		std::cout << "Loading previous SymmetricSolver solution from '" << fname << "'." << std::endl;
+		readFromFile(ifs);
+		ifs.close();
+	} else {
+		solve(R);
+		std::ofstream ofs(fname.c_str(), std::ifstream::out | std::ifstream::binary);
+		if(!ofs.good()) {
+			std::cout << "Warning: SymmetricSolver unable to write to file '" << fname << "'." << std::endl;
+			return;
+		}
+		writeToFile(ofs);
+		ofs.close();
+	}
 }

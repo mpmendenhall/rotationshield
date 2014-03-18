@@ -9,6 +9,7 @@
 #include "FieldSource.hh"
 #include "FieldEstimator2D.hh"
 #include "PlanarElement.hh"
+#include "MagRS.hh"
 
 /// surface element interaction protocol
 class Surfacel_Protocol {
@@ -18,7 +19,7 @@ public:
 };
 
 /// collection of individual surface elements
-class SurfacelSet: public ReactiveUnitSet, public FieldSource {
+class SurfacelSet: public ReactiveUnitSet, public FieldSource, public MagF_Responder {
 public:
 	/// constructor
 	SurfacelSet(unsigned int nph): ReactiveUnitSet(nph), FieldSource(), verbose(true) { }
@@ -35,7 +36,7 @@ public:
 	virtual void _visualize() const;
 	
 	/// calculate response to incident field
-	virtual void calculateIncident(FieldSource* f);
+	virtual void calculateIncident(const FieldSource& f);
 	
 	/// respond to interaction protocol; respond if protocol identified
 	virtual bool queryInteraction(void* ip);

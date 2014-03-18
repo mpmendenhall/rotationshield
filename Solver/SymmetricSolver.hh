@@ -6,6 +6,7 @@
 #include "Typedefs.hh"
 #include "InteractionSolver.hh"
 #include "BlockCMat.hh"
+#include <string>
 
 /// The class where everything else is pulled together to solve the shield boundary-value problem.
 
@@ -28,7 +29,14 @@ public:
 	virtual void solve(ReactiveSet& R);
 	/// Apply solution to ReactiveSet system initial state
 	virtual void calculateResult(ReactiveSet& R);
-		
+	
+	/// Write solution to file
+	void writeToFile(std::ostream& o) const;
+	/// Read solution from file
+	void readFromFile(std::istream& s) const;
+	/// Read solution from file if available; otherwise, solve; save result to same file
+	void cachedSolve(ReactiveSet& R, const std::string& fname);
+	
 protected:
 	
 	/// Assembles the interaction matrix

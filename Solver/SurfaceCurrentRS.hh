@@ -17,24 +17,25 @@ public:
 	/// generate correct response matrix to applied fields for given relative permeability
 	void setMu(double mu) {
 		murel = mu;
-		rmat = Matrix<2,3,mdouble>();
-		rmat(0,1) = 2*(murel-1)/(murel+1);
-		rmat(1,0) = -rmat(0,1);
+		rmat2 = Matrix<2,3,mdouble>();
+		rmat3 = Matrix<3,3,mdouble>();
+		
+		rmat3(0,1) = rmat2(0,1) = 2*(murel-1)/(murel+1);
+		rmat3(1,0) = rmat2(1,0) = -rmat2(0,1);
+		rmat3(2,2) = murel==0 ? -1:0;	// TODO correct physics
 	}
 	
-	/// determine response to field in local coordinates
-	vec2 responseToField(const vec3& Blocal) const { return rmat * Blocal; }
-	
 	mdouble murel;					//< relative permeability
-	Matrix<2,3,mdouble> rmat;		//< response matrix to applied field
+	Matrix<2,3,mdouble> rmat2;		//< response matrix to applied field
+	Matrix<3,3,mdouble> rmat3;		//< 3-component response matrix to applied field
 };
 
 
 /// Continuous surface current responding to magnetic field
 class SurfaceCurrentRS: public MagF_Responder, public SurfaceCurrentSource, public InterpolatingRS2D {
 public:
-	/// constructor
-	SurfaceCurrentRS(unsigned int nph, unsigned int nz);
+	/// constructor; set xdf=1 to enable dipole density response
+	SurfaceCurrentRS(unsigned int nph, unsigned int nz, unsigned int xdf=0);
 
 	// ReactiveSet subclassed functions
 	//=====================================
@@ -50,9 +51,6 @@ public:
 	/// set surface response at all points
 	void setSurfaceResponse(SurfaceI_Response r);
 	
-	/// get interpolated surface response
-	vec2 eval(const vec2& p) const { return vec2( (*G[0])(p[0],p[1]), (*G[1])(p[0],p[1]) ); }
-		
 	/// visualization routine
 	virtual void _visualize() const;
 	/// visualize current vectors
@@ -63,14 +61,20 @@ public:
 	/// get surface coordinate range for element (not including extended interpolation effects)
 	void element_surface_range(unsigned int i, vec2& ll, vec2& ur) const;
 	
+	/// get interpolated surface current response
+	vec2 eval_J(const vec2& p) const { return vec2( (*G[0])(p[0],p[1]), (*G[1])(p[0],p[1]) ); }
+	/// get interpolated surface dipole response
+	mdouble eval_D(const vec2& p) const { assert(nDFi>2); return (*G[2])(p[0],p[1]); }
+
+	
 protected:
 	
 	/// one surface element's reaction
-	vec2 subelReaction(ReactiveSet* R);
+	mvec subelReaction(ReactiveSet* R);
 	
 	unsigned int ixn_el;	//< interacting element currently being probed
 	
-	std::vector<SurfaceI_Response> sdefs;
+	std::vector<SurfaceI_Response> sdefs;	//< surface response definitions at each site
 };
 
 #endif

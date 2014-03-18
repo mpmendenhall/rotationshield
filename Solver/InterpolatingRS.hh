@@ -32,7 +32,7 @@ protected:
 class InterpolatingRS2D: public ReactiveSet {
 public:
 	/// constructor
-	InterpolatingRS2D(unsigned int nph): ReactiveSet(nph), nZ(0) { }
+	InterpolatingRS2D(unsigned int nph): ReactiveSet(nph), nZ(0), nDFi(0) { }
 	/// destructor
 	virtual ~InterpolatingRS2D() { clear_data(); }
 	

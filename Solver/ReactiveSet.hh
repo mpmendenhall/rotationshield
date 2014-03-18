@@ -125,7 +125,9 @@ protected:
 class ReactiveSetCombiner: public ReactiveSet {
 public:
 	/// constructor
-	ReactiveSetCombiner(unsigned int nph=1): ReactiveSet(nph) { set_cum_df.push_back(0); }
+	ReactiveSetCombiner(unsigned int nph=1): ReactiveSet(nph), ownSets(false) { set_cum_df.push_back(0); }
+	/// destructor
+	virtual ~ReactiveSetCombiner();
 	/// append a new ReactiveSet
 	virtual void addSet(ReactiveSet* R);
 	
@@ -145,6 +147,7 @@ public:
 	
 	/// reset interaction term counter
 	virtual void startInteractionScan();
+	bool ownSets;	//< whether this object is responsible for deleting its member sets
 	
 protected:
 

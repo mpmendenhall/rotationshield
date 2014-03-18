@@ -36,7 +36,7 @@ public:
 	void display(const char* suffix = "\n") const;
 	
 	/// dot product with another vector
-	T dot(const Vec<N,T> v) const { T s = x[0]*v[0]; for(unsigned int i=1; i<N; i++) s+=x[i]*v[i]; return s; }
+	T dot(const Vec<N,T>& v) const { T s = x[0]*v[0]; for(unsigned int i=1; i<N; i++) s+=x[i]*v[i]; return s; }
 	/// square magnitude \f$ v \cdot v \f$
 	T mag2() const { return dot(*this); }
 	/// magnitude \f$ \sqrt{v\cdot v} \f$
@@ -49,9 +49,9 @@ public:
 	/// this vector, normalized to magnitude 1
 	Vec<N,T> normalized() const { return (*this)/mag(); }
 	/// project out component parallel to another vector
-	Vec<N,T> paraProj(const Vec<N,T> v) const { return v*(dot(v)/v.mag2()); }
+	Vec<N,T> paraProj(const Vec<N,T>& v) const { return v*(dot(v)/v.mag2()); }
 	/// project out component orthogonal to another vector
-	Vec<N,T> orthoProj(const Vec<N,T> v) const { return (*this)-paraProj(v); }
+	Vec<N,T> orthoProj(const Vec<N,T>& v) const { return (*this)-paraProj(v); }
 	/// angle with another vector
 	T angle(const Vec<N,T> v) const { return acos(dot(v)/sqrt(mag2()*v.mag2())); }
 	
