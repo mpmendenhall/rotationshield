@@ -165,12 +165,12 @@ bool integrator_tests() {
 	pass &= compareResults(v1[1], 1843.50936);
 	pass &= compareResults(v1[2], 405.15552);
 
-	v1 = I2.polarIntegrate2D(&f_integ2_test_1, vec2(-0.3,-6), vec2(4.6, 7.2), vec2(-4,6), 0, 15);
+	v1 = I2.polarIntegrate2D(&f_integ2_test_1, vec2(-0.3,-6), vec2(4.6, 7.2), vec2(-4,6));
 	pass &= compareResults(v1[0], 1390.8356);
 	pass &= compareResults(v1[1], 1843.50936);
 	pass &= compareResults(v1[2], 405.15552);
 	
-	v1 = I2.polarIntegrate2D(&f_integ2_test_1, vec2(-0.3,-6), vec2(4.6, 7.2), vec2(2,1), 0, 15);
+	v1 = I2.polarIntegrate2D(&f_integ2_test_1, vec2(-0.3,-6), vec2(4.6, 7.2), vec2(2,1));
 	pass &= compareResults(v1[0], 1390.8356);
 	pass &= compareResults(v1[1], 1843.50936);
 	pass &= compareResults(v1[2], 405.15552);
@@ -238,10 +238,6 @@ public:
 
 bool csurface_test() {
 
-	angular_intervals_test();
-	return true;
-	
-
 	//center scan lines
 	vec3 origin(0,0,0);
 	vec3 xscan(0.15,0,0);
@@ -265,7 +261,6 @@ bool csurface_test() {
 	double zh = 3.9624/2;
 	double r0 = .6223;
 	
-	/*
 	// main shield
 	Line2D L2D(vec2(-zh,r0), vec2(zh,r0));
 	FieldAdaptiveSurface FAS(L2D);
@@ -276,17 +271,18 @@ bool csurface_test() {
 	RS.mySurface = &SG;
 	RS.setSurfaceResponse(SurfaceI_Response(10000));
 	RSC.addSet(&RS);
-	*/
 	
+	/*
 	// rear SC endcap 
 	Line2D L_Endcap(vec2(-zh,0), vec2(-zh,r0));
 	FieldAdaptiveSurface FAS_EC(L_Endcap);
 	FAS_EC.optimizeSpacing(fe,0.5);
 	CylSurfaceGeometry SG_EC(&FAS_EC);
-	SurfaceCurrentRS RS_EC(nPhi,12,1);
+	SurfaceCurrentRS RS_EC(nPhi,12,0);
 	RS_EC.mySurface = &SG_EC;
 	RS_EC.setSurfaceResponse(SurfaceI_Response(0));
 	RSC.addSet(&RS_EC);
+	*/
 	
 	RSC.calculateIncident(*MxS);
 	std::cout << "Net shield current: " << RSC.net_current() << std::endl;

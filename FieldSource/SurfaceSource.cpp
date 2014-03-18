@@ -28,7 +28,9 @@ mvec SurfaceSource::subdividedIntegral(mvec (*f)(vec2, void*), void* fparams, ve
 	for(unsigned int nx=0; nx<ndx; nx++) {
 		for(unsigned int ny=0; ny<ndy; ny++) {
 			vec2 lll =ll + vec2(nx*ur[0],ny*ur[1]);
-			mvec mi = myIntegrator.integrate2D(f, lll, lll+ur, fparams);
+			mvec mi;
+			if(polar_integral_center) mi = myIntegrator.polarIntegrate2D(f, lll, lll+ur, *polar_integral_center, fparams, -666, 0.001);
+			else mi = myIntegrator.integrate2D(f, lll, lll+ur, fparams);
 			if(!nx && !ny) m = mi;
 			else m += mi;
 		}

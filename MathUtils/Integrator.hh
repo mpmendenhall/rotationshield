@@ -131,7 +131,7 @@ public:
 	mvec integrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, void* params = NULL);
 	
 	/// performs polar integral around point, clipped to specfied rectangle
-	mvec polarIntegrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, vec2 c, mdouble r0, mdouble r1, void* params = NULL);
+	mvec polarIntegrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, vec2 c, void* params = NULL, mdouble r1 = -666, mdouble r0 = 0);
 	
 	std::vector<vec2> xysingularities;	//< known singularities
 	

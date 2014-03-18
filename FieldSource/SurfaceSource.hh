@@ -10,7 +10,7 @@
 class SurfaceSource: public FieldSource {
 public:
 	/// constructor
-	SurfaceSource(): FieldSource(), dflt_integrator_ndivs_x(1), dflt_integrator_ndivs_y(1) {}
+	SurfaceSource(): FieldSource(), dflt_integrator_ndivs_x(1), dflt_integrator_ndivs_y(1), polar_integral_center(NULL) {}
 
 	/// destructor
 	virtual ~SurfaceSource() {}
@@ -39,8 +39,10 @@ public:
 	unsigned int dflt_integrator_ndivs_y;	//< default number of sections to partition y integral in
 	
 protected:
-	mutable Integrator2D myIntegrator;	//< surface field integrator
 
+	mutable Integrator2D myIntegrator;	//< surface field integrator
+	vec2* polar_integral_center;		//< optional center point for switching to polar mode
+	
 	/// convenience mechanism for integrations split over may divisions, limited to surface [0,1]->[0,1] // TODO the problem??
 	mvec subdividedIntegral(mvec (*f)(vec2, void*), void* fparams, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const;
 };

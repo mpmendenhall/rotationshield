@@ -325,8 +325,19 @@ double polar_slice_v_integral(double x, void* params) {
 	return v[p->axis];
 }
 
-mvec Integrator2D::polarIntegrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, vec2 c, mdouble r0, mdouble r1, void* params) {
+mdouble r_max(vec2 ll, vec2 ur, vec2 c) {
+	mdouble r[4];
+	r[0] = (c-ll).mag2();
+	r[1] = (c-vec2(ll[0],ur[1])).mag2();
+	r[2] = (c-vec2(ur[0],ll[1])).mag2();
+	r[3] = (c-ur).mag2();
+	return sqrt(*std::max_element(r,r+4));
+}
 
+mvec Integrator2D::polarIntegrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, vec2 c, void* params, mdouble r1, mdouble r0) {
+
+	if(r1==-666) r1 = r_max(ll, ur, c); // auto-range
+	
 	integratingParams_V2D_P p;
 	p.yIntegrator = &yIntegrator;
 	p.f2 = f;

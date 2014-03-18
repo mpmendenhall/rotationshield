@@ -80,27 +80,22 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 	
 	int i_nz = ixn_el/nPhi;		//< responding element z
 	int i_nphi = ixn_el%nPhi;	//< responding element phi
+	vec2 ixn_center = surf_coords(ixn_el);	//< responding element coordinate center
 	
 	// whether this is the interaction of an element with itself
 	bool self_ixn = BField_Protocol::BFP->caller == this && el == ixn_el;
-	if(self_ixn) return true;	//< TODO
 	
 	// How to slice up integration range
 	std::vector<int> integ_domains;
-	if(self_ixn) {
-		const int idomains_16[] = {-2,-1,0,1,2};
-		integ_domains.insert(integ_domains.end(), idomains_16, idomains_16+5);
-	} else {
-		const int idomains_9[] = {-2,-1,1,2};
-		integ_domains.insert(integ_domains.end(), idomains_9, idomains_9+4);
-	}
-	
+	const int idomains_9[] = {-2,-1,1,2};
+	integ_domains.insert(integ_domains.end(), idomains_9, idomains_9+4);
+		
 	// save previous integration method
 	Integration_Method im = myIntegrator.getMethod();
 	
 	// integrate over each region
-	for(unsigned int dmz = 0; dmz < integ_domains.size(); dmz++) {
-		for(unsigned int dmp = 0; dmp < integ_domains.size(); dmp++) {
+	for(unsigned int dmz = 0; dmz < integ_domains.size()-1; dmz++) {
+		for(unsigned int dmp = 0; dmp < integ_domains.size()-1; dmp++) {
 
 			int nz0 = c_nz + integ_domains[dmz];
 			int nz1 = c_nz + integ_domains[dmz+1];
@@ -116,10 +111,12 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 			// set integration method depending on whether there will be edge singularities (target point inside integration range)
 			if( BField_Protocol::BFP->caller == this
 					&& (nz0 <= i_nz && i_nz <= nz1)
-					&& ( (i_nphi - np0 + nPhi)%nPhi <= (np1 - np0 + nPhi)%nPhi ) )
+					&& ( (i_nphi - np0 + nPhi)%nPhi <= (np1 - np0 + nPhi)%nPhi ) ) {
 				myIntegrator.setMethod(INTEG_GSL_QAGS);
-			else
+			} else
 				myIntegrator.setMethod(INTEG_GSL_QAG);
+			
+			if(self_ixn && nz0+nz1 == 2*i_nz && np0+np1==2*i_nphi) polar_integral_center = &ixn_center;
 			
 			if(BField_Protocol::BFP->M2) {
 				BField_Protocol::BFP->M2B += fieldAtWithTransform2(BField_Protocol::BFP->x, *BField_Protocol::BFP->M2, ll, ur, 1, 1);
@@ -128,6 +125,8 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 			} else {
 				BField_Protocol::BFP->B += fieldAt(BField_Protocol::BFP->x, ll, ur, 1, 1);
 			}
+			
+			polar_integral_center = NULL;
 		}
 	}
 	
