@@ -45,7 +45,10 @@ double Integrator::_integrate(gsl_function* F, double a, double b) {
 		
 	if(myMethod == INTEG_GSL_QNG) {
 		er = gsl_integration_qng(F, a, b, abs_err, rel_err, &r, &e, &neval);
-		if(er) printf("(*Integration Error %i '%s'\t(%g:\t%i evals, %g err)*)\n",er,gsl_strerror(er),r,(int)neval,e);
+		if(er) {
+			printf("(*Integration Error %i '%s'\t(%g:\t%i evals, %g err)*)\n",er,gsl_strerror(er),r,(int)neval,e);
+			err_count++;
+		}
 	} else {
 		if(myMethod == INTEG_GSL_QAG)
 			er = gsl_integration_qag(F, a, b, abs_err, rel_err, INTEG_WS_SIZE, GSL_INTEG_GAUSS15, gslIntegrationWS, &r, &e);
@@ -61,7 +64,10 @@ double Integrator::_integrate(gsl_function* F, double a, double b) {
 			}
 			er = gsl_integration_qagp(F, &_singularities[0], _singularities.size(), abs_err, rel_err, INTEG_WS_SIZE, gslIntegrationWS, &r, &e);
 		} else { assert(false); }
-		if(er) printf("(*Integration Warning %i '%s'\t(%g:\t%g err)*)\n",er,gsl_strerror(er),r,e);
+		if(er) {
+			printf("(*Integration Warning %i '%s'\t(%g:\t%g err)*)\n",er,gsl_strerror(er),r,e);
+			err_count++;
+		}
 	}
 	return r;
 }
@@ -73,15 +79,25 @@ double Integrator::_integrate(gsl_function* F, double a, double b) {
 double generalIntegratingFunction(double x, void* params) {
 	integratingParams* p = (integratingParams*)params;
 	std::map<double,mvec>::iterator it = p->m.find(x);
-	if(it != p->m.end()) return (it->second)[p->axis];
+	if(it != p->m.end()) {
+		//std::cout << "Fetched response at x = " << x << " for axis " << p->axis << std::endl;
+		if(p->axis < it->second.size()) return (it->second)[p->axis];
+		return 0;
+	}
+	
+	//std::cout << "Caching response at x = " << x << std::endl;
 	
 	mvec v = p->f(x,p->fparams);
-	p->n_dim = v.size();
+	if(v.size() > p->n_dim) {
+		p->n_dim = v.size();
+		//std::cout << "New size " << p->n_dim << " from " << v << std::endl;
+	}
 	p->m[x] = v;
-	assert(p->axis < p->n_dim);
-	return v[p->axis];
+	if(p->axis < v.size()) return v[p->axis];
+	return 0;
 }
 
+/*
 double generalIntegratingFunctionNoCache(double x, void* params) {
 	// non-cacheing version always re-evaluates function components
 	integratingParams* p = (integratingParams*)params;
@@ -90,6 +106,7 @@ double generalIntegratingFunctionNoCache(double x, void* params) {
 	assert(p->axis < p->n_dim);
 	return v[p->axis];
 }
+*/
 
 mvec Integrator::integrate(mvec (*f)(mdouble,void*), mdouble a, mdouble b, void* params) {
 
@@ -213,7 +230,10 @@ double xslice_v_integral(double x, void* params) {
 
 	integratingParams_V2D* p = (integratingParams_V2D*)params;
 	std::map<double,mvec>::iterator it = p->m.find(x);
-	if(it != p->m.end()) { return (it->second)[p->axis]; }
+	if(it != p->m.end()) {
+		if(p->axis < it->second.size()) return (it->second)[p->axis];
+		return 0;
+	}
 
 	integratingParams_V2D p2;
 	p2.f2 = p->f2;
@@ -224,10 +244,10 @@ double xslice_v_integral(double x, void* params) {
 	p2.y1 = p->y1;
 	mvec v = p->yIntegrator->integrate(&xslice_v, p->y0, p->y1, &p2);
 	
-	p->n_dim = v.size();
+	if(v.size() > p->n_dim) p->n_dim = v.size();
 	p->m[x] = v;
-	assert(p->axis < p->n_dim);
-	return v[p->axis];
+	if(p->axis < v.size()) return v[p->axis];
+	return 0;
 }
 
 mvec Integrator2D::integrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, void* params) {
@@ -299,7 +319,12 @@ double polar_slice_v_integral(double x, void* params) {
 
 	integratingParams_V2D_P* p = (integratingParams_V2D_P*)params;
 	std::map<double,mvec>::iterator it = p->m.find(x);
-	if(it != p->m.end()) { return (it->second)[p->axis]; }
+	if(it != p->m.end()) {
+		if(p->axis < it->second.size()) return (it->second)[p->axis];
+		return 0;
+	}
+	
+	//std::cout << "Polar slice at r = " << x << std::endl;
 
 	integratingParams_V2D_P p2;
 	p2.f2 = p->f2;
@@ -319,10 +344,10 @@ double polar_slice_v_integral(double x, void* params) {
 	}
 	v *= x;
 	
-	p->n_dim = v.size();
+	if(v.size() > p->n_dim) p->n_dim = v.size();
 	p->m[x] = v;
-	assert(p->axis < p->n_dim);
-	return v[p->axis];
+	if(p->axis < v.size()) return v[p->axis];
+	return 0;
 }
 
 mdouble r_max(vec2 ll, vec2 ur, vec2 c) {

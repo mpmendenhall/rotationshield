@@ -1,6 +1,7 @@
 #include "SurfaceGeometry.hh"
 #include "Integrator.hh"
 #include <cmath>
+#include <iostream>
 
 vec3 SurfaceGeometry::snorm(const vec2& p, bool normalized) const {
 	if(normalized) {
@@ -60,8 +61,8 @@ vec2 CylSurfaceGeometry::cache_profile(mdouble l) const {
 vec3 CylSurfaceGeometry::operator()(const vec2& p) const {
 	vec2 zr = cache_profile(p[0]);
 	mdouble phi = 2*M_PI*p[1];
-	double c,s;
-	cache_sincos(phi,c,s);
+	double s,c;
+	cache_sincos(phi,s,c);
 	return vec3(zr[1]*c, zr[1]*s, zr[0]);
 }
 
@@ -70,8 +71,8 @@ vec3 CylSurfaceGeometry::deriv(const vec2& p, unsigned int i) const {
 	assert(zr_profile);
 	vec2 zr = cache_profile(p[0]);
 	mdouble phi = 2*M_PI*p[1];
-	double c,s;
-	cache_sincos(phi,c,s);
+	double s,c;
+	cache_sincos(phi,s,c);
 	
 	if(i==0) {
 		vec2 dzr = zr_profile->deriv(p[0]);

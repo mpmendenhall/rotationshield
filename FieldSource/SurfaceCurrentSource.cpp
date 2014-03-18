@@ -2,7 +2,7 @@
 #include "Color.hh"
 #include <cmath>
 
-void SurfaceCurrentSource::dI_contrib(const vec2& l, vec3& dI, vec3& dm) const {
+vec3 SurfaceCurrentSource::dI_contrib(const vec2& l) const {
 	assert(mySurface && sj);
 	
 	// surface current element dl
@@ -11,41 +11,24 @@ void SurfaceCurrentSource::dI_contrib(const vec2& l, vec3& dI, vec3& dm) const {
 	vec3 dl1 = mySurface->deriv(l,1);
 	double ml0 = dl0.mag();
 	double ml1 = dl1.mag();
-	vec3 dA = cross(dl0,dl1);
+	double dA = cross(dl0,dl1).mag();
 	
-	dI = vec3(dl0/ml0 * sdl[0] + dl1/ml1 * sdl[1])*dA.mag();
-
-	if(sd) dm = dA*(*sd)(l,sjparams);
+	return vec3(dl0/ml0 * sdl[0] + dl1/ml1 * sdl[1])*dA;
 }
 
 vec3 SurfaceCurrentSource::fieldAt_contrib_from(const vec3& v, const vec2& l) const {
 	assert(mySurface);
 	
 	vec3 x0 = (*mySurface)(l);
-	vec3 dl,dm;
-	dI_contrib(l,dl,dm);
+	vec3 dI = dI_contrib(l);
 		
-	// Biot-Savart law, transitioning to near-field constant field approximation TODO
+	// Biot-Savart law
 	vec3 r = v - x0;
 	double mr = r.mag();
+	//if(mr<1e-4) return vec3(0,0,0);
+	return cross(dI,r)/(4.*M_PI*mr*mr*mr);
 	
-	//const double r_zero = 1e-4;
-	//const double r_dim = 1e-3;
-	
-	//if(mr < r_zero) return vec3(0,0,0);	//< zero out singularity
-	
-	if(sd) {
-		mr += 0.01;
-		return cross(dl,r)/(4.*M_PI*mr*mr*mr);
-		//return (cross(dl,r) + r*(3.*dm.dot(r)/(mr*mr)) - dm)*rolloff/(4.*M_PI*mr*mr*mr);
-	} else {
-		mr += 1e-4;
-		return cross(dl,r)/(4.*M_PI*mr*mr*mr);
-	}
-	
-	//if(mr > 0.05)
-	//if(mr > 0.02) return vec3();
-	//return vec3();
+	//return (cross(dl,r) + r*(3.*dm.dot(r)/(mr*mr)) - dm)/(4.*M_PI*mr*mr*mr);
 	
 }
 
@@ -98,9 +81,7 @@ void SurfaceCurrentSource::vis_coords(const vec2& l, double s) const {
 
 mvec J_dA(vec2 l, void* params) {
 	SurfaceCurrentSource& S = *(SurfaceCurrentSource*)params;
-	vec3 dI,dm;
-	S.dI_contrib(l,dI,dm);
-	return mvec(dI);
+	return mvec(S.dI_contrib(l));
 }
 
 vec3 SurfaceCurrentSource::netCurrent(vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {

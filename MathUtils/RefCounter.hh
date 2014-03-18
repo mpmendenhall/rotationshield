@@ -3,15 +3,19 @@
 
 #include <cassert>
 #include <stdio.h>
+#include <string>
 
 class RefCounter {
 public:
-	RefCounter(): refcount(0) { ++nReferencedObjects; }
-	virtual ~RefCounter() { assert(refcount==0); --nReferencedObjects; }
+	RefCounter(const std::string& nm = "RefCounter"): ref_name(nm), refcount(0) { ++nReferencedObjects; }
+	virtual ~RefCounter();
 	virtual void retain() const { ++refcount; ++nTotalReferences; }
-	virtual void release() const { assert(refcount>0); --refcount; --nTotalReferences; if(!refcount) delete(this); }
+	virtual void release() const;
 	static int referencedObjectCount() { return nReferencedObjects; }
 	static int totalReferenceCount() { return nTotalReferences; }
+	
+	std::string ref_name;	//< name for this object, for tracing down deletion issues
+	
 protected:
 	mutable unsigned int refcount;
 	static int nReferencedObjects;

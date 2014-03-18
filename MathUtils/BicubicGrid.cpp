@@ -53,12 +53,12 @@ double CubicGrid::_eval(double x) const {
 	double fx = x-ix;
 	
 	// bounds check for out-of-range values
-	if(ix<1 || ix > NX+1) {
+	if(ix<1 || ix > int(NX+1)) {
 		if(bc==IB_CYCLIC) ix = ((ix-2)+100*NX)%NX+2;
 		else return 0;
 	}
 	
-	assert(1<=ix && ix<=NX+1);
+	assert(1<=ix && ix<=int(NX+1));
 	return eval_cubic(fx, &data[ix-1]);
 }
 
@@ -67,12 +67,12 @@ double CubicGrid::_deriv(double x) const {
 	double fx = x-ix;
 	
 	// bounds check for out-of-range values
-	if(ix<1 || ix > NX+1) {
+	if(ix<1 || ix > int(NX+1)) {
 		if(bc==IB_CYCLIC) ix = ((ix-2)+100*NX)%NX+2;
 		else return 0;
 	}
 	
-	assert(1<=ix && ix<=NX+1);
+	assert(1<=ix && ix<=int(NX+1));
 	return eval_cubic_deriv(fx, &data[ix-1]);
 }
 
@@ -126,7 +126,12 @@ BicubicGrid::~BicubicGrid() {
 double BicubicGrid::operator()(double x, double y) const {
 	return eval_bicubic(sx*(x-ox), sy*(y-oy));
 }
-	
+
+double BicubicGrid::deriv(double x, double y, bool xdirection) const {
+	return eval_deriv(sx*(x-ox), sy*(y-oy), xdirection);
+}
+
+
 void BicubicGrid::setUserRange(double r0, double r1, bool xdirection, double e) {
 	// sx*(r0-ox) = 2-e; sx*(r1-ox) = NX+1+e
 	if(xdirection) {
@@ -195,20 +200,36 @@ double BicubicGrid::eval_bicubic(double x, double y) const {
 	double fy = y-iy;
 	
 	// bounds check for out-of-range values
-	if(ix<1 || ix > NX+1) {
+	if(ix<1 || ix > int(NX+1)) {
 		if(bc[0]==IB_CYCLIC) ix = ((ix-2)+100*NX)%NX+2;
 		else return 0;
 	}
-	if(iy<1 || iy > NY+1) {
+	if(iy<1 || iy > int(NY+1)) {
 		if(bc[1]==IB_CYCLIC) iy = ((iy-2)+100*NY)%NY+2;
 		else return 0;
 	}
 	
-	assert(1<=ix && ix<=NX+1 && 1<=iy && iy<=NY+1);
+	assert(1<=ix && ix<=int(NX+1) && 1<=iy && iy<=int(NY+1));
 	
 	for(int i=0; i<4; i++)
 		ypts[i] = eval_cubic(fy, &data[ix-1+i][iy-1]);
 	return eval_cubic(fx,ypts);
+}
+
+double BicubicGrid::eval_deriv(double x, double y, bool xdirection) const {
+	double dpts[4];
+	
+	int ix = int(x);
+	double fx = x-ix;
+	int iy = int(y);
+	double fy = y-iy;
+	
+	for(int i=0; i<4; i++) {
+		if(xdirection) dpts[i] = eval_bicubic(ix-1+i,y);
+		else dpts[i] = eval_bicubic(x,iy-1+i);
+	}
+	if(xdirection) return eval_cubic_deriv(fx, dpts);
+	return eval_cubic_deriv(fy, dpts);
 }
 
 void BicubicGrid::printData() const {

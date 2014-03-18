@@ -63,6 +63,8 @@ public:
 	
 	/// evaluate at (x,y) in user coordinates
 	double operator()(double x, double y) const;
+	/// evaluate derivative along one axis in user coordinates
+	double deriv(double x, double y, bool xdirection) const;
 	
 	/// set scale factors for user range, points at ends
 	void setUserRange(double r0, double r1, bool xdirection, double e = 0);
@@ -86,6 +88,8 @@ protected:
 
 	/// eval bicubic, x & y scaled to data range
 	double eval_bicubic(double x, double y) const;
+	/// evaluate derivative, x & y scaled to data range
+	double eval_deriv(double x, double y, bool xdirection) const;
 	/// set value at point x,y, in internal coordinates
 	void _set(unsigned int x, unsigned int y, double v);
 	

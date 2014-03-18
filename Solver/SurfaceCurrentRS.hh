@@ -22,7 +22,7 @@ public:
 		
 		rmat3(0,1) = rmat2(0,1) = 2*(murel-1)/(murel+1);
 		rmat3(1,0) = rmat2(1,0) = -rmat2(0,1);
-		rmat3(2,2) = murel==0 ? -1:0;	// TODO correct physics
+		rmat3(2,2) = 0;	//< needs to be set later for dipole sheet reaction
 	}
 	
 	mdouble murel;					//< relative permeability
@@ -35,7 +35,7 @@ public:
 class SurfaceCurrentRS: public MagF_Responder, public SurfaceCurrentSource, public InterpolatingRS2D {
 public:
 	/// constructor; set xdf=1 to enable dipole density response
-	SurfaceCurrentRS(unsigned int nph, unsigned int nz, unsigned int xdf=0);
+	SurfaceCurrentRS(unsigned int nph, unsigned int nz, unsigned int xdf=0, const std::string& nm = "SurfaceCurrentRS");
 
 	// ReactiveSet subclassed functions
 	//=====================================
@@ -63,9 +63,12 @@ public:
 	
 	/// get interpolated surface current response
 	vec2 eval_J(const vec2& p) const { return vec2( (*G[0])(p[0],p[1]), (*G[1])(p[0],p[1]) ); }
-	/// get interpolated surface dipole response
-	mdouble eval_D(const vec2& p) const { assert(nDFi>2); return (*G[2])(p[0],p[1]); }
+	/// get interpolated circulating current response
+	vec2 eval_J_circulant(const vec2& p) const;
+	
 
+	/// calculate dipole sheet field response
+	void calibrate_dipole_response();
 	
 protected:
 	

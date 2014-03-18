@@ -9,7 +9,7 @@
 class MixedSource: public FieldSource {
 public:
 	/// Constructor
-	MixedSource(): FieldSource(), displayColor(vec3(1.0,0.0,0.0)), sources(std::vector<const FieldSource*>()) {}
+	MixedSource(): FieldSource("MixedSource"), displayColor(vec3(1.0,0.0,0.0)), sources(std::vector<const FieldSource*>()) {}
 	
 	/// Destructor
 	virtual ~MixedSource() {

@@ -10,7 +10,8 @@
 class SurfaceCurrentSource: public SurfaceSource {
 public:
 	/// constructor
-	SurfaceCurrentSource(SurfaceGeometry* SG = NULL): SurfaceSource(), mySurface(SG), sj(NULL), sd(NULL), sjparams(NULL), vis_n1(200), vis_n2(200) {}
+	SurfaceCurrentSource(SurfaceGeometry* SG = NULL, const std::string& nm = "SurfaceCurrentSource"):
+		SurfaceSource(nm), mySurface(SG), sj(NULL), sjparams(NULL), vis_n1(200), vis_n2(200) {}
 		
 	/// field contribution f(x,y)dA; x,y in [0,1]^2
 	virtual vec3 fieldAt_contrib_from(const vec3& v, const vec2& l) const;
@@ -22,7 +23,6 @@ public:
 	
 	SurfaceGeometry* mySurface;	//< surface over which current is distributed
 	vec2 (*sj)(vec2, void*);	//< surface current density as a function of surface coordinate
-	mdouble (*sd)(vec2, void*);	//< optional additional surface dipole density contribution
 	void* sjparams;				//< extra parameters for surface function
 	
 	/// Visualize the field source
@@ -33,8 +33,8 @@ public:
 	/// visualize local coordinate axes
 	virtual void vis_coords(const vec2& l, double s = 0.02) const;
 
-	/// current element dI (and dipole dm) from surface coordinate l
-	void dI_contrib(const vec2& l, vec3& dI, vec3& dm) const;
+	/// current element dI from surface coordinate l
+	vec3 dI_contrib(const vec2& l) const;
 	
 };
 

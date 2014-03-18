@@ -34,6 +34,9 @@ const unsigned int INTEG_WS_SIZE = 512;	//< size of integrating workspace (max. 
 /// Contains the arguments for generalIntegratingFunction()
 class integratingParams {
 public:
+	/// constructor
+	integratingParams(): axis(0), n_dim(0) {}
+	
 	/// destructor
 	virtual ~integratingParams() {}
 	
@@ -54,7 +57,8 @@ public:
 class Integrator {
 public:
 	/// Constructor
-	Integrator(): rel_err(1e-4), abs_err(1e-5), myMethod(INTEG_GSL_QNG),
+	//Integrator(): rel_err(1e-4), abs_err(1e-5), myMethod(INTEG_GSL_QNG),
+	Integrator(): rel_err(1e-3), abs_err(1e-4), err_count(0), myMethod(INTEG_GSL_QNG),
 		gslIntegrationWS(gsl_integration_workspace_alloc(INTEG_WS_SIZE)),
 		gsl_cqd_ws(gsl_integration_cquad_workspace_alloc(INTEG_WS_SIZE)) { gsl_set_error_handler_off(); }
 	/// Destructor
@@ -79,6 +83,9 @@ public:
 	
 	double rel_err;					//< relative error target, OR
 	double abs_err;					//< absolute error target
+	unsigned int err_count;			//< note of integration errors
+	/// return and reset error counter
+	unsigned int reset_errcount() { unsigned int e = err_count; err_count = 0; return e; }
 	
 	std::set<double> singularities;	//< known singular points
 	
@@ -137,6 +144,9 @@ public:
 	
 	/// set integration method
 	virtual void setMethod(Integration_Method m) { Integrator::setMethod(m); yIntegrator.setMethod(m); }
+	
+	/// return and reset error counter in y direction
+	unsigned int reset_y_errcount() { return yIntegrator.reset_errcount(); }
 	
 protected:
 	

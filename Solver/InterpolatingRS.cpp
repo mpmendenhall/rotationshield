@@ -29,8 +29,16 @@ void InterpolatingRS2D::DF_address(unsigned int DF, unsigned int& p, unsigned in
 
 void InterpolatingRS2D::_setDF(unsigned int DF, double v) {
 	assert(DF < nDF());
+	assert(v==v && fabs(v)<1e6);
 	unsigned int p,z,d;
 	DF_address(DF,p,z,d);
 	assert(d<G.size() && p<nPhi && z<nZ);
 	G[d]->set(z,p,v);
+}
+
+mvec InterpolatingRS2D::interpl_DF(vec2 l) const {
+	mvec v(nDFi);
+	for(unsigned int i=0; i<nDFi; i++)
+		v[i] = (*G[i])(l[0],l[1]);
+	return v;
 }

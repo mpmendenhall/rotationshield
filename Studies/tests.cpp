@@ -11,6 +11,7 @@
 #include "SurfaceCurrentRS.hh"
 #include "FieldAdaptiveSurface.hh"
 #include "Angles.hh"
+#include "UniformField.hh"
 
 
 bool compareResults(mdouble a, mdouble b, const char* label) {
@@ -236,6 +237,46 @@ public:
 };
 
 
+bool superball_test() {
+	
+	vec3 origin(.3,.3,0);
+	
+	MixedSource* MxS = new MixedSource();
+	//UniformField* BU = new UniformField(vec3(1,1,1));
+	//MxS->addsource(BU);
+	
+	MxS->loop(-0.4, 0.6, 3.0);
+	
+	std::cout << "B center applied: " << MxS->fieldAt(origin) << std::endl;
+	
+	//Ball B(-1.0);
+	Line2D* L2D = new Line2D(vec2(-0.2,0.7), vec2(-0.2,.05));
+	CylSurfaceGeometry* SG = new CylSurfaceGeometry(L2D);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(32,12,1);
+	RS->mySurface = SG;
+	RS->setSurfaceResponse(SurfaceI_Response(0));
+
+	RS->calibrate_dipole_response();
+
+	RS->calculateIncident(*MxS);
+	MxS->addsource(RS);
+	std::cout << "B center non-interacting: " << MxS->fieldAt(origin) << std::endl;
+	MxS->visualize();
+	vsr::pause();
+	
+	SymmetricSolver SS;
+	SS.solve(*RS);
+	SS.calculateResult(*RS);
+	
+	std::cout << "B center interacting: " << MxS->fieldAt(origin) << std::endl;
+	
+	MxS->visualize();
+	vsr::pause();
+	
+	
+	return true;
+}
+
 bool csurface_test() {
 
 	//center scan lines
@@ -261,6 +302,7 @@ bool csurface_test() {
 	double zh = 3.9624/2;
 	double r0 = .6223;
 	
+	/*
 	// main shield
 	Line2D L2D(vec2(-zh,r0), vec2(zh,r0));
 	FieldAdaptiveSurface FAS(L2D);
@@ -271,24 +313,25 @@ bool csurface_test() {
 	RS.mySurface = &SG;
 	RS.setSurfaceResponse(SurfaceI_Response(10000));
 	RSC.addSet(&RS);
+	*/
 	
-	/*
+	
 	// rear SC endcap 
 	Line2D L_Endcap(vec2(-zh,0), vec2(-zh,r0));
 	FieldAdaptiveSurface FAS_EC(L_Endcap);
 	FAS_EC.optimizeSpacing(fe,0.5);
 	CylSurfaceGeometry SG_EC(&FAS_EC);
-	SurfaceCurrentRS RS_EC(nPhi,12,0);
+	SurfaceCurrentRS RS_EC(nPhi,12,1);
 	RS_EC.mySurface = &SG_EC;
 	RS_EC.setSurfaceResponse(SurfaceI_Response(0));
 	RSC.addSet(&RS_EC);
-	*/
+
 	
 	RSC.calculateIncident(*MxS);
-	std::cout << "Net shield current: " << RSC.net_current() << std::endl;
-	
+
 	bool pass = true;
 	mdouble b0 = RSC.fieldAt(origin)[0];
+	/*
 	pass &= compareResults(b0,6.83758710057794e-01,"origin - noninteracting");
 	pass &= compareResults(RSC.fieldAt(xscan)[0]-b0,1.11572338749721e-03,"+x");
 	pass &= compareResults(RSC.fieldAt(yscan)[0]-b0,-9.86029434321134e-05,"+y");
@@ -296,7 +339,8 @@ bool csurface_test() {
 	pass &= compareResults(RSC.fieldAt(-xscan)[0]-b0,1.11572338749666e-03,"-x");
 	pass &= compareResults(RSC.fieldAt(-yscan)[0]-b0,-9.86029434315583e-05,"-y");
 	pass &= compareResults(RSC.fieldAt(-zscan)[0]-b0,-1.33717928543731e-03,"-z");
-
+	*/
+	
 	RSC.visualize();
 	vsr::pause();
 		

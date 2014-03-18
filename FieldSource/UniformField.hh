@@ -9,7 +9,7 @@
 class UniformField: public FieldSource {
 public:
 	/// Constructor
-	UniformField(const vec3& f = vec3()): FieldSource(), B(f) {}
+	UniformField(const vec3& f = vec3()): FieldSource("UniformField"), B(f) { }
 	/// Destructor
 	virtual ~UniformField() {}
 	
@@ -22,6 +22,9 @@ public:
 	/// Magnetic field averaged over specified plane
 	virtual vec3 fieldOverPlane(Plane pl) const { return B; }
 
+	/// visualization
+	virtual void _visualize() const {}
+	
 	/// Print info to stdout
 	virtual void display() const { printf("[Uniform Field]\n"); }
 };

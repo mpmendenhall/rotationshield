@@ -20,4 +20,7 @@ bool integrator_tests();
 /// testing continuous surface current routine
 bool csurface_test();
 
+/// superconducting ball in uniform field
+bool superball_test();
+
 #endif

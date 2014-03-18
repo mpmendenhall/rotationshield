@@ -38,6 +38,9 @@ public:
 	
 	/// total number of degrees of freedom
 	virtual unsigned int nDF() const { return nZ*nPhi*nDFi; }
+
+	/// evaluate interpolators at point
+	mvec interpl_DF(vec2 l) const;
 	
 protected:
 	/// determine "address" for DF in interpolating grids

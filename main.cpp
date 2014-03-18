@@ -14,8 +14,8 @@
 
 /// run self-tests
 void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
-	//integrator_tests();
-	//return;
+	superball_test();
+	return;
 	csurface_test();
 	return;
 	printf("Simple shield self-test...\n");
