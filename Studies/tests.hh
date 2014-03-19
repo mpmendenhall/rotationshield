@@ -21,8 +21,10 @@ bool integrator_tests();
 bool csurface_test();
 
 /// superconducting ball in uniform field
-bool superball_test();
+void superball_test();
 /// superconducting plate blocking current loop
-bool blockade_test();
+void blockade_test();
+/// endless costheta between SC caps
+void mirror_test();
 
 #endif

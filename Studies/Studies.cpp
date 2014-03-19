@@ -72,7 +72,7 @@ void shieldFrame::construct(MixedSource& ms, CosThetaBuilder* ct, const std::str
 			FieldAdaptiveSurface* FAS = new FieldAdaptiveSurface(*L2D);
 			FAS->optimizeSpacing(fe, float(it->cSegs)/(it->cSegs+it->vSegs));
 			CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
-			SurfaceCurrentRS* RS = new SurfaceCurrentRS(pSegs,it->cSegs+it->vSegs,it->mu?0:1);
+			SurfaceCurrentRS* RS = new SurfaceCurrentRS(pSegs,it->cSegs+it->vSegs,0);
 			RS->mySurface = SG;
 			RS->setSurfaceResponse(SurfaceI_Response(it->mu));
 			RSC->addSet(RS);

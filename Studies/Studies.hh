@@ -7,6 +7,7 @@
 #include "CosThetaBuilder.hh"
 #include "MixedSource.hh"
 #include "SymmetricSolver.hh"
+#include "SurfaceProfiles.hh"
 #include "MagRS.hh"
 #include "QFile.hh"
 #include <vector>

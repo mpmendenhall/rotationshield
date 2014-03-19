@@ -29,6 +29,9 @@ vec2 SurfaceCurrentRS::eval_J_circulant(const vec2& p) const {
 	double dGx = G[2]->deriv(p[0],p[1],true);
 	double dGy = G[2]->deriv(p[0],p[1],false);
 	return vec2(dGy,-dGx);
+	
+	//vec2 v = mySurface->d_pathlength(p);
+	//return vec2(dGy/v[1],-dGx/v[2]);
 }
 
 SurfaceCurrentRS::SurfaceCurrentRS(unsigned int nph, unsigned int nz, unsigned int xdf, const std::string& nm): SurfaceCurrentSource(NULL,nm), InterpolatingRS2D(nph) {
@@ -116,17 +119,19 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 			int np0 = c_np + integ_domains[dmp];
 			int np1 = c_np + integ_domains[dmp+1];
 			if(nz1 < 0 || nz0 >= (int)nZ) continue; // skip past-edges domains; note, we are allowed to wrap around in phi
-			vec3 dh(0,0,0); // possible surface normal offset
+			
 			
 			// set integration method depending on whether there will be edge singularities (target point inside integration range)
 			bool self_intersection = ( BField_Protocol::BFP->caller == this
 										&& (nz0 <= i_nz && i_nz <= nz1)
 										&& ( (i_nphi - np0 + nPhi)%nPhi <= (np1 - np0 + nPhi)%nPhi ) );
+			
+			vec3 dh(0,0,0); // possible surface normal offset
 			if(self_intersection) {
 				myIntegrator.setMethod(INTEG_GSL_CQUAD);
 				polar_integral_center = &ixn_center;
 				if(np0 > i_nphi) { np0 -= nPhi; np1 -= nPhi; }	// adjust phi definition to align with polar center
-				if(ixn_df >= 2*nZ*nPhi) dh = mySurface->snorm(ixn_center,true)*0.001;
+				//if(ixn_df >= 2*nZ*nPhi) dh = mySurface->snorm(ixn_center,true)*0.00001;
 			}
 			
 			vec2 ll((nz0+0.5)/double(nZ), (np0+0.5)/double(nPhi));
@@ -145,7 +150,7 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 			if(BField_Protocol::BFP->M2) {
 				BField_Protocol::BFP->M2B += fieldAtWithTransform2(BField_Protocol::BFP->x, *BField_Protocol::BFP->M2, ll, ur, 1, 1);
 			} else if(BField_Protocol::BFP->M3) {
-				BField_Protocol::BFP->B += fieldAtWithTransform3(BField_Protocol::BFP->x + dh, *BField_Protocol::BFP->M3, ll, ur, 1, 1);
+				BField_Protocol::BFP->B += fieldAtWithTransform3(BField_Protocol::BFP->x, *BField_Protocol::BFP->M3, ll, ur, 1, 1);
 			} else {
 				BField_Protocol::BFP->B += fieldAt(BField_Protocol::BFP->x, ll, ur, 1, 1);
 			}
@@ -164,7 +169,7 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 		}
 	}
 	
-	if(self_ixn && ixn_df >= 2*nZ*nPhi) BField_Protocol::BFP->B[2]=0;	//< previously calibrated dipole self-interaction
+	if(self_ixn && ixn_df >= 2*nZ*nPhi) BField_Protocol::BFP->B[2] = 0; //< previously calibrated dipole self-interaction
 	
 	myIntegrator.setMethod(INTEG_GSL_QAG); //< reset default method
 	
@@ -202,6 +207,7 @@ void SurfaceCurrentRS::calibrate_dipole_response() {
 		// set calibrated field-cancelling response
 		for(unsigned int p = 0; p<nPhi; p++) {
 			assert(el+p < sdefs.size());
+			sdefs[el+p].rmat3(0,1) = sdefs[el+p].rmat3(1,0) = 0;
 			sdefs[el+p].rmat3(2,2) = -1./B[2];
 		}
 	}

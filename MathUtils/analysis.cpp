@@ -73,9 +73,9 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, int nX, int nY, int nZ, std::ostrea
 	mdouble resids;
 	char axisnames[] = "xyz";
 	
-	unsigned int polOrder = 4;
-	if(nX>5 && nY>5 && nZ>5) polOrder = 5;
-	if(nX>6 && nY>6 && nZ>6) polOrder = 6;
+	unsigned int polOrder = 0;
+	for(unsigned int i=1; i<=6; i++)
+		if(nX>i && nY>i && nZ>i) polOrder = i;
 	Polynomial<3,mdouble> p = Polynomial<3,mdouble>::lowerTriangleTerms(polOrder);
 	for(int i=0; i<3; i++) {
 		resids = polynomialFit(coords, bfield[i], p);

@@ -19,6 +19,9 @@ public:
 	/// surface normal at point p; when not normalized, magnitude is dA
 	virtual vec3 snorm(const vec2& l, bool normalized = false) const;
 	
+	/// pathlength for moves dl1, dl2 at surface position l
+	virtual vec2 d_pathlength(vec2 l) const;
+	
 	/// differential area dA / dl1 dl2
 	virtual mdouble dA(const vec2& l) const;
 	
@@ -73,15 +76,6 @@ public:
 	vec3 dx;
 	vec3 dy;
 	vec3 origin;
-};
-
-/// Convenience linear sweep DFunc
-class Line2D: public DVFunc1<2,mdouble> {
-public:
-	Line2D(vec2 a, vec2 b): x0(a), x1(b) {}
-	vec2 x0,x1;
-	virtual vec2 operator()(mdouble x) const { return x0*(1-x) + x1*x; }
-	virtual vec2 deriv(mdouble) const { return x1-x0; }
 };
 
 #endif

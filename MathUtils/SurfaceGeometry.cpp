@@ -14,6 +14,10 @@ vec3 SurfaceGeometry::snorm(const vec2& p, bool normalized) const {
 	}
 }
 
+vec2 SurfaceGeometry::d_pathlength(vec2 l) const {
+	return vec2(deriv(l,0).mag(), deriv(l,1).mag());
+}
+
 Matrix<3,3,mdouble> SurfaceGeometry::rotToLocal(const vec2& x) const {
 	vec3 v0 = deriv(x,0).normalized();
 	vec3 v1 = deriv(x,1).normalized();

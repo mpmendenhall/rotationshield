@@ -13,9 +13,9 @@ def make_asym_shortcoil_base(nm,r,dz=-0.783,r0=0.70):
 	#S.shsects.append(ShieldSection(10000,10,20,"nrd","prd"))
 	#S.shsects.append(ShieldSection(0,12,6,"prd","pax"))
 	
-	S.shsects.append(ShieldSection(0,6,4,"nax","nrd"))
+	S.shsects.append(ShieldSection(0,6,8,"nax","nrd"))
 	S.shsects.append(ShieldSection(10000,5,10,"nrd","prd"))
-	S.shsects.append(ShieldSection(0,6,4,"prd","pax"))
+	S.shsects.append(ShieldSection(0,6,8,"prd","pax"))
 	S.shsects[2].off[1][1] = r0
 		
 	S.measGrid = (7,11,7)
@@ -39,6 +39,8 @@ def make_closed_ends(nm,r,dz=0):
 	S.set_csgeom(clen = 2.5, crad = 1.0, dlen = 0.01, drad = 0.1)
 	S.cend = ["none","none"]
 	S.dist = []
+	S.shsects[0].off[1][1] = 1
+	S.shsects[2].off[0][1] = 1
 	
 	return S
 
@@ -102,6 +104,7 @@ def ECtoWiresScan():
 	for r in unifrange(0.001, .05, 7, True):
 		S = make_setup(stname+"_ECdz",r)
 		S.set_csgeom(clen = 2.5, crad = 1.0, dlen = r, drad = 0.1)
+		#print S.make_cmd();
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
 

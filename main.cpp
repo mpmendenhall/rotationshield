@@ -14,11 +14,15 @@
 
 /// run self-tests
 void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
+
+	mirror_test();
 	//superball_test();
-	blockade_test();
+	//blockade_test();
 	return;
+	
 	csurface_test();
 	return;
+	
 	printf("Simple shield self-test...\n");
 	reference_simpleshield();
 	//printf("\n\nReference self-test...\n");

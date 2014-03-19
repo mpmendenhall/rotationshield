@@ -12,7 +12,7 @@
 #include "FieldAdaptiveSurface.hh"
 #include "Angles.hh"
 #include "UniformField.hh"
-
+#include "SurfaceProfiles.hh"
 
 bool compareResults(mdouble a, mdouble b, const char* label) {
 	bool pass = true;
@@ -224,35 +224,23 @@ void angular_intervals_test() {
 	std::cout << AIS << std::endl;
 }
 
-class WavyThing: public DVFunc1<2,mdouble> {
-public:
-	virtual vec2 operator()(mdouble x) const { return vec2( (x*x-0.5)*3.9624, .6223 + 0.1*(1-x) + 0.04*sin(9*M_PI*x)); }
-};
-
-class Ball: public DVFunc1<2,mdouble> {
-public:
-	Ball(double rr): r(rr) {}
-	virtual vec2 operator()(mdouble x) const { return vec2(-r*cos(M_PI*x), r*sin(M_PI*x)); }
-	double r;
-};
-
-
-void qsurvey(FieldSource* S, vec3 v = vec3(0.5,0.5,0.5), unsigned int npts = 6) {
+void qsurvey(FieldSource* S, vec3 v1 = vec3(0.5,-0.5,0.5), vec3 v0 = vec3(0,0,0), unsigned int npts = 6) {
 	for(float i=0; i<npts; i++) {
-		vec3 l = v * float(i)/(npts-1);
+		double x = float(i)/(npts-1);
+		vec3 l = v1 * x + v0 * (1-x);
 		std::cout << "\t" << l << "\t" << S->fieldAt(l) << std::endl;
 	}
 }
 
-void vis_test_sequence(ReactiveSet* RS, MixedSource* MxS) {
+void vis_test_sequence(ReactiveSet* RS, MixedSource* MxS, vec3 vs = vec3(0.5,-0.5,0.5), vec3 vs0 = vec3(0,0,0)) {
 	
 	std::cout << "B applied: " << std::endl;
-	qsurvey(MxS);
+	qsurvey(MxS,vs,vs0);
 	
 	dynamic_cast<MagF_Responder*>(RS)->calculateIncident(*MxS);
 	MxS->addsource(dynamic_cast<FieldSource*>(RS));
 	std::cout << "B non-interacting: " << std::endl;
-	qsurvey(MxS);
+	qsurvey(MxS,vs,vs0);
 	MxS->visualize();
 	vsr::pause();
 	
@@ -262,43 +250,94 @@ void vis_test_sequence(ReactiveSet* RS, MixedSource* MxS) {
 	MxS->visualize();
 	
 	std::cout << "B interacting: " << std::endl;
-	qsurvey(MxS);
+	qsurvey(MxS,vs,vs0);
 	
 	vsr::pause();
 }
 
-bool blockade_test() {
+void blockade_test() {
 	
 	MixedSource* MxS = new MixedSource();
-	MxS->loop(-0.15,0.6,3.);
+	//MxS->loop(-0.25,0.6,3.);
+	UniformField* BU = new UniformField(vec3(0,0,1));
+	MxS->addsource(BU);
+	
+	unsigned int nPhi = 8;
+	//MagRSCombiner* RSC = new MagRSCombiner(nPhi);
+	
+	FieldEstimator2Dfrom3D fe(MxS);
 	
 	Line2D* L2D = new Line2D(vec2(-0.05,1.), vec2(-0.05,0));
-	CylSurfaceGeometry* SG = new CylSurfaceGeometry(L2D);
-	SurfaceCurrentRS* RS = new SurfaceCurrentRS(16,9,1);
+	//Dish* D = new Dish(-0.05, -0.25, 1);
+	FieldAdaptiveSurface* FAS = new FieldAdaptiveSurface(*L2D);
+	FAS->optimizeSpacing(fe, 0.6);
+	
+	CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(nPhi,15);
 	RS->mySurface = SG;
 	RS->setSurfaceResponse(SurfaceI_Response(0));
 	
+	//RSC->addSet(RS);
+	
+	/*
+	Dish* D2 = new Dish(0.5, 0.25, -1);
+	CylSurfaceGeometry* SG2 = new CylSurfaceGeometry(D2);
+	SurfaceCurrentRS* RS2 = new SurfaceCurrentRS(nPhi,9,0);
+	RS2->mySurface = SG2;
+	RS2->setSurfaceResponse(SurfaceI_Response(0));
+	RSC.addSet(RS2);
+	*/
+	
 	vis_test_sequence(RS,MxS);
-	return true;
 }
 
-bool superball_test() {
+void superball_test() {
 	
 	MixedSource* MxS = new MixedSource();
 	UniformField* BU = new UniformField(vec3(1,1,1));
 	MxS->addsource(BU);
 		
-	Ball* B = new Ball(-1.0);
+	Ball* B = new Ball(-1.0,0.7);
 	CylSurfaceGeometry* SG = new CylSurfaceGeometry(B);
-	SurfaceCurrentRS* RS = new SurfaceCurrentRS(16,15,1);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(16,15,0);
 	RS->mySurface = SG;
 	RS->setSurfaceResponse(SurfaceI_Response(0));
 
 	vis_test_sequence(RS,MxS);
-	return true;
+}
+
+
+void mirror_test() {
+
+	MixedSource* MxS = new MixedSource();
+	CosThetaBuilder b = CosThetaBuilder(5, 0.5, 1);
+	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_NONE;
+	b.buildCoil(*MxS);
+	FieldEstimator2Dfrom3D fe(MxS);
+	
+	unsigned int nPhi = 32;
+	MagRSCombiner* RSC = new MagRSCombiner(nPhi);
+
+	for(int z=-1; z<=1; z+=2) {
+		RoundedSlab* RSL = new RoundedSlab(0.61*z, -0.7, -0.2);
+		//Line2D* L2D = (z>0)? new Line2D(vec2(0.51, 0.7), vec2(0.51, 0)) : new Line2D(vec2(-0.51, 0), vec2(-0.51, 0.7));
+		FieldAdaptiveSurface* FAS = new FieldAdaptiveSurface(*RSL);
+		FAS->optimizeSpacing(fe, 0.6);
+		
+		CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
+		SurfaceCurrentRS* RS = new SurfaceCurrentRS(nPhi,25);
+		RS->mySurface = SG;
+		RS->setSurfaceResponse(SurfaceI_Response(0));
+		RSC->addSet(RS);
+	}
+	
+	vis_test_sequence(RSC,MxS, vec3(0.1,0,0.5), vec3(0.1,0,0));
+	
 }
 
 bool csurface_test() {
+
+	// mimic "simple shield" test with continuous surface
 
 	//center scan lines
 	vec3 origin(0,0,0);
@@ -323,8 +362,6 @@ bool csurface_test() {
 	double zh = 3.9624/2;
 	double r0 = .6223;
 	
-	/*
-	// main shield
 	Line2D L2D(vec2(-zh,r0), vec2(zh,r0));
 	FieldAdaptiveSurface FAS(L2D);
 	FAS.optimizeSpacing(sfe,0.3, false);
@@ -334,25 +371,12 @@ bool csurface_test() {
 	RS.mySurface = &SG;
 	RS.setSurfaceResponse(SurfaceI_Response(10000));
 	RSC.addSet(&RS);
-	*/
 	
-	
-	// rear SC endcap 
-	Line2D L_Endcap(vec2(-zh,0), vec2(-zh,r0));
-	FieldAdaptiveSurface FAS_EC(L_Endcap);
-	FAS_EC.optimizeSpacing(fe,0.5);
-	CylSurfaceGeometry SG_EC(&FAS_EC);
-	SurfaceCurrentRS RS_EC(nPhi,12,1);
-	RS_EC.mySurface = &SG_EC;
-	RS_EC.setSurfaceResponse(SurfaceI_Response(0));
-	RSC.addSet(&RS_EC);
-
 	
 	RSC.calculateIncident(*MxS);
 
 	bool pass = true;
 	mdouble b0 = RSC.fieldAt(origin)[0];
-	/*
 	pass &= compareResults(b0,6.83758710057794e-01,"origin - noninteracting");
 	pass &= compareResults(RSC.fieldAt(xscan)[0]-b0,1.11572338749721e-03,"+x");
 	pass &= compareResults(RSC.fieldAt(yscan)[0]-b0,-9.86029434321134e-05,"+y");
@@ -360,13 +384,10 @@ bool csurface_test() {
 	pass &= compareResults(RSC.fieldAt(-xscan)[0]-b0,1.11572338749666e-03,"-x");
 	pass &= compareResults(RSC.fieldAt(-yscan)[0]-b0,-9.86029434315583e-05,"-y");
 	pass &= compareResults(RSC.fieldAt(-zscan)[0]-b0,-1.33717928543731e-03,"-z");
-	*/
 	
 	RSC.visualize();
 	vsr::pause();
-		
-	//return true;
-	
+			
 	SymmetricSolver SS;
 	SS.solve(RSC);
 	SS.calculateResult(RSC);
