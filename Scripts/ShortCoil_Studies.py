@@ -214,7 +214,8 @@ if __name__=="__main__":
 				FI.BC.plotFields(2,0,1,2)
 		else:
 			
-			FI = FieldInfo(outdir+"/"+stname+"_ECdz/X_0.050000/")
+			#FI = FieldInfo(outdir+"/"+stname+"_ECdz/X_0.050000/")
+			FI = FieldInfo(outdir+"/foo/")
 			
 			if 1:
 				FI.BC.plotFields(2,0,1,2) # Bz along z

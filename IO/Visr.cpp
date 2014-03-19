@@ -7,8 +7,10 @@
 #ifdef WITH_OPENGL
 #include <GL/freeglut.h>
 
-namespace vsr {
+bool Visualizable::vis_on = true;
 
+namespace vsr {
+	
 	struct qcmd {
 		qcmd(void (*f)(std::vector<float>&)): fcn(f) {}
 		void (*fcn)(std::vector<float>&);
@@ -402,7 +404,10 @@ namespace vsr {
 
 #else
 
+bool Visualizable::vis_on = false;
+
 namespace vsr {
+
 	void initWindow(const std::string& title) { }
 	void clearWindow() {}
 	void resetViewTransformation() {}

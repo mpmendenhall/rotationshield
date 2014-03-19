@@ -22,5 +22,7 @@ bool csurface_test();
 
 /// superconducting ball in uniform field
 bool superball_test();
+/// superconducting plate blocking current loop
+bool blockade_test();
 
 #endif

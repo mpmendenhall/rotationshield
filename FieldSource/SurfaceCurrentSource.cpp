@@ -69,6 +69,8 @@ void SurfaceCurrentSource::_visualize() const {
 }
 
 void SurfaceCurrentSource::vis_coords(const vec2& l, double s) const {
+	if(!mySurface) return;
+	
 	vec3 o = (*mySurface)(l);
 	vec3 dx = mySurface->deriv(l,0).normalized();
 	vec3 dy = mySurface->deriv(l,1).normalized();
@@ -85,6 +87,8 @@ mvec J_dA(vec2 l, void* params) {
 }
 
 vec3 SurfaceCurrentSource::netCurrent(vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
+	assert(mySurface);
+	myIntegrator.setMethod(INTEG_GSL_QAG);
 	mvec J = subdividedIntegral(&J_dA, (void*)this, ll, ur, ndx, ndy);
 	return vec3(J[0],J[1],J[2]);
 }

@@ -28,6 +28,9 @@ public:
 	/// calculate rotation to surface local coordinates v_local = M*v
 	Matrix<3,3,mdouble> rotToLocal(const vec2& x) const;
 	
+	/// calculate min and max distance to corners of region
+	void proximity(vec3 x, vec2 ll, vec2 ur, double& mn, double& mx) const;
+	
 protected:
 
 	Integrator2D myIntegrator;	//< integrator for internal calculations

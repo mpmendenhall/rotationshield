@@ -28,7 +28,7 @@ vec2 SurfaceCurrentRS::eval_J_circulant(const vec2& p) const {
 	assert(nDFi>2);
 	double dGx = G[2]->deriv(p[0],p[1],true);
 	double dGy = G[2]->deriv(p[0],p[1],false);
-	return vec2(dGy,-dGx)/mySurface->dA(p);
+	return vec2(dGy,-dGx);
 }
 
 SurfaceCurrentRS::SurfaceCurrentRS(unsigned int nph, unsigned int nz, unsigned int xdf, const std::string& nm): SurfaceCurrentSource(NULL,nm), InterpolatingRS2D(nph) {
@@ -48,7 +48,7 @@ SurfaceCurrentRS::SurfaceCurrentRS(unsigned int nph, unsigned int nz, unsigned i
 }
 
 mvec SurfaceCurrentRS::getReactionTo(ReactiveSet* R, unsigned int phi) {
-	if(!(ixn_df%nPhi)) visualize();
+	if(vis_on && R==this && !(ixn_df%nPhi)) visualize();
 	mvec v(nDF()/nPhi);
 	for(ixn_el = phi; ixn_el < nDF()/nDFi; ixn_el+=nPhi) {
 		mvec vs = subelReaction(R);
@@ -97,12 +97,14 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 
 	// How to slice up integration range
 	std::vector<int> integ_domains;
-	const int idomains_1[] = {-2,2};
-	integ_domains.insert(integ_domains.end(), idomains_1, idomains_1+2);
+	if(BField_Protocol::BFP->caller == this && abs(i_nz-c_nz) <= 2 && (i_nphi-c_np+2*nPhi)%nPhi <= 2 ) {
+		const int idomains_1[] = {-2,2};
+		integ_domains.insert(integ_domains.end(), idomains_1, idomains_1+2);
+	} else {
+		const int idomains_9[] = {-2,-1,1,2};
+		integ_domains.insert(integ_domains.end(), idomains_9, idomains_9+4);
+	}
 	
-	//const int idomains_9[] = {-2,-1,1,2};
-	//integ_domains.insert(integ_domains.end(), idomains_9, idomains_9+4);
-		
 	polar_r0 = 0;
 	
 	// integrate over each region
@@ -114,27 +116,36 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 			int np0 = c_np + integ_domains[dmp];
 			int np1 = c_np + integ_domains[dmp+1];
 			if(nz1 < 0 || nz0 >= (int)nZ) continue; // skip past-edges domains; note, we are allowed to wrap around in phi
+			vec3 dh(0,0,0); // possible surface normal offset
 			
 			// set integration method depending on whether there will be edge singularities (target point inside integration range)
-			if( BField_Protocol::BFP->caller == this
-					&& (nz0 <= i_nz && i_nz <= nz1)
-					&& ( (i_nphi - np0 + nPhi)%nPhi <= (np1 - np0 + nPhi)%nPhi ) ) {
+			bool self_intersection = ( BField_Protocol::BFP->caller == this
+										&& (nz0 <= i_nz && i_nz <= nz1)
+										&& ( (i_nphi - np0 + nPhi)%nPhi <= (np1 - np0 + nPhi)%nPhi ) );
+			if(self_intersection) {
 				myIntegrator.setMethod(INTEG_GSL_CQUAD);
 				polar_integral_center = &ixn_center;
 				if(np0 > i_nphi) { np0 -= nPhi; np1 -= nPhi; }	// adjust phi definition to align with polar center
-			} else
-				myIntegrator.setMethod(INTEG_GSL_QAG);
+				if(ixn_df >= 2*nZ*nPhi) dh = mySurface->snorm(ixn_center,true)*0.001;
+			}
 			
 			vec2 ll((nz0+0.5)/double(nZ), (np0+0.5)/double(nPhi));
 			vec2 ur((nz1+0.5)/double(nZ), (np1+0.5)/double(nPhi));
 			if(ll[0]<0) ll[0]=0;
 			if(ur[0]>1) ur[0]=1;
 			
+			if(!self_intersection) {
+				// select integration method depending on near/far difference
+				double mn,mx;
+				mySurface->proximity(BField_Protocol::BFP->x, ll, ur, mn, mx);
+				if(mx > 2*mn) myIntegrator.setMethod(INTEG_GSL_CQUAD);
+				else myIntegrator.setMethod(INTEG_GSL_QAG);
+			}
 			
 			if(BField_Protocol::BFP->M2) {
 				BField_Protocol::BFP->M2B += fieldAtWithTransform2(BField_Protocol::BFP->x, *BField_Protocol::BFP->M2, ll, ur, 1, 1);
 			} else if(BField_Protocol::BFP->M3) {
-				BField_Protocol::BFP->B += fieldAtWithTransform3(BField_Protocol::BFP->x, *BField_Protocol::BFP->M3, ll, ur, 1, 1);
+				BField_Protocol::BFP->B += fieldAtWithTransform3(BField_Protocol::BFP->x + dh, *BField_Protocol::BFP->M3, ll, ur, 1, 1);
 			} else {
 				BField_Protocol::BFP->B += fieldAt(BField_Protocol::BFP->x, ll, ur, 1, 1);
 			}
@@ -142,7 +153,10 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 			unsigned int nerrx = myIntegrator.reset_errcount();
 			unsigned int nerry = myIntegrator.reset_y_errcount();
 			if(nerrx || nerry) {
-				std::cout << ll << ur << " " << el << " " << ixn_center << " P" << bool(polar_integral_center) << " errs (" << nerrx << "," << nerry
+				std::cout << "range:" << ll << ur << " el:" << el << " " << ixn_center << " P" << bool(polar_integral_center)
+					<< " from " << (*mySurface)(surf_coords(ixn_df)) << " to " << BField_Protocol::BFP->x
+					<< " asking:" << BField_Protocol::BFP->caller << " responding:" << this
+					<< " errs (" << nerrx << "," << nerry
 					<< ") z: " << nz0 << "/" << i_nz << "/" << nz1 << " phi: " << np0 << "/" << i_nphi << "/" << np1 << std::endl;
 			}
 			
@@ -151,6 +165,8 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 	}
 	
 	if(self_ixn && ixn_df >= 2*nZ*nPhi) BField_Protocol::BFP->B[2]=0;	//< previously calibrated dipole self-interaction
+	
+	myIntegrator.setMethod(INTEG_GSL_QAG); //< reset default method
 	
 	return true;
 }
@@ -179,7 +195,7 @@ void SurfaceCurrentRS::calibrate_dipole_response() {
 		
 		Matrix<3,3,mdouble> RM = mySurface->rotToLocal(l);
 		vec3 x = (*mySurface)(l);
-		std::cout << "\tz = " << z << "\tcoords" << ll << l << ur;
+		std::cout << "\tz = " << z << "\tcoords" << ll << l << ur << " x=" << x;
 		vec3 B = fieldAtWithTransform3(x, RM, ll, ur, 1, 1);
 		std::cout << "\tB = " << B << std::endl;
 		
@@ -187,11 +203,11 @@ void SurfaceCurrentRS::calibrate_dipole_response() {
 		for(unsigned int p = 0; p<nPhi; p++) {
 			assert(el+p < sdefs.size());
 			sdefs[el+p].rmat3(2,2) = -1./B[2];
-			sdefs[el+p].rmat3(0,1) = sdefs[el+p].rmat3(1,0) = 0;
 		}
 	}
 	
 	polar_integral_center = NULL;
+	myIntegrator.setMethod(INTEG_GSL_QAG);
 }
 
 //
@@ -201,6 +217,7 @@ void SurfaceCurrentRS::calibrate_dipole_response() {
 void SurfaceCurrentRS::setSurfaceResponse(SurfaceI_Response r) {
 	sdefs.resize(nZ*nPhi);
 	std::fill(sdefs.begin(), sdefs.end(), r);
+	if(nDFi==3) calibrate_dipole_response();
 }
 
 void SurfaceCurrentRS::_visualize() const {
@@ -215,6 +232,8 @@ void SurfaceCurrentRS::_visualize() const {
 }
 
 void SurfaceCurrentRS::vis_i_vectors(double s, double mx) const {
+	if(!mySurface || !sj) return;
+	
 	for(unsigned int el = 0; el < nZ*nPhi; el++) {
 		vec2 l = surf_coords(el);
 		vec3 o = (*mySurface)(l);

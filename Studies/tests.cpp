@@ -237,43 +237,64 @@ public:
 };
 
 
-bool superball_test() {
-	
-	vec3 origin(.3,.3,0);
-	
-	MixedSource* MxS = new MixedSource();
-	//UniformField* BU = new UniformField(vec3(1,1,1));
-	//MxS->addsource(BU);
-	
-	MxS->loop(-0.4, 0.6, 3.0);
-	
-	std::cout << "B center applied: " << MxS->fieldAt(origin) << std::endl;
-	
-	//Ball B(-1.0);
-	Line2D* L2D = new Line2D(vec2(-0.2,0.7), vec2(-0.2,.05));
-	CylSurfaceGeometry* SG = new CylSurfaceGeometry(L2D);
-	SurfaceCurrentRS* RS = new SurfaceCurrentRS(32,12,1);
-	RS->mySurface = SG;
-	RS->setSurfaceResponse(SurfaceI_Response(0));
+void qsurvey(FieldSource* S, vec3 v = vec3(0.5,0.5,0.5), unsigned int npts = 6) {
+	for(float i=0; i<npts; i++) {
+		vec3 l = v * float(i)/(npts-1);
+		std::cout << "\t" << l << "\t" << S->fieldAt(l) << std::endl;
+	}
+}
 
-	RS->calibrate_dipole_response();
-
-	RS->calculateIncident(*MxS);
-	MxS->addsource(RS);
-	std::cout << "B center non-interacting: " << MxS->fieldAt(origin) << std::endl;
+void vis_test_sequence(ReactiveSet* RS, MixedSource* MxS) {
+	
+	std::cout << "B applied: " << std::endl;
+	qsurvey(MxS);
+	
+	dynamic_cast<MagF_Responder*>(RS)->calculateIncident(*MxS);
+	MxS->addsource(dynamic_cast<FieldSource*>(RS));
+	std::cout << "B non-interacting: " << std::endl;
+	qsurvey(MxS);
 	MxS->visualize();
 	vsr::pause();
 	
 	SymmetricSolver SS;
 	SS.solve(*RS);
 	SS.calculateResult(*RS);
-	
-	std::cout << "B center interacting: " << MxS->fieldAt(origin) << std::endl;
-	
 	MxS->visualize();
+	
+	std::cout << "B interacting: " << std::endl;
+	qsurvey(MxS);
+	
 	vsr::pause();
+}
+
+bool blockade_test() {
 	
+	MixedSource* MxS = new MixedSource();
+	MxS->loop(-0.15,0.6,3.);
 	
+	Line2D* L2D = new Line2D(vec2(-0.05,1.), vec2(-0.05,0));
+	CylSurfaceGeometry* SG = new CylSurfaceGeometry(L2D);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(16,9,1);
+	RS->mySurface = SG;
+	RS->setSurfaceResponse(SurfaceI_Response(0));
+	
+	vis_test_sequence(RS,MxS);
+	return true;
+}
+
+bool superball_test() {
+	
+	MixedSource* MxS = new MixedSource();
+	UniformField* BU = new UniformField(vec3(1,1,1));
+	MxS->addsource(BU);
+		
+	Ball* B = new Ball(-1.0);
+	CylSurfaceGeometry* SG = new CylSurfaceGeometry(B);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(16,15,1);
+	RS->mySurface = SG;
+	RS->setSurfaceResponse(SurfaceI_Response(0));
+
+	vis_test_sequence(RS,MxS);
 	return true;
 }
 

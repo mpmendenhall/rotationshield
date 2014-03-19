@@ -128,7 +128,12 @@ double BicubicGrid::operator()(double x, double y) const {
 }
 
 double BicubicGrid::deriv(double x, double y, bool xdirection) const {
-	return eval_deriv(sx*(x-ox), sy*(y-oy), xdirection);
+	// crude way... but be sure it works
+	double h = 1e-4;
+	if(xdirection) return ((*this)(x+h,y)-(*this)(x-h,y))/(2*h);
+	else return ((*this)(x,y+h)-(*this)(x,y-h))/(2*h);
+	
+	//return eval_deriv(sx*(x-ox), sy*(y-oy), xdirection);
 }
 
 

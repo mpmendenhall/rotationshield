@@ -10,7 +10,7 @@ mdouble FieldAnalyzer::simpsonCoeff(int n, int ntot) {
 }
 
 void FieldAnalyzer::survey(vec3 ll, vec3 ur, int nX, int nY, int nZ, std::ostream& statsout, std::ostream& datsout) const {	
-	printf("Analyzing resultant fields... ");
+	printf("Analyzing resultant fields...\n");
 	vec3 n = vec3(nX-1,nY-1,nZ-1);
 	vec3 dx = (ur - ll)/n;
 	for(int i=0; i<3; i++) if(n[i]==0) { dx[i] = 0; ll[i] = 0.5*(ll[i]+ur[i]); }

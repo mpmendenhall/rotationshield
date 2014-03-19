@@ -54,7 +54,6 @@ namespace vsr {
 	bool get_pause();
 	/// set the kill flag to end visualization thread
 	void set_kill();
-	
 }
 
 /// virtual base class for visualizable objects
@@ -71,6 +70,8 @@ public:
 		
 	/// visualize without clearing screen
 	virtual void _visualize() const = 0;
+	
+	static bool vis_on;
 };
 
 

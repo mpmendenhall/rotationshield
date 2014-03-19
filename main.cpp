@@ -14,7 +14,8 @@
 
 /// run self-tests
 void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
-	superball_test();
+	//superball_test();
+	blockade_test();
 	return;
 	csurface_test();
 	return;

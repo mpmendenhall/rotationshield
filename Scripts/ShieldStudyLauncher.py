@@ -36,7 +36,7 @@ class StudySetup:
 		
 		self.shieldR = 0				# shield radius (nominal 0.68; 0 = no shield)
 		self.shieldL = 0				# shield length (nominal 2.7; 0 = no shield)
-		self.nPhi = 128					# shield phi sections
+		self.nPhi = 64					# shield phi sections
 		self.shsects = []				# list of shield sections
 			
 		self.measCell = [(0,-.2,-.2),(.2,.2,.2)]	# measurement range

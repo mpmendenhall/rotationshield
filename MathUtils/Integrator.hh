@@ -57,15 +57,9 @@ public:
 class Integrator {
 public:
 	/// Constructor
-	//Integrator(): rel_err(1e-4), abs_err(1e-5), myMethod(INTEG_GSL_QNG),
-	Integrator(): rel_err(1e-3), abs_err(1e-4), err_count(0), myMethod(INTEG_GSL_QNG),
-		gslIntegrationWS(gsl_integration_workspace_alloc(INTEG_WS_SIZE)),
-		gsl_cqd_ws(gsl_integration_cquad_workspace_alloc(INTEG_WS_SIZE)) { gsl_set_error_handler_off(); }
+	Integrator();
 	/// Destructor
-	virtual ~Integrator() {
-		gsl_integration_workspace_free(gslIntegrationWS);
-		gsl_integration_cquad_workspace_free(gsl_cqd_ws);
-	}
+	virtual ~Integrator();
 	
 	/// Integrates a function \f$ \int_a^b f(x)dx\f$ using GSL numerical integration routines for each component
 	/** \param f function to be integrated

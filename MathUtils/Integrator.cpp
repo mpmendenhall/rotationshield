@@ -8,6 +8,19 @@ bool integratingParams::verbose = false;
 // 1D integrator
 //
 
+Integrator::Integrator():
+	rel_err(1e-3), abs_err(1e-4), err_count(0), myMethod(INTEG_GSL_QNG),
+	gslIntegrationWS(gsl_integration_workspace_alloc(INTEG_WS_SIZE)),
+	gsl_cqd_ws(gsl_integration_cquad_workspace_alloc(INTEG_WS_SIZE/4)) {
+	//gsl_set_error_handler_off();
+}
+
+Integrator::~Integrator() {
+	gsl_integration_workspace_free(gslIntegrationWS);
+	gsl_integration_cquad_workspace_free(gsl_cqd_ws);
+}
+
+
 void Integrator::setup_singularities(mdouble a, mdouble b) {
 	_singularities.clear();
 	if(!singularities.size()) return;
@@ -316,7 +329,9 @@ std::vector<angular_interval> rectangle_clip(vec2 c, vec2 ll, vec2 ur, double r)
 }
 
 double polar_slice_v_integral(double x, void* params) {
-
+	
+	if(x<=0) return 0;
+	
 	integratingParams_V2D_P* p = (integratingParams_V2D_P*)params;
 	std::map<double,mvec>::iterator it = p->m.find(x);
 	if(it != p->m.end()) {

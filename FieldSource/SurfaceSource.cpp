@@ -19,7 +19,9 @@ mvec SSdA(vec2 l, void* params) {
 }
 
 mvec SurfaceSource::subdividedIntegral(mvec (*f)(vec2, void*), void* fparams, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
-
+	
+	assert(mySurface);
+	
 	ndx = ndx?ndx:dflt_integrator_ndivs_x;
 	ndy = ndy?ndx:dflt_integrator_ndivs_y;
 	for(unsigned int i=0; i<2; i++)

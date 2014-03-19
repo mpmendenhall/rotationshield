@@ -2,6 +2,7 @@
 #include "Integrator.hh"
 #include <cmath>
 #include <iostream>
+#include <algorithm>
 
 vec3 SurfaceGeometry::snorm(const vec2& p, bool normalized) const {
 	if(normalized) {
@@ -46,6 +47,25 @@ void SurfaceGeometry::cache_sincos(double theta, double& s, double& c) const {
 	if(c_th != theta) { c_th=theta; c_c=cos(c_th); c_s=sin(c_th); }
 	s = c_s;
 	c = c_c;
+}
+
+void SurfaceGeometry::proximity(vec3 p, vec2 ll, vec2 ur, double& mn, double& mx) const {
+	const int nx = 4;
+	const int ny = 4;
+	mdouble r[nx*ny];
+	
+	unsigned int i=0;
+	for(int x = 0; x<nx; x++) {
+		for(int y = 0; y<ny; y++) {
+			double l1 = double(x)/(nx-1);
+			double l2 = double(y)/(ny-1);
+			vec2 v( ll[0]*(1-l1)+ur[0]*l1, ll[1]*(1-l2)+ur[1]*l2);
+			r[i++] = ( p - (*this)(v) ).mag2();
+		}
+	}
+	
+	mn = sqrt(*std::max_element(r,r+nx*ny));
+	mx = sqrt(*std::min_element(r,r+nx*ny));
 }
 
 //--------------------------------------

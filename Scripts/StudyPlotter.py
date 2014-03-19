@@ -148,7 +148,7 @@ class BCell:
 			x=graph.axis.lin(title="$%s$ position [cm]"%axes[xk]),
 			y=graph.axis.lin(title="$B_{%s}$ [mG]"%axes[x0]),
 			key = graph.key.key(pos="bc",columns=3))
-		g.texrunner.set(lfs='foils17pt')
+		#g.texrunner.set(lfs='foils17pt')
 		
 		dlines = self.gridLines(x0,xi,xj,xk,nptsijk)		
 		for (ni,nj),(p_i,p_j) in self.slicepts:
@@ -172,7 +172,7 @@ class BCell:
 		g=graph.graphxy(width=self.ur[xi]-self.ll[xi]+1, height=self.ur[xj]-self.ll[xj]+1,
 			x=graph.axis.lin(title="$%s$ position [cm]"%axes[xi], min=self.ll[xi]-0.5, max=self.ur[xi]+0.5),
 			y=graph.axis.lin(title="$%s$ position [cm]"%axes[xj], min=self.ll[xj]-0.5, max=self.ur[xj]+0.5))
-		g.texrunner.set(lfs='foils17pt')
+		#g.texrunner.set(lfs='foils17pt')
 
 		AP = ArrowPlotter(g)
 		
@@ -231,13 +231,13 @@ class VarParamPlotter:
 			y=graph.axis.lin(title="Cell Average Gradients [$\\mu$G/cm]", min=self.yrange[0], max=self.yrange[1]),
 			y2=graph.axis.lin(title="Dephasing rate $1/T_2$ [mHz]", min=0),
 			key = graph.key.key(pos=self.keypos,columns=2))
-		self.g.texrunner.set(lfs='foils17pt')
+		#self.g.texrunner.set(lfs='foils17pt')
 		
 		self.gT2 = graph.graphxy(width=24,height=16,
 			x=graph.axis.lin(title=varname),
 			y=graph.axis.lin(title="Dephasing rate $1/T_2$ [mHz]", min=0),
 			key = graph.key.key(pos=self.keypos,columns=2))
-		self.gT2.texrunner.set(lfs='foils17pt')
+		#self.gT2.texrunner.set(lfs='foils17pt')
 		
 		self.g.plot(graph.data.function("y(x)=0",title=None),[graph.style.line(lineattrs=[style.linestyle.dotted,style.linewidth.Thick])])
 		
