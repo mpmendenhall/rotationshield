@@ -98,9 +98,18 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 	// whether this is the interaction of an element with itself
 	bool self_ixn = BField_Protocol::BFP->caller == this && el == ixn_el;
 
+	// distance between active and responding element
+	int delta_phi = (i_nphi-c_np + 2*nPhi)%nPhi;
+	if(delta_phi >= nPhi/2) delta_phi -= nPhi;
+	int delta_z = i_nz-c_nz;
+	if(isToroidal) {
+		delta_z = (delta_z + 2*nZ)%nZ;
+		if(delta_z >= nZ/2) delta_z -= nZ;
+	}
+
 	// How to slice up integration range
 	std::vector<int> integ_domains;
-	if(BField_Protocol::BFP->caller == this && abs(i_nz-c_nz) <= 2 && (i_nphi-c_np+2*nPhi)%nPhi <= 2 ) {
+	if(BField_Protocol::BFP->caller == this && abs(delta_z) <= 2 && abs(delta_phi) <= 2 ) {
 		const int idomains_1[] = {-2,2};
 		integ_domains.insert(integ_domains.end(), idomains_1, idomains_1+2);
 	} else {
@@ -127,6 +136,7 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 										&& ((nz0 <= i_nz && i_nz <= nz1) || (isToroidal && (i_nz - nz0 + nZ)%nZ <= (nz1 - nz0 + nZ)%nZ ) )
 										&& ( (i_nphi - np0 + nPhi)%nPhi <= (np1 - np0 + nPhi)%nPhi ) );
 			
+			self_intersection = integ_domains.size() == 2;
 			if(self_intersection) {
 				myIntegrator.setMethod(INTEG_GSL_CQUAD);
 				polar_integral_center = &ixn_center;
@@ -301,7 +311,7 @@ void SurfaceCurrentRS::calculateIncident(const FieldSource& f) {
 			AFIP.rmat2 = sdefs[el].rmat2;
 			AFIP.rmat3 = sdefs[el].rmat3;
 			
-			if(true) {
+			if(false) {
 				// value at center:
 				vec2 l = surf_coords(el);
 				vec2 r = sdefs[el].rmat2 * mySurface->rotToLocal(l) * f.fieldAt((*mySurface)(l));

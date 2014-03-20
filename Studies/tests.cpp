@@ -344,18 +344,18 @@ void tube_test() {
 	b.buildCoil(*MxS);
 	FieldEstimator2Dfrom3D fe(MxS);
 	
-	double zh = 3.9624/2;
+	double zh = 3.9624/2+0.2;
 	double r0 = .6223;
 	double t = 0.1;
 
 	RoundedTube* RT = new RoundedTube(vec2(-zh,r0+t), vec2(zh,r0+t), t);
-	//FieldAdaptiveSurface* FAS = new FieldAdaptiveSurface(*RT);
-	//FAS->optimizeSpacing(fe, 0.6);
+	FieldAdaptiveSurface* FAS = new FieldAdaptiveSurface(*RT);
+	FAS->optimizeSpacing(fe, 0.6);
 	
-	unsigned int nPhi = 16;
+	unsigned int nPhi = 64;
 	
-	CylSurfaceGeometry* SG = new CylSurfaceGeometry(RT);
-	SurfaceCurrentRS* RS = new SurfaceCurrentRS(nPhi,19);
+	CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(nPhi,15);
 	RS->mySurface = SG;
 	RS->setSurfaceResponse(SurfaceI_Response(10000));
 	RS->setToroidal();

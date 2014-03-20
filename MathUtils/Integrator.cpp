@@ -331,6 +331,7 @@ std::vector<angular_interval> rectangle_clip(vec2 c, vec2 ll, vec2 ur, double r)
 double polar_slice_v_integral(double x, void* params) {
 	
 	if(x<=0) return 0;
+	assert(params);
 	
 	integratingParams_V2D_P* p = (integratingParams_V2D_P*)params;
 	std::map<double,mvec>::iterator it = p->m.find(x);
