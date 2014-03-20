@@ -1,7 +1,7 @@
 #include "analysis.hh"
 #include "ProgressBar.hh"
 
-mdouble FieldAnalyzer::simpsonCoeff(int n, int ntot) {
+mdouble FieldAnalyzer::simpsonCoeff(unsigned int n, unsigned int ntot) {
 	if(ntot == 1) return 1.0;
 	if(ntot == 2) return 0.5;
 	if(n==0 || n==ntot-1) return 1.0/(3.0*mdouble(ntot-1));
@@ -9,10 +9,13 @@ mdouble FieldAnalyzer::simpsonCoeff(int n, int ntot) {
 	return 4.0/(3.0*mdouble(ntot-1));
 }
 
-void FieldAnalyzer::survey(vec3 ll, vec3 ur, int nX, int nY, int nZ, std::ostream& statsout, std::ostream& datsout) const {	
+void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, unsigned int nZ, std::ostream& statsout, std::ostream& datsout) const {
 	printf("Analyzing resultant fields...\n");
-	vec3 n = vec3(nX-1,nY-1,nZ-1);
-	vec3 dx = (ur - ll)/n;
+	
+	assert(nX>0 && nY>0 && nZ>0);
+	
+	unsigned int n[3] = { nX-1, nY-1, nZ-1 };
+	vec3 dx = (ur - ll)/vec3(n[0],n[1],n[2]);
 	for(int i=0; i<3; i++) if(n[i]==0) { dx[i] = 0; ll[i] = 0.5*(ll[i]+ur[i]); }
 	vec3 b, x, bsZ, bsYZ, bsXYZ, bssZ, bssYZ, bssXYZ;
 	mdouble avgBx0 = 0;
@@ -37,7 +40,7 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, int nX, int nY, int nZ, std::ostrea
 			bsZ = vec3(); bssZ = vec3();
 			for(n[2] = 0; n[2] < nZ; n[2]++)
 			{
-				x = ll+n*dx;
+				x = ll + dx * vec3(n[0],n[1],n[2]);
 				b = FS->fieldAt(x);
 				for(int i=0; i<3; i++) gsl_vector_set(bfield[i],c,b[i]);
 				
@@ -94,11 +97,10 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, int nX, int nY, int nZ, std::ostrea
 }
 
 
-void FieldAnalyzer::visualizeSurvey(vec3 ll, vec3 ur, int nX, int nY, int nZ) const {	
+void FieldAnalyzer::visualizeSurvey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, unsigned int nZ) const {
 	
-	vec3 n = vec3(nX-1,nY-1,nZ-1);
-	vec3 dx = (ur - ll)/n;
-	vec3 x,b;
+	unsigned int n[3] = { nX-1, nY-1, nZ-1 };
+	vec3 dx = (ur - ll)/vec3(n[0],n[1],n[2]);
 	for(int i=0; i<3; i++) if(n[i]==0) { dx[i] = 0; ll[i] = 0.5*(ll[i]+ur[i]); }
 	
 	vsr::startRecording(); 
@@ -108,9 +110,8 @@ void FieldAnalyzer::visualizeSurvey(vec3 ll, vec3 ur, int nX, int nY, int nZ) co
 	for(n[0] = 0; n[0] < nX; n[0]++) {
 		for(n[1] = 0; n[1] < nY; n[1] ++) {
 			for(n[2] = 0; n[2] < nZ; n[2]++) {
-				
-				x = ll+n*dx;
-				b = FS->fieldAt(x);
+				vec3 x = ll+vec3(n[0],n[1],n[2])*dx;
+				vec3 b = FS->fieldAt(x);
 				float bmag = b.mag();
 				if(!bmag) continue;
 				b *= log(1+pow(bmag,0.25))/bmag;

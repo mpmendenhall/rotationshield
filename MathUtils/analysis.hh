@@ -30,14 +30,13 @@ public:
 	/// \param datf file to store surveyed fields to
 	/// \param statsout ostream to which summary fields data is written
 	/// \param key string to prepend to summary data
-	void survey(vec3 ll, vec3 ur, int nX, int nY, int nZ, std::ostream& statsout = std::cout, std::ostream& datsout = std::cout) const;
+	void survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, unsigned int nZ, std::ostream& statsout = std::cout, std::ostream& datsout = std::cout) const;
 	
-	void visualizeSurvey(vec3 ll, vec3 ur, int nX, int nY, int nZ) const;
+	void visualizeSurvey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, unsigned int nZ) const;
 	
 	/// Get the Simpson's Rule numerical integrating weight for a point
-	static mdouble simpsonCoeff(int n, int ntot);
-	/// Get the Simpson's Rule numerical integrating weight for a point
-	static mdouble simpsonCoeff(mdouble n, int ntot) { return simpsonCoeff(int(n),ntot); }	
+	static mdouble simpsonCoeff(unsigned int n, unsigned int ntot);
+
 protected:
 	const FieldSource* FS; //< the FieldSource producing the fields being analyzed
 };

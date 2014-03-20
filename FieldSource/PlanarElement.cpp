@@ -9,7 +9,7 @@ void PlanarElement::_visualize() const {
 		smag = std::max(0.,std::min(1.0,0.1*(log(smag)+10-logmax)));
 	
 	vec3 svec = vec3();
-	for(unsigned int i=0; i<std::min(3, (int)state.size()); i++)
+	for(unsigned int i=0; i<std::min((unsigned int)3, state.size()); i++)
 		svec[i] = state[i];
 	
 	vec3 hsv = vec3( atan2(svec[0],svec[1]), 1.0, 1.0 );
