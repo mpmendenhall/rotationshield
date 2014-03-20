@@ -15,7 +15,8 @@
 /// run self-tests
 void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
 
-	mirror_test();
+	//mirror_test();
+	tube_test();
 	//superball_test();
 	//blockade_test();
 	return;

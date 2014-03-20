@@ -26,5 +26,7 @@ void superball_test();
 void blockade_test();
 /// endless costheta between SC caps
 void mirror_test();
+/// thick ferromagnetic tube
+void tube_test();
 
 #endif

@@ -125,4 +125,6 @@ mdouble CylSurfaceGeometry::area(const vec2& ll, const vec2& ur) {
 	return myIntegrator.integrate(&integration_cyl_dA, ll[0], ur[0], this)*(ur[1]-ll[1]);
 }
 
+//--------------------------------------------
+
 

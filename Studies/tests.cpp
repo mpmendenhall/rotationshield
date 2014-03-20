@@ -239,9 +239,9 @@ void vis_test_sequence(ReactiveSet* RS, MixedSource* MxS, vec3 vs = vec3(0.5,-0.
 	
 	dynamic_cast<MagF_Responder*>(RS)->calculateIncident(*MxS);
 	MxS->addsource(dynamic_cast<FieldSource*>(RS));
+	MxS->visualize();
 	std::cout << "B non-interacting: " << std::endl;
 	qsurvey(MxS,vs,vs0);
-	MxS->visualize();
 	vsr::pause();
 	
 	SymmetricSolver SS;
@@ -308,12 +308,13 @@ void superball_test() {
 
 
 void mirror_test() {
-
+	
 	MixedSource* MxS = new MixedSource();
-	CosThetaBuilder b = CosThetaBuilder(5, 0.5, 1);
-	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_NONE;
+	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 3.92);
+	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_LINE;
 	b.buildCoil(*MxS);
 	FieldEstimator2Dfrom3D fe(MxS);
+	
 	
 	unsigned int nPhi = 16;
 	MagRSCombiner* RSC = new MagRSCombiner(nPhi);
@@ -334,6 +335,34 @@ void mirror_test() {
 	vis_test_sequence(RSC,MxS, vec3(0.1,0,0.5), vec3(0.1,0,0));
 	
 }
+
+void tube_test() {
+	
+	MixedSource* MxS = new MixedSource();
+	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 3.92);
+	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_LINE;
+	b.buildCoil(*MxS);
+	FieldEstimator2Dfrom3D fe(MxS);
+	
+	double zh = 3.9624/2;
+	double r0 = .6223;
+	double t = 0.1;
+
+	RoundedTube* RT = new RoundedTube(vec2(-zh,r0+t), vec2(zh,r0+t), t);
+	//FieldAdaptiveSurface* FAS = new FieldAdaptiveSurface(*RT);
+	//FAS->optimizeSpacing(fe, 0.6);
+	
+	unsigned int nPhi = 16;
+	
+	CylSurfaceGeometry* SG = new CylSurfaceGeometry(RT);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(nPhi,19);
+	RS->mySurface = SG;
+	RS->setSurfaceResponse(SurfaceI_Response(10000));
+	RS->setToroidal();
+	vis_test_sequence(RS, MxS, vec3(0.1,0,0.5), vec3(0.1,0,0));
+
+}
+
 
 bool csurface_test() {
 

@@ -118,26 +118,28 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 			int nz1 = c_nz + integ_domains[dmz+1];
 			int np0 = c_np + integ_domains[dmp];
 			int np1 = c_np + integ_domains[dmp+1];
-			if(nz1 < 0 || nz0 >= (int)nZ) continue; // skip past-edges domains; note, we are allowed to wrap around in phi
+			// skip past-edges domains; note, we are allowed to wrap around in phi
+			if(!isToroidal && (nz1 < 0 || nz0 >= (int)nZ)) continue;
 			
 			
 			// set integration method depending on whether there will be edge singularities (target point inside integration range)
 			bool self_intersection = ( BField_Protocol::BFP->caller == this
-										&& (nz0 <= i_nz && i_nz <= nz1)
+										&& ((nz0 <= i_nz && i_nz <= nz1) || (isToroidal && (i_nz - nz0 + nZ)%nZ <= (nz1 - nz0 + nZ)%nZ ) )
 										&& ( (i_nphi - np0 + nPhi)%nPhi <= (np1 - np0 + nPhi)%nPhi ) );
 			
-			vec3 dh(0,0,0); // possible surface normal offset
 			if(self_intersection) {
 				myIntegrator.setMethod(INTEG_GSL_CQUAD);
 				polar_integral_center = &ixn_center;
-				if(np0 > i_nphi) { np0 -= nPhi; np1 -= nPhi; }	// adjust phi definition to align with polar center
-				//if(ixn_df >= 2*nZ*nPhi) dh = mySurface->snorm(ixn_center,true)*0.00001;
+				if(np0 > i_nphi) { np0 -= nPhi; np1 -= nPhi; }			// adjust phi definition to align with polar center
+				if(isToroidal && nz0 > i_nz) { nz0 -= nZ; nz1 -= nZ; }	// adjust z definition to align with polar center
 			}
 			
 			vec2 ll((nz0+0.5)/double(nZ), (np0+0.5)/double(nPhi));
 			vec2 ur((nz1+0.5)/double(nZ), (np1+0.5)/double(nPhi));
-			if(ll[0]<0) ll[0]=0;
-			if(ur[0]>1) ur[0]=1;
+			if(!isToroidal) {
+				if(ll[0]<0) ll[0]=0;
+				if(ur[0]>1) ur[0]=1;
+			}
 			
 			if(!self_intersection) {
 				// select integration method depending on near/far difference
@@ -298,27 +300,31 @@ void SurfaceCurrentRS::calculateIncident(const FieldSource& f) {
 			AFIP.S = this;
 			AFIP.rmat2 = sdefs[el].rmat2;
 			AFIP.rmat3 = sdefs[el].rmat3;
-		
-			vec2 ll(double(zn)/double(nZ), double(pn)/double(nPhi));
-			vec2 ur(double(zn+1)/double(nZ), double(pn+1)/double(nPhi));
 			
-			mvec r;
-			if(nDFi == 2)
-				r = myIntegrator.integrate2D(&FieldResponsedA2, ll, ur, &AFIP);
-			else if(nDFi == 3)
-				r = myIntegrator.integrate2D(&FieldResponsedA3, ll, ur, &AFIP);
-			else
-				assert(false);
+			if(true) {
+				// value at center:
+				vec2 l = surf_coords(el);
+				vec2 r = sdefs[el].rmat2 * mySurface->rotToLocal(l) * f.fieldAt((*mySurface)(l));
+				incidentState[el] = r[0];
+				incidentState[el+nZ*nPhi] = r[1];
+			} else {
+				// averaged over local region
+				vec2 ll(double(zn)/double(nZ), double(pn)/double(nPhi));
+				vec2 ur(double(zn+1)/double(nZ), double(pn+1)/double(nPhi));
 				
-			double A = mySurface->area(ll,ur);
-			for(unsigned int i = 0; i < r.size(); i++)
-				incidentState[el+nZ*nPhi*i] = r[i]/A;
+				mvec r;
+				if(nDFi == 2)
+					r = myIntegrator.integrate2D(&FieldResponsedA2, ll, ur, &AFIP);
+				else if(nDFi == 3)
+					r = myIntegrator.integrate2D(&FieldResponsedA3, ll, ur, &AFIP);
+				else
+					assert(false);
+					
+				double A = mySurface->area(ll,ur);
+				for(unsigned int i = 0; i < r.size(); i++)
+					incidentState[el+nZ*nPhi*i] = r[i]/A;
+			}
 			
-			// value at center:
-			//vec2 l = (ll+ur)*0.5;
-			//vec2 r = AFIP.rmat * AFIP.S->mySurface->rotToLocal(l) * AFIP.f->fieldAt((*AFIP.S->mySurface)(l));
-			//incidentState[el] = r[0];
-			//incidentState[el+nZ*nPhi] = r[1];
 		}
 		
 	}

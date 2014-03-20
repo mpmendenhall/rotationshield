@@ -48,12 +48,12 @@ void SurfaceCurrentSource::_visualize() const {
 			
 			vec2 j = (*sj)(l0,sjparams);
 			
-			vec3 hsv = vec3( atan2(j[1],j[0]), 1.0, 1.0 );
-			vec3 rgb = hsv2rgb(hsv);
 			float smag = j.mag2();
 			if(smag)
 				smag = std::max(0.,std::min(1.0,0.1*(log(smag)+10-logmax)));
-			vsr::setColor(rgb[0], rgb[1] , rgb[2], 1.0*smag);
+			vec3 hsv = vec3( atan2(j[1],j[0]), smag, 1.0 );
+			vec3 rgb = hsv2rgb(hsv);
+			vsr::setColor(rgb[0], rgb[1] , rgb[2], 1.0);
 		
 			float xyz[12];
 			for(int dn1 = 0; dn1 < 2; dn1++) {
@@ -61,7 +61,7 @@ void SurfaceCurrentSource::_visualize() const {
 					vec2 c = vec2(l0[0] + dl1*(dn1?0.5:-0.5), l0[1] + dl2*(dn2?0.5:-0.5));
 					vec3 cx = (*mySurface)(c);
 					for(unsigned int i=0; i<3; i++)
-						xyz[3*(2*dn1+dn2)+i] = cx[i];
+						xyz[3*(2*dn1+dn2) + i] = cx[i];
 				}
 			}
 			vsr::filledquad(xyz);

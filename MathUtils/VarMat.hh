@@ -21,10 +21,6 @@ public:
 	/// destructor
 	~VarMat() {}
 	
-
-	
-	
-	
 	/// generate a random-filled VarMat
 	static VarMat<T> random();
 	

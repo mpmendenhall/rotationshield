@@ -2,6 +2,7 @@
 #define SURFACEPROFILES_HH 1
 
 #include "SurfaceGeometry.hh"
+#include <cmath>
 
 /// Convenience linear sweep DFunc
 class Line2D: public DVFunc1<2,mdouble> {
@@ -20,7 +21,7 @@ public:
 class Arc2D: public DVFunc1<2,mdouble> {
 public:
 	/// constructor
-	Arc2D(double rr, vec2 v0 = vec2(), double th0 = -M_PI, double th1 = M_PI): r(rr), v(v0), t0(th0), dt(th1-th0) {}
+	Arc2D(double rr, double th0 = -M_PI, double th1 = M_PI, vec2 v0 = vec2()): r(rr), v(v0), t0(th0), dt(th1-th0) {}
 	/// function call
 	virtual vec2 operator()(mdouble x) const;
 	/// derivative
@@ -45,31 +46,36 @@ public:
 	double r;
 };
 
-
-/// Parameter distorter for speeding up or slowing down passage through segment in PathJoiner
-class PathStretcher: public DVFunc1<2,mdouble> {
+/// Parameter distorter for speeding/slowing arclength traversal at ends of path
+class ParamStretcher: public DVFunc1<2,mdouble> {
 public:
 	/// constructor
-	PathStretcher(DVFunc1<2,mdouble>* f0, mdouble a, bool dodelete = true): u(a), f(f0), delete_f(dodelete) { assert(f); }
+	ParamStretcher(DVFunc1<2,mdouble>* f0, mdouble d0, mdouble r0, mdouble d1, mdouble r1, bool dodelete = true);
 	/// destructor
-	virtual ~PathStretcher() { if(delete_f) delete f; }
+	virtual ~ParamStretcher() { if(delete_f) delete f; }
+	
 	/// evaluate function
 	virtual vec2 operator()(mdouble x) const { return (*f)(distort(x)); }
 	/// derivative
 	virtual vec2 deriv(mdouble x) const { return f->deriv(distort(x)) * d_distort(x); }
-
-	mdouble u;				//< distortion parameter, 1 for no distortion, 0 to infty for slow/fast stretch
 	
 protected:
 	/// distortion map function
-	virtual mdouble distort(mdouble l) const { return l * (l*(2*l-3)*(u-1) + u) ; }
+	virtual mdouble distort(mdouble l) const { return h + k*(l + c0*exp(-l*ri0) + c1*exp(-(1-l)*ri1) ); }
 	/// distortion derivative function
-	virtual mdouble d_distort(mdouble l) const { return 6*l*(l-1)*(u-1) + u; }
+	virtual mdouble d_distort(mdouble l) const { return k*(1 -ri0*c0*exp(-l*ri0) + ri1*c1*exp(-(1-l)*ri1) ); }
 
+	// internal parameters
+	double ri0;
+	double ri1;
+	double c0;
+	double c1;
+	double k;
+	double h;
+	
 	DVFunc1<2,mdouble>* f;	//< function being distorted
 	bool delete_f;			//< whether to delete function f on destruction
 };
-
 
 /// Circular-rounded-ends circular slab
 class RoundedSlab: public PathJoiner<2,mdouble> {
@@ -80,7 +86,22 @@ public:
 	virtual ~RoundedSlab() { clear(); }
 };
 
-/// 
+/// Rounded-end finite-thickness tube
+class RoundedTube: public PathJoiner<2,mdouble> {
+public:
+	/// constructor
+	RoundedTube(vec2 x0, vec2 x1, mdouble r, mdouble endfrac = 0.33);
+	/// destructor
+	virtual ~RoundedTube() { clear(); }
+	
+	/// evaluate function
+	virtual vec2 operator()(mdouble x) const { return PathJoiner<2,mdouble>::operator()(wrap(x)); }
+	/// derivative
+	virtual vec2 deriv(mdouble x) const { return PathJoiner<2,mdouble>::deriv(wrap(x)); }
+
+	/// wrap a number into [0,1] for periodic function
+	mdouble wrap(mdouble x) const { mdouble i; x += 0.5*seg_endpts[1]/seg_endpts.back(); return x>0 ? modf(x,&i) : 1-modf(x,&i); }
+};
 
 
 
