@@ -4,7 +4,7 @@
 #include "SymmetricSolver.hh"
 #include "GenericSolver.hh"
 #include "FieldSource.hh"
-#include "analysis.hh"
+#include "FieldAnalyzer.hh"
 #include "SurfacelCyl.hh"
 #include "CosThetaBuilder.hh"
 #include "ScanRange.hh"

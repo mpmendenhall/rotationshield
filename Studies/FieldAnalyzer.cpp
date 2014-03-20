@@ -1,4 +1,4 @@
-#include "analysis.hh"
+#include "FieldAnalyzer.hh"
 #include "ProgressBar.hh"
 
 mdouble FieldAnalyzer::simpsonCoeff(unsigned int n, unsigned int ntot) {

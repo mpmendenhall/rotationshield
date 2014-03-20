@@ -4,7 +4,7 @@
 #include "FieldSource.hh"
 #include "PlaneSource.hh"
 #include "SurfacelCyl.hh"
-#include "analysis.hh"
+#include "FieldAnalyzer.hh"
 #include "CosThetaBuilder.hh"
 #include "Integrator.hh"
 #include "SurfaceCurrentSource.hh"

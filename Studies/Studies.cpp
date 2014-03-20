@@ -6,7 +6,7 @@
 #include "SurfaceGeometry.hh"
 #include "SurfacelCyl.hh"
 #include "PlaneSource.hh"
-#include "analysis.hh"
+#include "FieldAnalyzer.hh"
 #include <cassert>
 
 shieldSection::shieldSection(): mu(10000) {

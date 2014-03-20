@@ -1,4 +1,4 @@
-/// \file "analysis.hh" \brief Routines for analyzing the simulated fields
+/// \file "FieldAnalyzer.hh" \brief Routines for analyzing the simulated fields
 #ifndef ANALYSIS_HH
 /// Make sure this header is only loaded once
 #define ANALYSIS_HH 1
