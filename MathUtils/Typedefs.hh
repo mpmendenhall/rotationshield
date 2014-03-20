@@ -16,4 +16,7 @@ typedef Matrix<3,3,mdouble> mat3;
 typedef VarMat<mdouble> mmat;
 typedef VarVec<mdouble> mvec;
 
+template<typename T>
+inline T sign(T t) { if(t<0) return -1; return (t==0)?0:1; }
+
 #endif

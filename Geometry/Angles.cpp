@@ -1,6 +1,14 @@
 #include "Angles.hh"
 #include <cassert>
 
+float normalizeAngle(float a, float theta0) {
+	if(a<theta0) a += 2*M_PI*int(1+(theta0-a)/(2*M_PI));
+	if(a>=theta0+2*M_PI) a -= 2*M_PI*int((a-theta0)/(2*M_PI));
+	return a;
+}
+
+//-----------------------------------------
+
 angular_interval::angular_interval(double t0, double t1, bool nrm): th0(t0), th1(t1) {
 	if(nrm) normalize();
 }

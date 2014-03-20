@@ -1,14 +1,15 @@
 #include "PlanarElement.hh"
+#include <algorithm>
 
 void PlanarElement::_visualize() const {
 
 	mdouble logmax = 3.0;
 	float smag = state.mag2();
 	if(smag)
-		smag = max(0,min(1.0,0.1*(log(smag)+10-logmax)));
+		smag = std::max(0.,std::min(1.0,0.1*(log(smag)+10-logmax)));
 	
 	vec3 svec = vec3();
-	for(unsigned int i=0; i<min(3,state.size()); i++)
+	for(unsigned int i=0; i<std::min(3, (int)state.size()); i++)
 		svec[i] = state[i];
 	
 	vec3 hsv = vec3( atan2(svec[0],svec[1]), 1.0, 1.0 );

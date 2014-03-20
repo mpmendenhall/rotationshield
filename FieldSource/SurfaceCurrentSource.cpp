@@ -1,6 +1,7 @@
 #include "SurfaceCurrentSource.hh"
 #include "Color.hh"
 #include <cmath>
+#include <algorithm>
 
 vec3 SurfaceCurrentSource::dI_contrib(const vec2& l) const {
 	assert(mySurface && sj);
@@ -51,7 +52,7 @@ void SurfaceCurrentSource::_visualize() const {
 			vec3 rgb = hsv2rgb(hsv);
 			float smag = j.mag2();
 			if(smag)
-				smag = max(0,min(1.0,0.1*(log(smag)+10-logmax)));
+				smag = std::max(0.,std::min(1.0,0.1*(log(smag)+10-logmax)));
 			vsr::setColor(rgb[0], rgb[1] , rgb[2], 1.0*smag);
 		
 			float xyz[12];

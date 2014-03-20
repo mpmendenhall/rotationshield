@@ -6,6 +6,9 @@
 #include <cmath>
 #include <iostream>
 
+/// normalize an angle to [t0,t0+2*PI)
+float normalizeAngle(float a, float theta0 = -M_PI);
+
 /// utility class for math on angular intervals
 struct angular_interval {
 	/// constructor

@@ -1,4 +1,5 @@
 #include "Geometry.hh"
+#include <algorithm>
 
 void Line::_visualize() const { vsr::line(s,e); }
 
@@ -45,14 +46,14 @@ const mat3 Plane::projectionMatrix() const {
 void Plane::_visualize() const { vsr::plane(o,dx,dz); }
 
 void Plane::visualizeCoordinates(float scale) const {
-	float l = min(wx,wz)*0.5*scale;
+	float l = std::min(wx,wz)*0.5*scale;
 	vsr::line(o, o+dx*l/wx);
 	vsr::line(o, o+dz*l/wz);
 	vsr::line(o, o+sn*l);
 }
 
 void Plane::visualizeVector(vec3 v) const {
-	v = v.normalized()*(0.5*min(wx,wz));
+	v = v.normalized()*(0.5*std::min(wx,wz));
 	vsr::line(o,o+dx*v[0]/wx+dz*v[1]/wz+sn*v[2]);
 }
 
