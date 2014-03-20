@@ -297,7 +297,7 @@ void superball_test() {
 	UniformField* BU = new UniformField(vec3(1,1,1));
 	MxS->addsource(BU);
 		
-	Ball* B = new Ball(-1.0,0.7);
+	Arc2D* B = new Arc2D(-1.0);
 	CylSurfaceGeometry* SG = new CylSurfaceGeometry(B);
 	SurfaceCurrentRS* RS = new SurfaceCurrentRS(16,15,0);
 	RS->mySurface = SG;
@@ -315,17 +315,17 @@ void mirror_test() {
 	b.buildCoil(*MxS);
 	FieldEstimator2Dfrom3D fe(MxS);
 	
-	unsigned int nPhi = 32;
+	unsigned int nPhi = 16;
 	MagRSCombiner* RSC = new MagRSCombiner(nPhi);
 
 	for(int z=-1; z<=1; z+=2) {
-		RoundedSlab* RSL = new RoundedSlab(0.61*z, -0.7, -0.2);
+		RoundedSlab* RSL = new RoundedSlab(0.53*z, -0.7, -0.04);
 		//Line2D* L2D = (z>0)? new Line2D(vec2(0.51, 0.7), vec2(0.51, 0)) : new Line2D(vec2(-0.51, 0), vec2(-0.51, 0.7));
 		FieldAdaptiveSurface* FAS = new FieldAdaptiveSurface(*RSL);
 		FAS->optimizeSpacing(fe, 0.6);
 		
 		CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
-		SurfaceCurrentRS* RS = new SurfaceCurrentRS(nPhi,25);
+		SurfaceCurrentRS* RS = new SurfaceCurrentRS(nPhi,15);
 		RS->mySurface = SG;
 		RS->setSurfaceResponse(SurfaceI_Response(0));
 		RSC->addSet(RS);

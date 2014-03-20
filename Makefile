@@ -40,7 +40,7 @@ BASE_LIB_DIRS  = -L$(OS_DIR)/lib
 GCC_OPTIMIZATION_LEVEL = 3
 
 CPPFLAGS = -g $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -Wall -Wuninitialized \
-	-I. -IMathUtils -IFieldSource -ISolver -IBuilder -IStudies -IIO $(BASE_INCLUDE_DIRS)
+	-I. -IMathUtils -IGeometry -IFieldSource -ISolver -IBuilder -IStudies -IIO $(BASE_INCLUDE_DIRS)
 
 ifdef ROTSHIELD_VIS
 	CPPFLAGS += -DWITH_OPENGL $(GL_INCLUDES) 
@@ -51,12 +51,14 @@ endif
 # Everything below here "should" work without modification
 #############
 
-VPATH = ./:MathUtils/:FieldSource/:Solver/:Builder/:Studies/:IO/
+VPATH = ./:MathUtils/:Geometry/:FieldSource/:Solver/:Builder/:Studies/:IO/
 
 # things to build
 obj_IO = Visr.o strutils.o ControlMenu.o QFile.o SMExcept.o PathUtils.o VisSurface.o ProgressBar.o
 
-obj_MathUtils = Geometry.o Integrator.o MiscUtils.o RefCounter.o analysis.o linmin.o SurfaceGeometry.o InterpolationHelper.o BicubicGrid.o Angles.o
+obj_MathUtils = Geometry.o Integrator.o MiscUtils.o RefCounter.o analysis.o linmin.o InterpolationHelper.o BicubicGrid.o
+
+obj_Geometry = Angles.o SurfaceGeometry.o SurfaceProfiles.o
 
 obj_FieldSource = FieldSource.o MixedSource.o InfiniteLineSource.o LineSource.o InfinitePlaneSource.o \
 	SurfaceSource.o SurfaceCurrentSource.o PlanarElement.o PlaneSource.o FieldEstimator2D.o
@@ -67,7 +69,7 @@ obj_Builder = CosThetaBuilder.o SurfacelCyl.o FieldAdaptiveSurface.o
 
 obj_Studies = tests.o Studies.o
 
-objects = $(obj_IO) $(obj_MathUtils) $(obj_FieldSource) $(obj_Solver) $(obj_Builder) $(obj_Studies)
+objects = $(obj_IO) $(obj_MathUtils) $(obj_Geometry) $(obj_FieldSource) $(obj_Solver) $(obj_Builder) $(obj_Studies)
 	
 RotationShield : main.cpp $(objects)
 	$(CXX) main.cpp $(objects) -o RotationShield $(CPPFLAGS) $(LDFLAGS) $(BASE_LIB_DIRS) -lgsl -lfftw3 -lgslcblas
