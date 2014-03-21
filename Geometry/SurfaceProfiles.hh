@@ -63,7 +63,7 @@ protected:
 	/// distortion map function
 	virtual mdouble distort(mdouble l) const { return h + k*(l + c0*exp(-l*ri0) + c1*exp(-(1-l)*ri1) ); }
 	/// distortion derivative function
-	virtual mdouble d_distort(mdouble l) const { return k*(1 -ri0*c0*exp(-l*ri0) + ri1*c1*exp(-(1-l)*ri1) ); }
+	virtual mdouble d_distort(mdouble l) const { mdouble dd = k*(1 -ri0*c0*exp(-l*ri0) + ri1*c1*exp(-(1-l)*ri1) );  assert(dd); return dd; }
 
 	// internal parameters
 	double ri0;
@@ -75,6 +75,94 @@ protected:
 	
 	DVFunc1<2,mdouble>* f;	//< function being distorted
 	bool delete_f;			//< whether to delete function f on destruction
+};
+
+//
+//==========================================================================
+//
+
+
+/// append sequential univariate functions, assumed to each reside on [0,1]
+template<unsigned int N, typename T>
+class PathJoiner: public DVFunc1<N,T> {
+public:
+	/// constructor
+	PathJoiner() {
+		seg_endpts.push_back(0);
+	}
+	
+	/// destructor
+	virtual ~PathJoiner() {}
+	
+	/// evaluate function
+	virtual Vec<N,T> operator()(T x) const {
+		if(this->period) x = wrap(x);
+		unsigned int i = locate(x);
+		return seg_offsets[i] + (*mysegs[i])(x);
+	}
+	
+	/// derivative
+	virtual Vec<N,T> deriv(T x) const {
+		if(this->period) x = wrap(x);
+		unsigned int i = locate(x);
+		return mysegs[i]->deriv(x) * seg_endpts.back()/(seg_endpts[i+1]-seg_endpts[i]);
+	}
+	
+	/// append a segment, spaced to maintain continuous pathlength derivative
+	virtual void append( DVFunc1<N,T>* f, bool smooth_pathlength = true) {
+		assert(f);
+		if(!mysegs.size()) {
+			seg_endpts.push_back(1);
+		} else {
+			unsigned int i = mysegs.size();
+			T mul = smooth_pathlength ? f->deriv(0).mag() / mysegs.back()->deriv(1).mag() * (seg_endpts[i]-seg_endpts[i-1]) : 1;
+			seg_endpts.push_back(seg_endpts.back() + mul);
+		}
+		if(mysegs.size())
+			seg_offsets.push_back(seg_offsets.back() + (*mysegs.back())(1.) - (*f)(0));
+		else
+			seg_offsets.push_back(Vec<N,T>());
+		mysegs.push_back(f);
+		if( ((*mysegs.back())(1)+seg_offsets.back()-(*mysegs[0])(0)).mag2() < 1e-6 ) this->period = 1;
+		else this->period = 0;
+	}
+	
+	/// display contents
+	void display() const {
+		std::cout << "PathJoiner in " << mysegs.size() << " segments:\n";
+		for(unsigned int i=0; i<mysegs.size(); i++)
+			std::cout << "\t" << seg_endpts[i] << " to " << seg_endpts[i+1] << "\tstarting at " << seg_offsets[i] << std::endl;
+	}
+	
+protected:
+	
+	/// locate sub-function and position therein
+	unsigned int locate(T& l) const {
+		assert(mysegs.size());
+		typename std::vector<T>::const_iterator it = std::upper_bound(seg_endpts.begin(), seg_endpts.end(), l*seg_endpts.back());
+		unsigned int i = it-seg_endpts.begin();
+		if(!i) i += 1;
+		if(it==seg_endpts.end()) i -= 1;
+		l = (l*seg_endpts.back()-seg_endpts[i-1])/(seg_endpts[i]-seg_endpts[i-1]);
+		return i-1;
+	}
+	
+	/// delete all items
+	void clear() {
+		for(unsigned int i=0; i<mysegs.size(); i++)
+			delete mysegs[i];
+		mysegs.clear();
+		seg_endpts.clear();
+		seg_offsets.clear();
+		seg_endpts.push_back(0);
+	}
+	
+	/// wrap a number into [0,1) for periodic function, starting half-way on outside
+	T wrap(T x) const { T i; x += 0.5*seg_endpts[1]/seg_endpts.back(); return x>=0 ? modf(x,&i) : 1+modf(x,&i); }
+	
+	std::vector< DVFunc1<N,T>* > mysegs;	//< subsections
+	std::vector<T> seg_endpts;				//< map from global l to sub-range endpoints
+	std::vector< Vec<N,T> > seg_offsets;	// endpoint offsets for each segment
 };
 
 /// Circular-rounded-ends circular slab
@@ -93,14 +181,6 @@ public:
 	RoundedTube(vec2 x0, vec2 x1, mdouble r, mdouble endfrac = 0.33);
 	/// destructor
 	virtual ~RoundedTube() { clear(); }
-	
-	/// evaluate function
-	virtual vec2 operator()(mdouble x) const { return PathJoiner<2,mdouble>::operator()(wrap(x)); }
-	/// derivative
-	virtual vec2 deriv(mdouble x) const { return PathJoiner<2,mdouble>::deriv(wrap(x)); }
-
-	/// wrap a number into [0,1] for periodic function
-	mdouble wrap(mdouble x) const { mdouble i; x += 0.5*seg_endpts[1]/seg_endpts.back(); return x>0 ? modf(x,&i) : 1-modf(x,&i); }
 };
 
 

@@ -11,6 +11,7 @@ void FieldAdaptiveSurface::setConstantSpacing() {
 }
 
 void FieldAdaptiveSurface::symmetry_test() const {
+	printf("Underlying function period: %g\n",F.period);
 	for(int i=0; i<21; i++) {
 		double l = float(i)/20.;
 		double v = l_remap(l);

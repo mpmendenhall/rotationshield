@@ -346,20 +346,37 @@ void tube_test() {
 	
 	double zh = 3.9624/2+0.2;
 	double r0 = .6223;
-	double t = 0.1;
+	double t = 0.05;
 
 	RoundedTube* RT = new RoundedTube(vec2(-zh,r0+t), vec2(zh,r0+t), t);
 	FieldAdaptiveSurface* FAS = new FieldAdaptiveSurface(*RT);
 	FAS->optimizeSpacing(fe, 0.6);
+	FAS->symmetry_test();
 	
-	unsigned int nPhi = 64;
+	unsigned int nPhi = 32;
 	
 	CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
-	SurfaceCurrentRS* RS = new SurfaceCurrentRS(nPhi,15);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(nPhi,30);
 	RS->mySurface = SG;
 	RS->setSurfaceResponse(SurfaceI_Response(10000));
 	RS->setToroidal();
 	vis_test_sequence(RS, MxS, vec3(0.1,0,0.5), vec3(0.1,0,0));
+	
+	//center scan lines
+	vec3 origin(0,0,0);
+	vec3 xscan(0.15,0,0);
+	vec3 yscan(0,0.06,0);
+	vec3 zscan(0,0,0.25);
+	printf("Testing shielded fields...\n");
+	mdouble b0 = MxS->fieldAt(origin)[0];
+	bool pass = true;
+	pass &= compareResults(b0,1.59942943484446e+00,"origin");
+	pass &= compareResults(MxS->fieldAt(xscan)[0]-b0,2.62654994091771e-03,"+x");
+	pass &= compareResults(MxS->fieldAt(yscan)[0]-b0,-3.80699814184204e-04,"+y");
+	pass &= compareResults(MxS->fieldAt(zscan)[0]-b0,-2.60066781668566e-04,"+z");
+	pass &= compareResults(MxS->fieldAt(-xscan)[0]-b0,2.62654994091793e-03,"-x");
+	pass &= compareResults(MxS->fieldAt(-yscan)[0]-b0,-3.80699814183982e-04,"-y");
+	pass &= compareResults(MxS->fieldAt(-zscan)[0]-b0,-2.60066781561097e-04,"-z");
 
 }
 

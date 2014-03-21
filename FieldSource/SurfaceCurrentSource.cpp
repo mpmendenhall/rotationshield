@@ -12,6 +12,7 @@ vec3 SurfaceCurrentSource::dI_contrib(const vec2& l) const {
 	vec3 dl1 = mySurface->deriv(l,1);
 	double ml0 = dl0.mag();
 	double ml1 = dl1.mag();
+	assert(ml0 && ml1);
 	double dA = cross(dl0,dl1).mag();
 	
 	return vec3(dl0/ml0 * sdl[0] + dl1/ml1 * sdl[1])*dA;
@@ -26,11 +27,13 @@ vec3 SurfaceCurrentSource::fieldAt_contrib_from(const vec3& v, const vec2& l) co
 	// Biot-Savart law
 	vec3 r = v - x0;
 	double mr = r.mag();
-	//if(mr<1e-4) return vec3(0,0,0);
-	return cross(dI,r)/(4.*M_PI*mr*mr*mr);
-	
-	//return (cross(dl,r) + r*(3.*dm.dot(r)/(mr*mr)) - dm)/(4.*M_PI*mr*mr*mr);
-	
+	if(!mr) return vec3(0,0,0);
+	vec3 B = cross(dI,r)/(4.*M_PI*mr*mr*mr);
+	if(!(B[0]==B[0] && B[1]==B[1] && B[2]==B[2])) {
+		std::cout << v << l << mr << B << std::endl;
+		assert(false);
+	}
+	return B;
 }
 
 void SurfaceCurrentSource::_visualize() const {

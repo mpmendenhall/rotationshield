@@ -104,7 +104,7 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 	int delta_z = i_nz-c_nz;
 	if(isToroidal) {
 		delta_z = (delta_z + 2*nZ)%nZ;
-		if(delta_z >= nZ/2) delta_z -= nZ;
+		if(delta_z >= int(nZ)/2) delta_z -= nZ;
 	}
 
 	// How to slice up integration range
@@ -118,6 +118,8 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 	}
 	
 	polar_r0 = 0;
+	unsigned int nerrx = myIntegrator.reset_errcount();
+	unsigned int nerry = myIntegrator.reset_y_errcount();
 	
 	// integrate over each region
 	for(unsigned int dmz = 0; dmz < integ_domains.size()-1; dmz++) {
@@ -167,10 +169,15 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 				BField_Protocol::BFP->B += fieldAt(BField_Protocol::BFP->x, ll, ur, 1, 1);
 			}
 			
-			unsigned int nerrx = myIntegrator.reset_errcount();
-			unsigned int nerry = myIntegrator.reset_y_errcount();
+			// range:< -0.1 -0.0234375 >< -0.0333333 -0.0078125 > el:0 < 0.233333 0.0078125 > P0 from < 0.82131 0.0403483 -0.75597 > to < 0.64014 0.0314481 -2.1393 >
+			// asking:0x7fbf180488c0 responding:0x7fbf180488c0 errs (2,90) z: -2/3/-1 phi: -2/0/-1
+
+			
+			nerrx = myIntegrator.reset_errcount();
+			nerry = myIntegrator.reset_y_errcount();
 			if(nerrx || nerry) {
-				std::cout << "range:" << ll << ur << " el:" << el << " " << ixn_center << " P" << bool(polar_integral_center)
+				std::cout << "range:" << ll << ur << " active el:" << el << " " << ixn_center
+					<< " P" << bool(polar_integral_center) << " method " << myIntegrator.getMethod()
 					<< " from " << (*mySurface)(surf_coords(ixn_df)) << " to " << BField_Protocol::BFP->x
 					<< " asking:" << BField_Protocol::BFP->caller << " responding:" << this
 					<< " errs (" << nerrx << "," << nerry

@@ -100,9 +100,9 @@ vec3 CylSurfaceGeometry::deriv(const vec2& p, unsigned int i) const {
 	
 	if(i==0) {
 		vec2 dzr = zr_profile->deriv(p[0]);
+		assert(dzr.mag2());
 		return vec3(dzr[1]*c, dzr[1]*s, dzr[0]);
-	}
-	if(i==1) {
+	} else if(i==1) {
 		return vec3(-zr[1]*s*2*M_PI, zr[1]*c*2*M_PI, 0);
 	}
 	

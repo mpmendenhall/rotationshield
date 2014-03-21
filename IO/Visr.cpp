@@ -96,6 +96,7 @@ namespace vsr {
 	
 	void pause() {
 		pause_display = true;
+		printf("Press [enter] in visualization window to conitnue...\n");
 		while(pause_display) usleep(50000);
 	}
 	

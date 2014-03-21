@@ -49,14 +49,14 @@ RoundedTube::RoundedTube(vec2 x0, vec2 x1, mdouble r, mdouble endfrac): PathJoin
 	mdouble s = (1-endfrac)/endfrac * endlen/sidelen;
 	
 	if(r>0) {
-		append(new ParamStretcher(new Line2D(x1+dn, x0+dn), s, r, s, r));
+		append(new ParamStretcher(new Line2D(x1+dn, x0+dn), s, 2*r, s, 2*r));
 		append(new Arc2D(r,th,th+M_PI));
-		append(new ParamStretcher(new Line2D(x0-dn, x1-dn), s, r, s, r));
+		append(new ParamStretcher(new Line2D(x0-dn, x1-dn), s, 2*r, s, 2*r));
 		append(new Arc2D(r,th+M_PI,th+2*M_PI));
 	} else {
-		append(new ParamStretcher(new Line2D(x1-dn, x0-dn), s, r, s, r));
+		append(new ParamStretcher(new Line2D(x1-dn, x0-dn), s, 2*r, s, 2*r));
 		append(new Arc2D(-r,th+M_PI,th));
-		append(new ParamStretcher(new Line2D(x0+dn, x1+dn), s, r, s, r));
+		append(new ParamStretcher(new Line2D(x0+dn, x1+dn), s, 2*r, s, 2*r));
 		append(new Arc2D(-r,th,th-M_PI));
 	}
 }

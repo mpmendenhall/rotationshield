@@ -94,7 +94,11 @@ double generalIntegratingFunction(double x, void* params) {
 	std::map<double,mvec>::iterator it = p->m.find(x);
 	if(it != p->m.end()) {
 		//std::cout << "Fetched response at x = " << x << " for axis " << p->axis << std::endl;
-		if(p->axis < it->second.size()) return (it->second)[p->axis];
+		if(p->axis < it->second.size()) {
+			double r = (it->second)[p->axis];
+			assert(r==r);
+			return r;
+		}
 		return 0;
 	}
 	

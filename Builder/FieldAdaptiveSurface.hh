@@ -13,10 +13,10 @@ public:
 	FieldAdaptiveSurface(const DVFunc1<2,mdouble>& f);
 	
 	/// evaluate function
-	virtual vec2 operator()(mdouble x) const { return F(l_remap(x)); }
+	virtual vec2 operator()(mdouble x) const { if(F.period) x=wrap(x); return F(l_remap(x)); }
 	
 	/// derivative
-	virtual vec2 deriv(mdouble x) const { return F.deriv(l_remap(x)) * l_remap.deriv(x); }
+	virtual vec2 deriv(mdouble x) const { if(F.period) x=wrap(x); return F.deriv(l_remap(x)) * l_remap.deriv(x); }
 	
 	/// optimize for field configuration
 	void optimizeSpacing(const FieldEstimator2D& fes, double pfixed = 0.5, bool useDeriv = true);
@@ -29,6 +29,9 @@ public:
 protected:
 	/// derivative of l distortion parameter
 	mdouble l_dist_deriv(mdouble l) const;
+	
+	/// wrap a number into [0,1) for periodic function, starting half-way on outside
+	mdouble wrap(mdouble x) const { mdouble i; return x>=0 ? modf(x,&i) : 1+modf(x,&i); }
 	
 	CubicGrid l_remap;	//< distortion function, as interpolator
 	
