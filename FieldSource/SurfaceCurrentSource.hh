@@ -10,7 +10,7 @@ class SurfaceCurrentSource: public SurfaceSource {
 public:
 	/// constructor
 	SurfaceCurrentSource(SurfaceGeometry* SG = NULL, const std::string& nm = "SurfaceCurrentSource"):
-		SurfaceSource(SG,nm), sj(NULL), sjparams(NULL), vis_n1(200), vis_n2(200) {}
+		SurfaceSource(SG,nm), sj(NULL), sjparams(NULL) {}
 		
 	/// field contribution f(x,y)dA; x,y in [0,1]^2
 	virtual vec3 fieldAt_contrib_from(const vec3& v, const vec2& l) const;
@@ -25,8 +25,6 @@ public:
 	
 	/// Visualize the field source
 	virtual void _visualize() const;
-	unsigned int vis_n1;		//< visualization gridding, z
-	unsigned int vis_n2;		//< visualization gridding, phi
 	
 	/// visualize local coordinate axes
 	virtual void vis_coords(const vec2& l, double s = 0.02) const;

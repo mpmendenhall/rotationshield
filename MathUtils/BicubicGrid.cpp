@@ -51,6 +51,7 @@ void CubicGrid::set(unsigned int x, double v) {
 double CubicGrid::_eval(double x) const {
 	int ix = int(x);
 	double fx = x-ix;
+	if(fx < 0) { fx += 1; ix -= 1; }
 	
 	// bounds check for out-of-range values
 	if(ix<1 || ix > int(NX+1)) {
@@ -65,6 +66,7 @@ double CubicGrid::_eval(double x) const {
 double CubicGrid::_deriv(double x) const {
 	int ix = int(x);
 	double fx = x-ix;
+	if(fx < 0) { fx += 1; ix -= 1; }
 	
 	// bounds check for out-of-range values
 	if(ix<1 || ix > int(NX+1)) {
@@ -201,8 +203,10 @@ double BicubicGrid::eval_bicubic(double x, double y) const {
 	
 	int ix = int(x);
 	double fx = x-ix;
+	if(fx<0) { fx += 1; ix -= 1; }
 	int iy = int(y);
 	double fy = y-iy;
+	if(fy < 0) { fy += 1; iy -= 1; }
 	
 	// bounds check for out-of-range values
 	if(ix<1 || ix > int(NX+1)) {
@@ -226,8 +230,10 @@ double BicubicGrid::eval_deriv(double x, double y, bool xdirection) const {
 	
 	int ix = int(x);
 	double fx = x-ix;
+	if(fx<0) { fx += 1; ix -= 1; }
 	int iy = int(y);
 	double fy = y-iy;
+	if(fy < 0) { fy += 1; iy -= 1; }
 	
 	for(int i=0; i<4; i++) {
 		if(xdirection) dpts[i] = eval_bicubic(ix-1+i,y);

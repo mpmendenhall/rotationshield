@@ -18,16 +18,12 @@ public:
 	void setMu(double mu) {
 		murel = mu;
 		rmat2 = Matrix<2,3,mdouble>();
-		rmat3 = Matrix<3,3,mdouble>();
-		
-		rmat3(0,1) = rmat2(0,1) = 2*(murel-1)/(murel+1);
-		rmat3(1,0) = rmat2(1,0) = -rmat2(0,1);
-		rmat3(2,2) = 0;	//< needs to be set later for dipole sheet reaction
+		rmat2(0,1) = 2*(murel-1)/(murel+1);
+		rmat2(1,0) = -rmat2(0,1);
 	}
 	
 	mdouble murel;					//< relative permeability
 	Matrix<2,3,mdouble> rmat2;		//< response matrix to applied field
-	Matrix<3,3,mdouble> rmat3;		//< 3-component response matrix to applied field
 };
 
 
@@ -35,7 +31,7 @@ public:
 class SurfaceCurrentRS: public MagF_Responder, public SurfaceCurrentSource, public InterpolatingRS2D {
 public:
 	/// constructor; set xdf=1 to enable dipole density response
-	SurfaceCurrentRS(unsigned int nph, unsigned int nz, unsigned int xdf=0, const std::string& nm = "SurfaceCurrentRS");
+	SurfaceCurrentRS(unsigned int nph, unsigned int nz, const std::string& nm = "SurfaceCurrentRS");
 
 	// ReactiveSet subclassed functions
 	//=====================================
@@ -62,13 +58,7 @@ public:
 	void element_surface_range(unsigned int i, vec2& ll, vec2& ur) const;
 	
 	/// get interpolated surface current response
-	vec2 eval_J(const vec2& p) const { return vec2( (*G[0])(p[0],p[1]), (*G[1])(p[0],p[1]) ); }
-	/// get interpolated circulating current response
-	vec2 eval_J_circulant(const vec2& p) const;
-	
-
-	/// calculate dipole sheet field response
-	void calibrate_dipole_response();
+	vec2 eval_J(const vec2& p) const { return vec2( (*G[0])(p[0],p[1]), (*G[1])(p[0],p[1]) ); }	
 	
 protected:
 	

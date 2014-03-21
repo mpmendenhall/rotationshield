@@ -12,7 +12,7 @@ class SurfaceSource: public FieldSource {
 public:
 	/// constructor
 	SurfaceSource(SurfaceGeometry* SG = NULL, const std::string& nm = "SurfaceSource"):
-		FieldSource(nm), mySurface(SG), dflt_integrator_ndivs_x(1), dflt_integrator_ndivs_y(1), polar_integral_center(NULL), polar_r0(0) {}
+		FieldSource(nm), mySurface(SG), dflt_integrator_ndivs_x(1), dflt_integrator_ndivs_y(1), vis_n1(200), vis_n2(200), polar_integral_center(NULL), polar_r0(0) {}
 
 	/// destructor
 	virtual ~SurfaceSource() {}
@@ -36,12 +36,18 @@ public:
 		
 	/// Display field contributions over grid to given point
 	void displayContribGrid(const vec3& v, unsigned int nx = 7, unsigned int ny = 7) const;
+	/// draw a curve on the surface
+	virtual void visualize_line(vec2 s, vec2 e) const;
+	/// draw lines around a rectangular region
+	virtual void visualize_region(vec2 ll, vec2 ur) const;
+	
 	
 	SurfaceGeometry* mySurface;	//< surface on which source is defined
 
-
 	unsigned int dflt_integrator_ndivs_x;	//< default number of sections to partition x integral in
 	unsigned int dflt_integrator_ndivs_y;	//< default number of sections to partition y integral in
+	unsigned int vis_n1;		//< visualization gridding, z
+	unsigned int vis_n2;		//< visualization gridding, phi
 	
 protected:
 

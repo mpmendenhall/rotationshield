@@ -2,6 +2,7 @@
 #include "VisSurface.hh"
 #include <iostream>
 #include <cassert>
+#include <algorithm>
 
 struct SurfaceSourceIntegParams {
 	const SurfaceSource* S;
@@ -30,11 +31,11 @@ mvec SurfaceSource::subdividedIntegral(mvec (*f)(vec2, void*), void* fparams, ve
 	mvec m;
 	for(unsigned int nx=0; nx<ndx; nx++) {
 		for(unsigned int ny=0; ny<ndy; ny++) {
-			vec2 lll = ll + vec2(nx*ur[0],ny*ur[1]);
+			vec2 lll = ll + ur*vec2(nx,ny);
 			mvec mi;
 			if(polar_integral_center) mi = myIntegrator.polarIntegrate2D(f, lll, lll+ur, *polar_integral_center, fparams, -666, polar_r0);
 			else mi = myIntegrator.integrate2D(f, lll, lll+ur, fparams);
-			if(!nx && !ny) m = mi;
+ 			if(!nx && !ny) m = mi;
 			else m += mi;
 		}
 	}
@@ -99,3 +100,23 @@ void SurfaceSource::displayContribGrid(const vec3& v, unsigned int nx, unsigned 
 	B /= nx*ny;
 	std::cout << "Total field: " << B << std::endl;
 }
+
+void SurfaceSource::visualize_line(vec2 s, vec2 e) const {
+	if(!vis_on) return;
+	unsigned int nseg = std::max((unsigned int)std::max(fabs(s[0]-e[0])*vis_n1, fabs(s[1]-e[1])*vis_n2),(unsigned int)1);
+	for(unsigned int i=0; i<nseg; i++) {
+		double l1 = double(i)/nseg;
+		double l2 = double(i+1)/nseg;
+		vsr::line((*mySurface)(s*(1-l1)+e*l1), (*mySurface)(s*(1-l2)+e*l2));
+	}
+}
+
+void SurfaceSource::visualize_region(vec2 ll, vec2 ur) const {
+	visualize_line(ll,vec2(ur[0],ll[1]));
+	visualize_line(vec2(ur[0],ll[1]),ur);
+	visualize_line(ur,vec2(ll[0],ur[1]));
+	visualize_line(vec2(ll[0],ur[1]),ll);
+};
+
+
+
