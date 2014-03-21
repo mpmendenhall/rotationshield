@@ -21,7 +21,7 @@ public:
 class Arc2D: public DVFunc1<2,mdouble> {
 public:
 	/// constructor
-	Arc2D(double rr, double th0 = -M_PI, double th1 = M_PI, vec2 v0 = vec2()): r(rr), v(v0), t0(th0), dt(th1-th0) {}
+	Arc2D(double rr, double th0 = -M_PI, double th1 = 0, vec2 v0 = vec2()): r(rr), v(v0), t0(th0), dt(th1-th0) { assert(dt); }
 	/// function call
 	virtual vec2 operator()(mdouble x) const;
 	/// derivative
@@ -169,7 +169,7 @@ protected:
 class RoundedSlab: public PathJoiner<2,mdouble> {
 public:
 	/// constructor
-	RoundedSlab(mdouble z0, mdouble r, mdouble w);
+	RoundedSlab(mdouble z0, mdouble r, mdouble w, mdouble endfrac = 0.33);
 	/// destructor
 	virtual ~RoundedSlab() { clear(); }
 };

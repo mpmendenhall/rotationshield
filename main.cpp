@@ -14,20 +14,20 @@
 
 /// run self-tests
 void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
-	
-	//mirror_test();
-	tube_test();
-	//superball_test();
-	//blockade_test();
-	return;
-	
-	csurface_test();
-	return;
-	
 	printf("Simple shield self-test...\n");
 	reference_simpleshield();
 	//printf("\n\nReference self-test...\n");
 	//reference_sanity_check();
+}
+
+void mi_demos(std::deque<std::string>&, std::stack<std::string>& stack) {
+	std::string s = streamInteractor::popString(stack);
+	if(s=="sc")
+		superball_test();
+	if(s=="mr")
+		mirror_test();
+	if(s=="tb")
+		tube_test();
 }
 
 /// Return a random number, uniformly distributed over interval [a,b]
@@ -216,6 +216,14 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	
 	inputRequester selfTests("Self test to reproduce known results",&mi_runtests);
 	
+	
+	NameSelector selectDemo("Demonstration");
+	selectDemo.addChoice("superconducting sphere","sc");
+	selectDemo.addChoice("superconductor-mirrored cos theta coil","mr");
+	selectDemo.addChoice("cos-theta coil in ferromagnetic tube","tb");
+	inputRequester demos("Demonstration calculations",&mi_demos);
+	demos.addArg(&selectDemo);
+	
 	inputRequester setFCrange("Set Measurement Range",&mi_setFCrange);
 	setFCrange.addArg("x min","-0.20");
 	setFCrange.addArg("y min","-0.20");
@@ -307,6 +315,7 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	OM.addChoice(&ncube,"ncube");
 	OM.addChoice(&setClearColor,"bg");
 #endif
+	OM.addChoice(&demos,"demo");
 	OM.addChoice(&OMcell,"cell");
 	OM.addChoice(&OMcoil,"coil");
 	OM.addChoice(&OMshield,"shield");

@@ -282,7 +282,7 @@ void blockade_test() {
 	/*
 	Dish* D2 = new Dish(0.5, 0.25, -1);
 	CylSurfaceGeometry* SG2 = new CylSurfaceGeometry(D2);
-	SurfaceCurrentRS* RS2 = new SurfaceCurrentRS(nPhi,9,0);
+	SurfaceCurrentRS* RS2 = new SurfaceCurrentRS(nPhi,9);
 	RS2->mySurface = SG2;
 	RS2->setSurfaceResponse(SurfaceI_Response(0));
 	RSC.addSet(RS2);
@@ -293,25 +293,29 @@ void blockade_test() {
 
 void superball_test() {
 	
+	std::cout << "Expelling external B=(1,1,1) field from a superconducting sphere.\n";
+	
 	MixedSource* MxS = new MixedSource();
 	UniformField* BU = new UniformField(vec3(1,1,1));
 	MxS->addsource(BU);
 		
 	Arc2D* B = new Arc2D(-1.0);
 	CylSurfaceGeometry* SG = new CylSurfaceGeometry(B);
-	SurfaceCurrentRS* RS = new SurfaceCurrentRS(16,15,0);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(16,15);
 	RS->mySurface = SG;
 	RS->setSurfaceResponse(SurfaceI_Response(0));
-
+	
 	vis_test_sequence(RS,MxS);
 }
 
 
 void mirror_test() {
 	
+	std::cout << "Mirroring cos theta coil current between superconducting plates for improved uniformity.\n";
+	
 	MixedSource* MxS = new MixedSource();
-	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 3.92);
-	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_LINE;
+	CosThetaBuilder b = CosThetaBuilder(5, 0.5, 1.0);
+	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_NONE;
 	b.buildCoil(*MxS);
 	FieldEstimator2Dfrom3D fe(MxS);
 	
@@ -320,7 +324,8 @@ void mirror_test() {
 	MagRSCombiner* RSC = new MagRSCombiner(nPhi);
 
 	for(int z=-1; z<=1; z+=2) {
-		RoundedSlab* RSL = new RoundedSlab(0.53*z, -0.7, -0.04);
+		double w = 0.1;
+		RoundedSlab* RSL = new RoundedSlab((0.51+0.5*w)*z, 0.7, w);
 		//Line2D* L2D = (z>0)? new Line2D(vec2(0.51, 0.7), vec2(0.51, 0)) : new Line2D(vec2(-0.51, 0), vec2(-0.51, 0.7));
 		FieldAdaptiveSurface* FAS = new FieldAdaptiveSurface(*RSL);
 		FAS->optimizeSpacing(fe, 0.6);
@@ -337,19 +342,19 @@ void mirror_test() {
 }
 
 void tube_test() {
+
+	std::cout << "Cos theta coil in a ferromagnetic shield.\n";
 	
 	MixedSource* MxS = new MixedSource();
-	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 3.92);
+	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 2);
 	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_LINE;
 	b.buildCoil(*MxS);
 	FieldEstimator2Dfrom3D fe(MxS);
 	
-	double zh = 3.9624/2+0.2;
-	double r0 = .6223;
 	double t = 0.1;
+	double r0 = 0.6;
 
-	RoundedTube* RT = new RoundedTube(vec2(-zh,r0+t), vec2(zh,r0+t), t);
-	Line2D* L2D = new Line2D(vec2(-zh,r0), vec2(zh,r0));
+	RoundedTube* RT = new RoundedTube(vec2(-(1+t),r0+t), vec2(1+t,r0+t), t);
 	FieldAdaptiveSurface* FAS = new FieldAdaptiveSurface(*RT);
 	FAS->optimizeSpacing(fe, 0.6);
 	
@@ -361,23 +366,6 @@ void tube_test() {
 	RS->setSurfaceResponse(SurfaceI_Response(10000));
 	RS->setToroidal();
 	vis_test_sequence(RS, MxS, vec3(0.1,0,0.5), vec3(0.1,0,0));
-	
-	//center scan lines
-	vec3 origin(0,0,0);
-	vec3 xscan(0.15,0,0);
-	vec3 yscan(0,0.06,0);
-	vec3 zscan(0,0,0.25);
-	printf("Testing shielded fields...\n");
-	mdouble b0 = MxS->fieldAt(origin)[0];
-	bool pass = true;
-	pass &= compareResults(b0,1.59942943484446e+00,"origin");
-	pass &= compareResults(MxS->fieldAt(xscan)[0]-b0,2.62654994091771e-03,"+x");
-	pass &= compareResults(MxS->fieldAt(yscan)[0]-b0,-3.80699814184204e-04,"+y");
-	pass &= compareResults(MxS->fieldAt(zscan)[0]-b0,-2.60066781668566e-04,"+z");
-	pass &= compareResults(MxS->fieldAt(-xscan)[0]-b0,2.62654994091793e-03,"-x");
-	pass &= compareResults(MxS->fieldAt(-yscan)[0]-b0,-3.80699814183982e-04,"-y");
-	pass &= compareResults(MxS->fieldAt(-zscan)[0]-b0,-2.60066781561097e-04,"-z");
-
 }
 
 

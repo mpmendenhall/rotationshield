@@ -93,7 +93,6 @@ double generalIntegratingFunction(double x, void* params) {
 	integratingParams* p = (integratingParams*)params;
 	std::map<double,mvec>::iterator it = p->m.find(x);
 	if(it != p->m.end()) {
-		//std::cout << "Fetched response at x = " << x << " for axis " << p->axis << std::endl;
 		if(p->axis < it->second.size()) {
 			double r = (it->second)[p->axis];
 			assert(r==r);
@@ -101,14 +100,9 @@ double generalIntegratingFunction(double x, void* params) {
 		}
 		return 0;
 	}
-	
-	//std::cout << "Caching response at x = " << x << std::endl;
-	
+		
 	mvec v = p->f(x,p->fparams);
-	if(v.size() > p->n_dim) {
-		p->n_dim = v.size();
-		//std::cout << "New size " << p->n_dim << " from " << v << std::endl;
-	}
+	if(v.size() > p->n_dim) p->n_dim = v.size();
 	p->m[x] = v;
 	if(p->axis < v.size()) return v[p->axis];
 	return 0;

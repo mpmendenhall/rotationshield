@@ -27,12 +27,21 @@ ri0(1./fabs(r0)), ri1(1./fabs(r1)), c0(-(d0-1)*fabs(r0)), c1((d1-1)*fabs(r1)), k
 
 //----
 
-RoundedSlab::RoundedSlab(mdouble z0, mdouble r, mdouble w): PathJoiner<2,mdouble>() {
-	append(new ParamStretcher(new Line2D(vec2(z0-0.5*w, 0), vec2(z0-0.5*w, r-0.5*w)),
-							  1, 1, 0.3, r));
-	append(new Arc2D(0.5*w));
-	append(new ParamStretcher(new Line2D(vec2(z0+0.5*w, r-0.5*w), vec2(z0+0.5*w, 0)),
-							  0.3, r, 1, 1));
+RoundedSlab::RoundedSlab(mdouble z0, mdouble r, mdouble w, mdouble endfrac): PathJoiner<2,mdouble>() {
+
+	w = copysign(w,r);
+	
+	mdouble sidelen = 2*fabs(r-0.5*w);
+	mdouble endlen = fabs(0.5*w)*M_PI;
+	mdouble s = (1-endfrac)/endfrac * endlen/sidelen;
+
+	append(new ParamStretcher(new Line2D(vec2(z0+0.5*w, 0), vec2(z0+0.5*w, fabs(r-0.5*w))),
+							  1, 1, s, r));
+				
+	append(new Arc2D(0.5*w, 0, r<0 ? -M_PI:M_PI));
+	
+	append(new ParamStretcher(new Line2D(vec2(z0-0.5*w, fabs(r-0.5*w)), vec2(z0-0.5*w, 0)),
+							 	s, r, 1, 1));
 }
 
 //----

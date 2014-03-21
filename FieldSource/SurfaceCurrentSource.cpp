@@ -12,9 +12,9 @@ vec3 SurfaceCurrentSource::dI_contrib(const vec2& l) const {
 	vec3 dl1 = mySurface->deriv(l,1);
 	double ml0 = dl0.mag();
 	double ml1 = dl1.mag();
-	assert(ml0 && ml1);
-	double dA = cross(dl0,dl1).mag();
+	if(!ml0 || !ml1) return vec3(0,0,0);
 	
+	double dA = cross(dl0,dl1).mag();
 	return vec3(dl0/ml0 * sdl[0] + dl1/ml1 * sdl[1])*dA;
 }
 
