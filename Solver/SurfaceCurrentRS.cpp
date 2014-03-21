@@ -16,13 +16,20 @@ vec2 surfaceJ(vec2 v, void* p) {
 	return ((SurfaceCurrentRS*)p)->eval_J(v);
 }
 
-SurfaceCurrentRS::SurfaceCurrentRS(unsigned int nph, unsigned int nz, const std::string& nm): SurfaceCurrentSource(NULL,nm), InterpolatingRS2D(nph) {
+SurfaceCurrentRS::SurfaceCurrentRS(SurfaceGeometry* SG, unsigned int nph, unsigned int nz, const std::string& nm): SurfaceCurrentSource(SG,nm), InterpolatingRS2D(nph) {
+	
+	assert(mySurface);
+	assert(nPhi == 1 || mySurface->isClosed(1));
+	
 	// surface current function
 	sj = &surfaceJ;
 	sjparams = this;
 	
 	// set up DF interpolator
 	make_grids(nz,2);
+	if(mySurface->isClosed(0))
+		for(unsigned int i=0; i<nDFi; i++)
+			G[i]->bc[0] = IB_CYCLIC;
 	
 	// split up surface phi integrals by default
 	dflt_integrator_ndivs_y = nPhi>8? nPhi/8 : 1;
@@ -79,7 +86,7 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 	int delta_phi = (i_nphi-c_np + 2*nPhi)%nPhi;
 	if(delta_phi >= nPhi/2) delta_phi -= nPhi;
 	int delta_z = i_nz-c_nz;
-	if(isToroidal) {
+	if(mySurface->isClosed(0)) {
 		delta_z = (delta_z + 2*nZ)%nZ;
 		if(delta_z >= int(nZ)/2) delta_z -= nZ;
 	}
@@ -107,12 +114,12 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 			int np0 = c_np + integ_domains[dmp];
 			int np1 = c_np + integ_domains[dmp+1];
 			// skip past-edges domains; note, we are allowed to wrap around in phi
-			if(!isToroidal && (nz1 < 0 || nz0 >= (int)nZ)) continue;
+			if(!mySurface->isClosed(0) && (nz1 < 0 || nz0 >= (int)nZ)) continue;
 			
 			
 			// set integration method depending on whether there will be edge singularities (target point inside integration range)
 			bool self_intersection = ( BField_Protocol::BFP->caller == this
-										&& ((nz0 <= i_nz && i_nz <= nz1) || (isToroidal && (i_nz - nz0 + nZ)%nZ <= (nz1 - nz0 + nZ)%nZ ) )
+										&& ((nz0 <= i_nz && i_nz <= nz1) || (mySurface->isClosed(0) && (i_nz - nz0 + nZ)%nZ <= (nz1 - nz0 + nZ)%nZ ) )
 										&& ( (i_nphi - np0 + nPhi)%nPhi <= (np1 - np0 + nPhi)%nPhi ) );
 			
 			self_intersection = integ_domains.size() == 2;
@@ -120,12 +127,12 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 				myIntegrator.setMethod(INTEG_GSL_CQUAD);
 				polar_integral_center = &ixn_center;
 				if(np0 > i_nphi) { np0 -= nPhi; np1 -= nPhi; }			// adjust phi definition to align with polar center
-				if(isToroidal && nz0 > i_nz) { nz0 -= nZ; nz1 -= nZ; }	// adjust z definition to align with polar center
+				if(mySurface->isClosed(0) && nz0 > i_nz) { nz0 -= nZ; nz1 -= nZ; }	// adjust z definition to align with polar center
 			}
 			
 			vec2 ll((nz0+0.5)/double(nZ), (np0+0.5)/double(nPhi));
 			vec2 ur((nz1+0.5)/double(nZ), (np1+0.5)/double(nPhi));
-			if(!isToroidal) {
+			if(!mySurface->isClosed(0)) {
 				if(ll[0]<0) ll[0]=0;
 				if(ur[0]>1) ur[0]=1;
 			}

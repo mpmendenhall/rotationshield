@@ -32,7 +32,7 @@ protected:
 class InterpolatingRS2D: public ReactiveSet {
 public:
 	/// constructor
-	InterpolatingRS2D(unsigned int nph): ReactiveSet(nph), nZ(0), nDFi(0), isToroidal(false) { }
+	InterpolatingRS2D(unsigned int nph): ReactiveSet(nph), nZ(0), nDFi(0) { }
 	/// destructor
 	virtual ~InterpolatingRS2D() { clear_data(); }
 	
@@ -41,9 +41,6 @@ public:
 
 	/// evaluate interpolators at point
 	mvec interpl_DF(vec2 l) const;
-	
-	/// set for toroidal geometries to close ends
-	virtual void setToroidal();
 	
 	/// display data grids
 	virtual void printData() const;
@@ -63,7 +60,6 @@ protected:
 	std::vector<BicubicGrid*> G;	//< degrees of freedom stored in interpolator grid
 	unsigned int nZ;				//< grid size in z direction
 	unsigned int nDFi;				//< number of DF per element
-	bool isToroidal;				//< whether this has a toroidal topology
 };
 
 

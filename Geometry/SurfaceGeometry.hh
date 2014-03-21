@@ -34,6 +34,9 @@ public:
 	/// calculate min and max distance to corners of region
 	void proximity(vec3 x, vec2 ll, vec2 ur, double& mn, double& mx) const;
 	
+	/// whether surface is closed/periodic along particular axis
+	virtual bool isClosed(unsigned int a) const { return false; }
+	
 protected:
 
 	Integrator2D myIntegrator;	//< integrator for internal calculations
@@ -72,6 +75,9 @@ public:
 	
 	// geometry-defining functions
 	DVFunc1<2,mdouble>* zr_profile;	//< z,r (l) profile
+	
+	/// whether surface is closed/periodic along particular axis
+	virtual bool isClosed(unsigned int a) const { return a==0 ? (zr_profile && zr_profile->period) : a==1; }
 	
 protected:
 	// cache profile calls, since likely to be for same value

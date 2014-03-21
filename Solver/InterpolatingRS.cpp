@@ -44,12 +44,6 @@ mvec InterpolatingRS2D::interpl_DF(vec2 l) const {
 	return v;
 }
 
-void InterpolatingRS2D::setToroidal() {
-	isToroidal = true;
-	for(unsigned int i=0; i<nDFi; i++)
-		G[i]->bc[0] = IB_CYCLIC;
-}
-
 void InterpolatingRS2D::printData() const {
 	for(unsigned int i=0; i<nDFi; i++) {
 		printf("Data table for layer %i:\n",i);

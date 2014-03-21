@@ -3,6 +3,7 @@
 
 FieldAdaptiveSurface::FieldAdaptiveSurface(const DVFunc1<2,mdouble>& f): l_remap(100), F(f) {
 	setConstantSpacing();
+	period = F.period;
 }
 
 void FieldAdaptiveSurface::setConstantSpacing() {

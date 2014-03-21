@@ -273,8 +273,7 @@ void blockade_test() {
 	FAS->optimizeSpacing(fe, 0.6);
 	
 	CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
-	SurfaceCurrentRS* RS = new SurfaceCurrentRS(nPhi,15);
-	RS->mySurface = SG;
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG,nPhi,15);
 	RS->setSurfaceResponse(SurfaceI_Response(0));
 	
 	//RSC->addSet(RS);
@@ -301,8 +300,7 @@ void superball_test() {
 		
 	Arc2D* B = new Arc2D(-1.0);
 	CylSurfaceGeometry* SG = new CylSurfaceGeometry(B);
-	SurfaceCurrentRS* RS = new SurfaceCurrentRS(16,15);
-	RS->mySurface = SG;
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG,16,15);
 	RS->setSurfaceResponse(SurfaceI_Response(0));
 	
 	vis_test_sequence(RS,MxS);
@@ -331,8 +329,7 @@ void mirror_test() {
 		FAS->optimizeSpacing(fe, 0.6);
 		
 		CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
-		SurfaceCurrentRS* RS = new SurfaceCurrentRS(nPhi,15);
-		RS->mySurface = SG;
+		SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG,nPhi,15);
 		RS->setSurfaceResponse(SurfaceI_Response(0));
 		RSC->addSet(RS);
 	}
@@ -361,10 +358,8 @@ void tube_test() {
 	unsigned int nPhi = 16;
 	
 	CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
-	SurfaceCurrentRS* RS = new SurfaceCurrentRS(nPhi, 17);
-	RS->mySurface = SG;
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG,nPhi, 17);
 	RS->setSurfaceResponse(SurfaceI_Response(10000));
-	RS->setToroidal();
 	vis_test_sequence(RS, MxS, vec3(0.1,0,0.5), vec3(0.1,0,0));
 }
 
@@ -401,8 +396,7 @@ bool csurface_test() {
 	FAS.optimizeSpacing(sfe,0.3, false);
 	FAS.symmetry_test();
 	CylSurfaceGeometry SG(&FAS);
-	SurfaceCurrentRS RS(nPhi,12);
-	RS.mySurface = &SG;
+	SurfaceCurrentRS RS(&SG,nPhi,12);
 	RS.setSurfaceResponse(SurfaceI_Response(10000));
 	RSC.addSet(&RS);
 	
@@ -474,8 +468,7 @@ bool csurface_test_B() {
 	FieldAdaptiveSurface FAS(L2D);
 	FAS.optimizeSpacing(*fe,0.2);
 	CylSurfaceGeometry SG(&FAS);
-	SurfaceCurrentRS RS(128,50);
-	RS.mySurface = &SG;
+	SurfaceCurrentRS RS(&SG,128,50);
 	RS.setSurfaceResponse(SurfaceI_Response(10000));
 	RSC.addSet(&RS);
 

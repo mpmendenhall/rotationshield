@@ -30,8 +30,8 @@ public:
 /// Continuous surface current responding to magnetic field
 class SurfaceCurrentRS: public MagF_Responder, public SurfaceCurrentSource, public InterpolatingRS2D {
 public:
-	/// constructor; set xdf=1 to enable dipole density response
-	SurfaceCurrentRS(unsigned int nph, unsigned int nz, const std::string& nm = "SurfaceCurrentRS");
+	/// constructor
+	SurfaceCurrentRS(SurfaceGeometry* SG, unsigned int nph, unsigned int nz, const std::string& nm = "SurfaceCurrentRS");
 
 	// ReactiveSet subclassed functions
 	//=====================================

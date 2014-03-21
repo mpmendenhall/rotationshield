@@ -31,6 +31,8 @@ RoundedSlab::RoundedSlab(mdouble z0, mdouble r, mdouble w, mdouble endfrac): Pat
 
 	w = copysign(w,r);
 	
+	assert(fabs(r) > fabs(0.5*w));
+	
 	mdouble sidelen = 2*fabs(r-0.5*w);
 	mdouble endlen = fabs(0.5*w)*M_PI;
 	mdouble s = (1-endfrac)/endfrac * endlen/sidelen;
@@ -47,6 +49,10 @@ RoundedSlab::RoundedSlab(mdouble z0, mdouble r, mdouble w, mdouble endfrac): Pat
 //----
 
 RoundedTube::RoundedTube(vec2 x0, vec2 x1, mdouble r, mdouble endfrac): PathJoiner<2,mdouble>() {
+
+	assert((x1-x0).mag() > 2*fabs(r));
+	assert(0 < endfrac && endfrac < 1);
+	
 	vec2 dl = (x1-x0).normalized()*fabs(r);
 	vec2 dn = rhOrtho(dl);
 	double th = atan2(dn[1],dn[0]);
