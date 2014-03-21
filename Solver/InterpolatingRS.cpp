@@ -30,7 +30,7 @@ void InterpolatingRS2D::DF_address(unsigned int DF, unsigned int& p, unsigned in
 
 void InterpolatingRS2D::_setDF(unsigned int DF, double v) {
 	assert(DF < nDF());
-	assert(v==v && fabs(v)<1e6);
+	assert(v==v && fabs(v)<1e12);
 	unsigned int p,z,d;
 	DF_address(DF,p,z,d);
 	assert(d<G.size() && p<nPhi && z<nZ);

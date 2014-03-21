@@ -1,6 +1,13 @@
 #include "ReactiveSet.hh"
 #include <iostream>
 
+void ReactiveSet::setDF(unsigned int DF, double v) {
+	if(finalState.size() != nDF())
+		finalState = mvec(nDF());
+	finalState[DF] = v;
+	_setDF(DF,v);
+}
+
 void ReactiveSet::setInteractionDF(unsigned int DF, double v) {
 
 	//std::cout << this << " Setting Interaction DF " << DF << " of " << nDF() << " to " << v << std::endl;

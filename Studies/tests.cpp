@@ -364,6 +364,45 @@ void tube_test() {
 }
 
 
+void flux_trap_test() {
+
+	std::cout << "Calculating trapped-flux state of superconducting ring..." << std::endl;
+	
+	RoundedTube* RT = new RoundedTube(vec2(0,0.25), vec2(0,0.8), 0.1);
+	CylSurfaceGeometry* SG = new CylSurfaceGeometry(RT);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG, 10, 18);
+	RS->setSurfaceResponse(SurfaceI_Response(0));
+	RS->visualize();
+	
+	SymmetricSolver SS;
+	SS.solve(*RS);
+	
+	std::cout << "Setting initial current loop distribution..." << std::endl;
+	RS->setZeroState();
+	//RS->set_current_loop(0,1.0,false);
+	RS->set_current_loop(9,1.0);
+	RS->setFinalState(RS->finalState.normalized()*(0.05*RS->nDF()));
+	RS->visualize();
+	vsr::pause();
+		
+	for(unsigned int i=0; i<7; i++) {
+		
+		std::cout << "Iterating solution to stable trapped-flux state..." << std::endl;
+		RS->incidentState = RS->finalState;
+		SS.calculateResult(*RS);
+		
+		std::cout << RS->finalState.mag() << std::endl;
+		RS->setFinalState(RS->finalState.normalized()*(0.05*RS->nDF()));
+		std::cout << "Initial/final state difference magnitude: " << (RS->finalState - RS->incidentState).mag() << std::endl;
+		
+		qsurvey(RS, vec3(0,.75,0), vec3(0,0,0), 6);
+		
+		RS->visualize();
+		vsr::pause();
+	}
+
+}
+
 bool csurface_test() {
 
 	// mimic "simple shield" test with continuous surface

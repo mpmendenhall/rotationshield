@@ -3,10 +3,6 @@
 #include <cassert>
 #include <fstream>
 
-SymmetricSolver::SymmetricSolver(): InteractionSolver() {
-	verbose = true;
-}
-
 void SymmetricSolver::solve(ReactiveSet& R) {
 	buildInteractionMatrix(R);
 	printf("Solving for Green's Function... ");

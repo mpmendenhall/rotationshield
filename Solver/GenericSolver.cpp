@@ -5,7 +5,6 @@
 #include "gsl/gsl_blas.h"
 #include <cassert>
 
-GenericSolver::GenericSolver(): InteractionSolver(), the_GF(NULL) {}
 GenericSolver::~GenericSolver() {
 	if(the_GF) gsl_matrix_free(the_GF);
 	the_GF = NULL;

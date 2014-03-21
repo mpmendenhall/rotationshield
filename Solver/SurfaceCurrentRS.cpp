@@ -37,6 +37,19 @@ SurfaceCurrentRS::SurfaceCurrentRS(SurfaceGeometry* SG, unsigned int nph, unsign
 	myIntegrator.setMethod(INTEG_GSL_QAG);
 }
 
+
+void SurfaceCurrentRS::set_current_loop(unsigned int z, double i, bool phidir) {
+	if(phidir) {
+		assert(z<nZ);
+		for(unsigned int p=0; p<nPhi; p++)
+			setDF(nZ*nPhi + z*nPhi + p, i);
+	} else {
+		assert(z<nPhi);
+		for(unsigned int p=0; p<nZ; p++)
+			setDF(p*nPhi + z, i);
+	}
+}
+
 mvec SurfaceCurrentRS::getReactionTo(ReactiveSet* R, unsigned int phi) {
 	mvec v(nDF()/nPhi);
 	for(ixn_el = phi; ixn_el < nDF()/nDFi; ixn_el+=nPhi) {

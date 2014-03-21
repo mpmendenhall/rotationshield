@@ -10,7 +10,7 @@
 class InteractionSolver {
 public:
 	/// Constructor
-	InteractionSolver() {}
+	InteractionSolver(bool vbs = true): verbose(vbs) {}
 	/// Destructor
 	virtual ~InteractionSolver() {}
 

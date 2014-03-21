@@ -28,5 +28,7 @@ void blockade_test();
 void mirror_test();
 /// thick ferromagnetic tube
 void tube_test();
+/// calculate trapped-flux state of superconducting loop
+void flux_trap_test();
 
 #endif

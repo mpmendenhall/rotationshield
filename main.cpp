@@ -28,6 +28,8 @@ void mi_demos(std::deque<std::string>&, std::stack<std::string>& stack) {
 		mirror_test();
 	if(s=="tb")
 		tube_test();
+	if(s=="ft")
+		flux_trap_test();
 }
 
 /// Return a random number, uniformly distributed over interval [a,b]
@@ -221,6 +223,7 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	selectDemo.addChoice("superconducting sphere","sc");
 	selectDemo.addChoice("superconductor-mirrored cos theta coil","mr");
 	selectDemo.addChoice("cos-theta coil in ferromagnetic tube","tb");
+	selectDemo.addChoice("trapped-flux state of superconducting ring","ft");
 	inputRequester demos("Demonstration calculations",&mi_demos);
 	demos.addArg(&selectDemo);
 	

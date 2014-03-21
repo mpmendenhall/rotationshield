@@ -58,7 +58,10 @@ public:
 	void element_surface_range(unsigned int i, vec2& ll, vec2& ur) const;
 	
 	/// get interpolated surface current response
-	vec2 eval_J(const vec2& p) const { return vec2( (*G[0])(p[0],p[1]), (*G[1])(p[0],p[1]) ); }	
+	vec2 eval_J(const vec2& p) const { return vec2( (*G[0])(p[0],p[1]), (*G[1])(p[0],p[1]) ); }
+	
+	/// set up current loop response around given ring of z elements
+	void set_current_loop(unsigned int z, double i=1.0, bool phidir = true);
 	
 protected:
 	

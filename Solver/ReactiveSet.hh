@@ -12,7 +12,7 @@
 class ReactiveSet {
 public:
 	/// constructor
-	ReactiveSet(unsigned int nph=1): nPhi(nph), ixn_df(0) {}
+	ReactiveSet(unsigned int nph=1): nPhi(nph), ixn_df(0) { }
 	/// destructor
 	virtual ~ReactiveSet() {}
 	
@@ -34,7 +34,7 @@ public:
 	/// set single degree of freedom to produce interactions from, clearing previous DF
 	virtual void setInteractionDF(unsigned int DF, double v);
 	/// set a DF without clearing previous DF
-	virtual void setDF(unsigned int DF, double v) { finalState[DF] = v; _setDF(DF,v); }
+	virtual void setDF(unsigned int DF, double v);
 	/// set zero state
 	virtual void setZeroState() { setFinalState(mvec(nDF())); }
 	/// set final state
