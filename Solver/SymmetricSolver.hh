@@ -32,7 +32,8 @@ protected:
 	/// Assembles the interaction matrix
 	void buildInteractionMatrix(ReactiveSet& R);
 	
-	BlockCMat<mdouble> the_GF; //< The inverted interaction matrix, i.e. the Green's Function for the system
+	BlockCMat<mdouble> the_ixn;	//< The interaction matrix R between degrees of freedom
+	BlockCMat<mdouble> the_GF;	//< the Green's Function for the system, (I-R)^-1
 };
 
 

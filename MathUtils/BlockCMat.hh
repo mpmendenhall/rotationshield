@@ -46,6 +46,10 @@ class BlockCMat
 		const BlockCMat<T> operator-() const;
 		/// matrix product
 		const BlockCMat<T> operator*(const BlockCMat<T>& rhs) const;
+		/// matrix sum
+		const BlockCMat<T> operator+(const BlockCMat<T>& rhs) const;
+		/// matrix difference
+		const BlockCMat<T> operator-(const BlockCMat<T>& rhs) const;
 		/// matrix right-multiplied by a vector
 		const VarVec<T> operator*(const VarVec<T>& v) const;
 		
@@ -177,6 +181,25 @@ const BlockCMat<T> BlockCMat<T>::operator*(const BlockCMat<T>& m) const {
 	return r;
 }
 
+template<typename T>
+const BlockCMat<T> BlockCMat<T>::operator+(const BlockCMat<T>& m) const {
+	assert(ncols == m.ncols && nrows == m.nrows);
+	BlockCMat<T> foo = *this;
+	for(unsigned int r=0; r<nrows; r++)
+		for(unsigned int c=0; c<ncols; c++)
+			foo.getBlock(r,c) += m.getBlock(r,c);
+	return foo;
+}
+
+template<typename T>
+const BlockCMat<T> BlockCMat<T>::operator-(const BlockCMat<T>& m) const {
+	assert(ncols == m.ncols && nrows == m.nrows);
+	BlockCMat<T> foo = *this;
+	for(unsigned int r=0; r<nrows; r++)
+		for(unsigned int c=0; c<ncols; c++)
+			foo.getBlock(r,c) -= m.getBlock(r,c);
+	return foo;
+}
 
 template<typename T>
 const VarVec<T> BlockCMat<T>::operator*(const VarVec<T>& v) const

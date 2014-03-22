@@ -379,21 +379,24 @@ CMatrix<T>& CMatrix<T>::operator-=(const CMatrix<T>& m)
 	kdata_ok = realdata_ok = false;
 	
 	if(!has_realspace && !has_kspace) {
-		*this = m;
+		*this = -m;
 		return *this;
 	}
 	
-	if(has_realspace && (m.has_realspace || !has_kspace)) {
-		for(unsigned int i=0; i<ncycles; i++)
-			data[i] -= m[i];
-		realdata_ok = true;
-	}
 	if(has_kspace && (m.has_kspace || !has_realspace)) {
 		const std::vector<cdouble>& kd = m.getKData();
 		for(unsigned int i=0; i<ncycles/2+1; i++)
 			kdata[i] -= kd[i];
 		kdata_ok = true;
+		has_kspace = true;
 	}
+
+	if(has_realspace && (m.has_realspace || !has_kspace)) {
+		for(unsigned int i=0; i<ncycles; i++)
+			data[i] -= m[i];
+		realdata_ok = true;
+	}
+	
 	
 	has_realspace = realdata_ok;
 	has_kspace = kdata_ok;
