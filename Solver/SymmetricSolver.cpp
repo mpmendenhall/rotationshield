@@ -36,6 +36,10 @@ void SymmetricSolver::calculateResult(ReactiveSet& R) {
 	if(verbose) printf(" Done.\n");
 }
 
+void SymmetricSolver::selfInteract(ReactiveSet& R) {
+	R.setFinalState(the_ixn * R.incidentState);
+}
+
 void SymmetricSolver::writeToFile(std::ostream& o) const {
 	the_GF.writeToFile(o);
 }

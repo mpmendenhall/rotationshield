@@ -385,11 +385,12 @@ void flux_trap_test() {
 	RS->visualize();
 	vsr::pause();
 		
-	for(unsigned int i=0; i<7; i++) {
+	for(unsigned int i=0; i<100; i++) {
 		
 		std::cout << "Iterating solution to stable trapped-flux state..." << std::endl;
 		RS->incidentState = RS->finalState;
-		SS.calculateResult(*RS);
+		//SS.calculateResult(*RS);	// alternate, gets there faster, but with huge normalization isse
+		SS.selfInteract(*RS);
 		
 		std::cout << RS->finalState.mag() << std::endl;
 		RS->setFinalState(RS->finalState.normalized()*(0.05*RS->nDF()));

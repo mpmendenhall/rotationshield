@@ -19,6 +19,8 @@ public:
 	virtual void solve(ReactiveSet& R);
 	/// Apply solution to ReactiveSet system initial state
 	virtual void calculateResult(ReactiveSet& R);
+	/// Apply self-interaction to final state
+	virtual void selfInteract(ReactiveSet& R);
 	
 	/// Write solution to file
 	void writeToFile(std::ostream& o) const;
