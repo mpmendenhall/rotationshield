@@ -8,7 +8,7 @@
 class LineSource: public FieldSource {
 public:
 	/// Constructor
-	LineSource(vec3 startv, vec3 endv, mdouble current): FieldSource(), l(startv,endv), j(current) {}
+	LineSource(vec3 startv, vec3 endv, double current): FieldSource(), l(startv,endv), j(current) {}
 	/// Destructor
 	~LineSource() {}
 	
@@ -28,18 +28,18 @@ public:
 	
 	/// Integrates \f$ \int_0^x \frac{(t^2+a^2)^{1/2}}{(t^2+b^2)^{3/2}}dt \f$ (\f$ a>b \f$)
 	/** See Abramowitz and Stegun 17.4.41 */
-	static mdouble sF1(mdouble a2, mdouble b2, mdouble x);
+	static double sF1(double a2, double b2, double x);
 	/// Integrates \f$ \int_0^x \frac{1}{(t^2+a^2)^{3/2}(t^2+b^2)^{1/2}}dt \f$
 	/** See Abramowitz and Stegun 17.4.51 */
-	static mdouble sF2(mdouble a2, mdouble b2, mdouble x);
+	static double sF2(double a2, double b2, double x);
 	/// Integrates \f$ \int_{x_1}^{x_2} \frac{(t^2+a^2)^{1/2}}{(t^2+b^2)^{1/2}}dt \f$ (\f$ a>b \f$)
-	static mdouble sF1(mdouble a2, mdouble b2, mdouble x1, mdouble x2) { return sF1(a2,b2,x2) - sF1(a2,b2,x1); }
+	static double sF1(double a2, double b2, double x1, double x2) { return sF1(a2,b2,x2) - sF1(a2,b2,x1); }
 	/// Integrates \f$ \int_{x_1}^{x_2} \frac{1}{(t^2+a^2)^{3/2}(t^2+b^2)^{1/2}}dt \f$
-	static mdouble sF2(mdouble a2, mdouble b2, mdouble x1, mdouble x2) { return sF2(a2,b2,x2) - sF2(a2,b2,x1); }
+	static double sF2(double a2, double b2, double x1, double x2) { return sF2(a2,b2,x2) - sF2(a2,b2,x1); }
 	
 private:
 	const Line l;	//< The line along which current flows
-	const mdouble j; //< The current
+	const double j; //< The current
 };
 
 #endif

@@ -12,18 +12,18 @@
 class SurfaceI_Response {
 public:
 	/// constructor
-	SurfaceI_Response(mdouble mu = 0) { setMu(mu); }
+	SurfaceI_Response(double mu = 0) { setMu(mu); }
 	
 	/// generate correct response matrix to applied fields for given relative permeability
 	void setMu(double mu) {
 		murel = mu;
-		rmat2 = Matrix<2,3,mdouble>();
+		rmat2 = Matrix<2,3,double>();
 		rmat2(0,1) = 2*(murel-1)/(murel+1);
 		rmat2(1,0) = -rmat2(0,1);
 	}
 	
-	mdouble murel;					//< relative permeability
-	Matrix<2,3,mdouble> rmat2;		//< response matrix to applied field
+	double murel;					//< relative permeability
+	Matrix<2,3,double> rmat2;		//< response matrix to applied field
 };
 
 

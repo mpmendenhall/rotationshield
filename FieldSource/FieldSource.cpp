@@ -11,14 +11,14 @@ struct fieldIntegratorParams {
 };
 
 /// For integrating magnetic fields over a Line using an Integrator
-mvec fieldLineIntegratorFunction(mdouble x, void* params) {
+mvec fieldLineIntegratorFunction(double x, void* params) {
 	fieldIntegratorParams* p = (fieldIntegratorParams*)params;
 	vec3 pos = (p->l)->position(x);
 	return mvec((p->fs)->fieldAt(pos));
 }
 
 /// For integrating magnetic fields over a Plane using an Integrator
-mvec fieldPlaneIntegratorFunction(mdouble x, void* params) {
+mvec fieldPlaneIntegratorFunction(double x, void* params) {
 	fieldIntegratorParams p = *(fieldIntegratorParams*)params;
 	Line l(p.p->position(x,-1.0),p.p->position(x,1.0));
 	return mvec((p.fs)->fieldOverLine(l));

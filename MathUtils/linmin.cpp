@@ -21,7 +21,7 @@ gsl_vector* lsmin(gsl_matrix* coeffs, const gsl_vector* rslt, gsl_vector* resid)
 	return x;
 }
 
-double polynomialFit(const gsl_matrix* coords, const gsl_vector* values, Polynomial<3,mdouble>& p) {
+double polynomialFit(const gsl_matrix* coords, const gsl_vector* values, Polynomial<3,double>& p) {
 	int nparams = p.terms.size();
 	assert(coords && values);
 	assert((unsigned int)nparams <= values->size);
@@ -30,10 +30,10 @@ double polynomialFit(const gsl_matrix* coords, const gsl_vector* values, Polynom
 	
 	// build coefficients matrix
 	gsl_matrix* coeffs = gsl_matrix_alloc(coords->size1,nparams);
-	Vec<3,mdouble> coord;
+	Vec<3,double> coord;
 	p.it = p.terms.begin();
 	for(int j=0; j<nparams; j++) {
-		Monomial<3,mdouble,unsigned int> m = Monomial<3,mdouble,unsigned int>(1.0,p.it->first);
+		Monomial<3,double,unsigned int> m = Monomial<3,double,unsigned int>(1.0,p.it->first);
 		for(unsigned int i=0; i<values->size; i++) {
 			for(int c=0; c<3; c++) coord[c] = gsl_matrix_get(coords,i,c);
 			gsl_matrix_set(coeffs,i,j,m(coord));

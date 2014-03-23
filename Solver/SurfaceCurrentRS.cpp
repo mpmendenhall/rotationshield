@@ -64,7 +64,7 @@ mvec SurfaceCurrentRS::getReactionTo(ReactiveSet* R, unsigned int phi) {
 mvec SurfaceCurrentRS::subelReaction(ReactiveSet* R) {
 	vec2 sc = surf_coords(ixn_el);
 	BField_Protocol::BFP->x = (*mySurface)(sc);
-	Matrix<2,3,mdouble> RM2 = sdefs[ixn_el].rmat2 * mySurface->rotToLocal(sc);
+	Matrix<2,3,double> RM2 = sdefs[ixn_el].rmat2 * mySurface->rotToLocal(sc);
 	BField_Protocol::BFP->M2 = &RM2;
 	BField_Protocol::BFP->M3 = NULL;
 	BField_Protocol::BFP->caller = this;
@@ -232,7 +232,7 @@ void SurfaceCurrentRS::vis_i_vectors(double s, double mx) const {
 struct AverageFieldIntegParams {
 	const FieldSource* f;			//< field source
 	const SurfaceCurrentRS* S;		//< this surface being integrated over
-	Matrix<2,3,mdouble> rmat2;		//< 2-component response matrix to local field
+	Matrix<2,3,double> rmat2;		//< 2-component response matrix to local field
 };
 
 mvec FieldResponsedA2(vec2 l, void* params) {

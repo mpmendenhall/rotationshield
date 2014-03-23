@@ -36,8 +36,8 @@ void mi_demos(std::deque<std::string>&, std::stack<std::string>& stack) {
 /**	\param a lower bound of interval
  \param b upper bound of interval
  \return a random number in the interval [a,b] */
-mdouble randunif(mdouble a, mdouble b) { 
-	return a + (b-a)*mdouble(rand())/mdouble(RAND_MAX);
+double randunif(double a, double b) { 
+	return a + (b-a)*double(rand())/double(RAND_MAX);
 }
 
 template<unsigned int N>
@@ -47,7 +47,7 @@ void hypercube_rotator() {
 	
 	double ftime = 15.e-3; // min frame time in s
 	srand(time(NULL));
-	std::vector<mdouble> vrot;
+	std::vector<double> vrot;
 	for(unsigned int i=1; i<N; i++)
 		for(unsigned int j=0; j<i; j++)
 			vrot.push_back(randunif(-2./sqrt(N),2./sqrt(N)));
@@ -124,7 +124,7 @@ void mi_setCoilDistort(std::deque<std::string>&, std::stack<std::string>& stack)
 	float a = streamInteractor::popFloat(stack);
 	int n = streamInteractor::popInt(stack);
 	ShiftPositioner* SP = (ShiftPositioner*)(GlobGM.coil.AP);
-	if(n<=0) SP->shift = VarVec<mdouble>(0);
+	if(n<=0) SP->shift = VarVec<double>(0);
 	else {
 		while(SP->shift.size()<(unsigned int)n) SP->shift.push_back(0);
 		SP->shift[n-1] = a;

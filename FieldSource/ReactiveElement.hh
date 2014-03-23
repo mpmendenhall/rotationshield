@@ -43,7 +43,7 @@ public:
 	/// set state vector
 	virtual void setState(mvec v) { assert(v.size() == nDF()); state = v; }
 	/// set element of state vector
-	virtual void setState(unsigned int df, mdouble v) {
+	virtual void setState(unsigned int df, double v) {
 		if(state.size() != nDF()) state = mvec(nDF());
 		assert(df<nDF());
 		state[df] = v;

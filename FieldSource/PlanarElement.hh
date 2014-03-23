@@ -16,7 +16,7 @@ public:
 	virtual PlanarElement* reference(annulusSpec a) const { return replicate(Plane(a)); }
 	
 	/// replicate rotated around z axis
-	virtual PlanarElement* replicateRotated(mdouble th) const = 0;
+	virtual PlanarElement* replicateRotated(double th) const = 0;
 	
 	/// Visualize the element
 	virtual void _visualize() const;

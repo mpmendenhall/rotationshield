@@ -8,9 +8,9 @@
 class InfinitePlaneSource: public PlanarElement {
 public:
 	/// Constructor
-	InfinitePlaneSource(Plane cp, mdouble mu): PlanarElement(cp), murel(mu) { setRmat(); }
+	InfinitePlaneSource(Plane cp, double mu): PlanarElement(cp), murel(mu) { setRmat(); }
 	/// Constructor for 2D arrangements
-	InfinitePlaneSource(vec2 s, vec2 e, mdouble mu):
+	InfinitePlaneSource(vec2 s, vec2 e, double mu):
 	PlanarElement(Plane(vec3(0.5*(s[0]+e[0]),0.5*(s[1]+e[1]),0),vec3(0.5*(e[0]-s[0]),0.5*(e[1]-s[1]),0),vec3(0,0,1.0))), murel(mu) { setRmat(); }
 	
 	/// number of degrees of freedom
@@ -29,18 +29,18 @@ public:
 	/// generate initial reference element
 	virtual PlanarElement* reference(annulusSpec a) const { return new InfinitePlaneSource(Plane(a),murel); }
 	/// replicate reference element to other angle
-	virtual PlanarElement* replicateRotated(mdouble th) const { return new InfinitePlaneSource(p.zrotated(th),murel); }
+	virtual PlanarElement* replicateRotated(double th) const { return new InfinitePlaneSource(p.zrotated(th),murel); }
 	
 	/// field components due to each DF at given point
 	virtual mmat fieldAtComponents(vec3 p0) const;
 	
 private:
-	mdouble murel;	//< relative permeability
+	double murel;	//< relative permeability
 	mmat rmat;		//< response matrix to applied field
 	
 	/// generate correct response matrix to applied fields
 	void setRmat() {
-		Matrix<2,3,mdouble> M = Matrix<2,3,mdouble>();
+		Matrix<2,3,double> M = Matrix<2,3,double>();
 		M(0,1) = M(1,0) = 2.0*(1.0-murel)/(1.0+murel);
 		rmat = mmat(M*p.projectionMatrix());		
 	}

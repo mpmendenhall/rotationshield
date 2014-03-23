@@ -39,8 +39,8 @@ class BField_Protocol {
 public:
 	vec3 x;	//< position
 	vec3 B;	//< magnetic field
-	const Matrix<2,3,mdouble>* M2;	//< optional 3-to-2 transform matrix
-	const Matrix<3,3,mdouble>* M3;	//< optional 3-to-3 transform matrix
+	const Matrix<2,3,double>* M2;	//< optional 3-to-2 transform matrix
+	const Matrix<3,3,double>* M3;	//< optional 3-to-3 transform matrix
 	vec2 M2B;						//< transformed field
 	const void* caller;				//< pointer to caller
 	static BField_Protocol* BFP;	//< instance to use

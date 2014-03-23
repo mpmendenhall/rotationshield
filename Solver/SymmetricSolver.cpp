@@ -65,7 +65,7 @@ void SymmetricSolver::calculateResult(ReactiveSet& R) {
 }
 
 void SymmetricSolver::selfInteract(ReactiveSet& R) {
-	VarVec<mdouble> v = R.incidentState;
+	VarVec<double> v = R.incidentState;
 	circulantMul(the_ixn, v, R.nPhi);
 	R.setFinalState(v);
 }

@@ -3,7 +3,7 @@
 vec2 FieldEstimator2D::estimateAt(const vec2& v) const {
 	vec2 est = vec2();
 	vec2 r;
-	mdouble r0;
+	double r0;
 	for(unsigned int i=0; i<sources.size(); i++) {
 		r = v-sources[i];
 		r0 = r.mag2();

@@ -191,6 +191,16 @@ double CMatrix::det() const {
 	return d;
 }
 
+double CMatrix::trace() const {
+	if(has_realspace) return ncycles*data[0];
+	else if(has_kspace) {
+		double s = kdata.begin()->z[0];
+		for(std::vector<cdouble>::const_iterator it = kdata.begin()+1; it < kdata.end(); it++)
+			s += it->z[0]*2;
+		if(!(ncycles%2)) s -= kdata.back().z[0];
+		return s;
+	} else return 0;
+}
 
 // "GUI" ------______------______-------_______------______------
 

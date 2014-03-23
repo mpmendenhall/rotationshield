@@ -35,7 +35,7 @@ public:
 	void visualizeSurvey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, unsigned int nZ) const;
 	
 	/// Get the Simpson's Rule numerical integrating weight for a point
-	static mdouble simpsonCoeff(unsigned int n, unsigned int ntot);
+	static double simpsonCoeff(unsigned int n, unsigned int ntot);
 
 protected:
 	const FieldSource* FS; //< the FieldSource producing the fields being analyzed

@@ -14,7 +14,7 @@
 #include "UniformField.hh"
 #include "SurfaceProfiles.hh"
 
-bool compareResults(mdouble a, mdouble b, const char* label) {
+bool compareResults(double a, double b, const char* label) {
 	bool pass = true;
 	if(label) printf("%s:\n",label);
 	printf("\tTest Result:\t%.14e\n\t  Reference:\t%.14e\n\t\t   error:\t%.1f%%",double(a),double(b),double(100*(a-b)/a));
@@ -43,7 +43,7 @@ bool reference_sanity_check() {
 	vec3 zscan = vec3(0,0,0.25);
 	
 	bool pass = true;
-	mdouble b0 = MxS->fieldAt(origin)[0];
+	double b0 = MxS->fieldAt(origin)[0];
 	pass &= compareResults(b0,8.53210605848347e-01,"coil origin");
 	pass &= compareResults(MxS->fieldAt(xscan)[0]-b0,8.53217812021647e-01-8.53210605848347e-01,"coil +x edge");
 	pass &= compareResults(MxS->fieldAt(yscan)[0]-b0,8.53163006651345e-01-8.53210605848347e-01,"coil +y edge");
@@ -116,7 +116,7 @@ bool reference_simpleshield() {
 	// non-interacting field reaction
 	SB->calculateIncident(*MxS);
 	bool pass = true;
-	mdouble b0 = SB->fieldAt(origin)[0];
+	double b0 = SB->fieldAt(origin)[0];
 	pass &= compareResults(b0,6.83758710057794e-01,"origin - noninteracting");
 	pass &= compareResults(SB->fieldAt(xscan)[0]-b0,1.11572338749721e-03,"+x");
 	pass &= compareResults(SB->fieldAt(yscan)[0]-b0,-9.86029434321134e-05,"+y");
@@ -444,7 +444,7 @@ bool csurface_test() {
 	RSC.calculateIncident(*MxS);
 
 	bool pass = true;
-	mdouble b0 = RSC.fieldAt(origin)[0];
+	double b0 = RSC.fieldAt(origin)[0];
 	pass &= compareResults(b0,6.83758710057794e-01,"origin - noninteracting");
 	pass &= compareResults(RSC.fieldAt(xscan)[0]-b0,1.11572338749721e-03,"+x");
 	pass &= compareResults(RSC.fieldAt(yscan)[0]-b0,-9.86029434321134e-05,"+y");

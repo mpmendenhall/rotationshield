@@ -31,7 +31,7 @@ public:
 	/// shield info as Stringmap
 	Stringmap getInfo() const;
 	
-	mdouble mu;				//< material relative permeability
+	double mu;				//< material relative permeability
 	unsigned int cSegs;		//< constant-width z segments
 	unsigned int vSegs;		//< variable z segments
 	GeomRefPt endpts[2];	//< endpoint reference locations
@@ -47,8 +47,8 @@ public:
 	virtual ~shieldFrame() { if(RSC) delete RSC; }
 	
 	unsigned int pSegs;						//< phi segments
-	mdouble length;							//< shield length
-	mdouble radius;							//< shield radius
+	double length;							//< shield length
+	double radius;							//< shield radius
 	std::vector<shieldSection> mySections;	//< sections of shield
 	MagRSCombiner* RSC;						//< shield system to be solved
 	SymmetricSolver SS;						//< solver for shield

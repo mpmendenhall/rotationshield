@@ -12,6 +12,6 @@
 /// least-squares minimize coeffs*x = rslt+resid using QR decomposition. *frees* coeffs; needs proper-sized resid, returns x.
 gsl_vector* lsmin(gsl_matrix* coeffs, const gsl_vector* rslt, gsl_vector* resid);
 /// Linear fit to 3-variate polynomial; return rms residual. Coords is an N*3 matrix for N values at locations x,y,z
-double polynomialFit(const gsl_matrix* coords, const gsl_vector* values, Polynomial<3,mdouble>& p);
+double polynomialFit(const gsl_matrix* coords, const gsl_vector* values, Polynomial<3,double>& p);
 
 #endif

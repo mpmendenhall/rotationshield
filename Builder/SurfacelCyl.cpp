@@ -33,7 +33,7 @@ void SurfacelSet::_visualize() const {
 void SurfacelSet::calculateIncident(const FieldSource& f) {
 	if(verbose) printf("Calculating incident field on %i elements in %i groups...\n", n_subels(), n_subels()/nPhi);
 	ProgressBar pb = ProgressBar(n_subels(), nPhi, verbose);
-	incidentState = VarVec<mdouble>(nDF());
+	incidentState = VarVec<double>(nDF());
 	for(unsigned int i = 0; i<n_subels(); i++) {
 		pb.update(i);
 		surfacels[i]->reactTo(&f);
@@ -85,7 +85,7 @@ void SurfacelCyl::OptCone(unsigned int nZ0, unsigned int nZ1, vec2 s, vec2 e, Pl
 	const unsigned int nZ = nZ0+nZ1;
 	
 	//cumulative field strength across length
-	mdouble fstr[ngridpts];
+	double fstr[ngridpts];
 	fstr[0]=0;
 	vec2 dv = (e-s)*1./ngridpts;
 	if(fes && nZ1) {
@@ -101,7 +101,7 @@ void SurfacelCyl::OptCone(unsigned int nZ0, unsigned int nZ1, vec2 s, vec2 e, Pl
 	
 	//printf("Average field %g\n",fstr[ngridpts-1]/(ngridpts-1));
 	
-	mdouble slope = 0;
+	double slope = 0;
 	if(nZ1) {
 		slope = fstr[ngridpts-1]*nZ0/((ngridpts-1.0)*nZ1); // add a constant slope for fixed partitions
 		if(!(slope>1e-10)) slope=1e-10;	//< fix problems with extremely low fields
@@ -113,13 +113,13 @@ void SurfacelCyl::OptCone(unsigned int nZ0, unsigned int nZ1, vec2 s, vec2 e, Pl
 		fstr[i] *= nZ/fstr[ngridpts-1];
 	
 	//interpolation to determine dividing lines, relative coordinates 0 to 1
-	mdouble* ls = new mdouble[nZ+1];
+	double* ls = new double[nZ+1];
 	unsigned int n=1;
 	int i=1;
 	ls[0]=0;
 	while(n<nZ) {
 		if(fstr[i] >= n) {
-			ls[n] = (mdouble(i)-(fstr[i]-n)/(fstr[i]-fstr[i-1]))/(ngridpts-1.0); // interpolated partition point
+			ls[n] = (double(i)-(fstr[i]-n)/(fstr[i]-fstr[i-1]))/(ngridpts-1.0); // interpolated partition point
 			n++;
 			continue;
 		}
@@ -129,7 +129,7 @@ void SurfacelCyl::OptCone(unsigned int nZ0, unsigned int nZ1, vec2 s, vec2 e, Pl
 	
 	annulusSpec a;
 	a.theta0 = 0;
-	a.dTheta = 2*M_PI/mdouble(nPhi);
+	a.dTheta = 2*M_PI/double(nPhi);
 	
 	base->retain();
 	for(unsigned int z=0; z<nZ; z++) {

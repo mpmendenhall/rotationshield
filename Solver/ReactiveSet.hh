@@ -84,7 +84,7 @@ protected:
 	// Subclass me!
 	//=====================================
 	/// set state for i^th sub-element
-	virtual void setSubelDF(unsigned int el, unsigned int df, mdouble v) = 0;
+	virtual void setSubelDF(unsigned int el, unsigned int df, double v) = 0;
 	/// sub-element reaction: need this!
 	virtual mvec subelReaction(unsigned int el, ReactiveSet* R) = 0;
 	//=====================================

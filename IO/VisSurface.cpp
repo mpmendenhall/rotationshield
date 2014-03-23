@@ -5,8 +5,8 @@ void VisSurface::_visualize() const {
 	
 	if(!mySurface) return;
 	
-	mdouble dl1 = 1./vis_nx;
-	mdouble dl2 = 1./vis_ny;
+	double dl1 = 1./vis_nx;
+	double dl2 = 1./vis_ny;
 	
 	vsr::setColor(0.5,0.5,0.5,1);
 	

@@ -7,8 +7,8 @@
 struct SurfaceSourceIntegParams {
 	const SurfaceSource* S;
 	vec3 v;
-	const Matrix<2,3,mdouble>* M2;
-	const Matrix<3,3,mdouble>* M3;
+	const Matrix<2,3,double>* M2;
+	const Matrix<3,3,double>* M3;
 };
 
 mvec SSdA(vec2 l, void* params) {
@@ -57,7 +57,7 @@ vec3 SurfaceSource::fieldAt(const vec3& v, vec2 ll, vec2 ur, unsigned int ndx, u
 
 }
 
-vec2 SurfaceSource::fieldAtWithTransform2(const vec3& v, const Matrix<2,3,mdouble>& M, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
+vec2 SurfaceSource::fieldAtWithTransform2(const vec3& v, const Matrix<2,3,double>& M, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
 	
 	SurfaceSourceIntegParams p;
 	p.S = this;
@@ -70,7 +70,7 @@ vec2 SurfaceSource::fieldAtWithTransform2(const vec3& v, const Matrix<2,3,mdoubl
 	return vec2(MB[0],MB[1]);
 }
 
-vec3 SurfaceSource::fieldAtWithTransform3(const vec3& v, const Matrix<3,3,mdouble>& M, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
+vec3 SurfaceSource::fieldAtWithTransform3(const vec3& v, const Matrix<3,3,double>& M, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
 	
 	SurfaceSourceIntegParams p;
 	p.S = this;
@@ -87,10 +87,10 @@ void SurfaceSource::displayContribGrid(const vec3& v, unsigned int nx, unsigned 
 	std::cout << "Field contributions to " << v << std::endl;
 	vec3 B;
 	for(unsigned int ix=0; ix<nx; ix++) {
-		mdouble x = float(ix)/(nx-1);
+		double x = float(ix)/(nx-1);
 		std::cout << x << "\t";
 		for(unsigned int iy=0; iy<ny; iy++) {
-			mdouble y = float(iy)/(ny-1);
+			double y = float(iy)/(ny-1);
 			vec3 Bi = fieldAt_contrib_from(v,vec2(x,y));
 			std::cout << "\t" << Bi;
 			B += Bi;

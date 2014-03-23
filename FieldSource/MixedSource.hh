@@ -26,15 +26,15 @@ public:
 	/// Add a new FieldSource to the source currents
 	void addsource(const FieldSource* fs) { fs->retain(); sources.push_back(fs); }
 	/// Add FieldSource's specified in a file
-	void loadSourcesFile(FILE* f, mdouble scale);
+	void loadSourcesFile(FILE* f, double scale);
 	
 	/// Net current of the arrangement
 	vec3 net_current() const { vec3 d = vec3(); for(unsigned int i=0; i<sources.size(); i++) d += sources[i]->net_current(); return d; }
 	
 	/// Add an arc of current (approximated by many LineSource segments)
-	void arc(vec3 start, vec3 end, mdouble j, int nsegs = 1);
+	void arc(vec3 start, vec3 end, double j, int nsegs = 1);
 	/// Add a loop of current (approximated by many LineSource segments)
-	void loop(mdouble z, mdouble r, mdouble j, int nsides = 32);
+	void loop(double z, double r, double j, int nsides = 32);
 	
 	/// Print info to stdout
 	void display() const { printf("Multisource:\n"); for(unsigned int i=0; i<sources.size(); i++) sources[i]->display(); }

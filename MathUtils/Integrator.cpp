@@ -21,7 +21,7 @@ Integrator::~Integrator() {
 }
 
 
-void Integrator::setup_singularities(mdouble a, mdouble b) {
+void Integrator::setup_singularities(double a, double b) {
 	_singularities.clear();
 	if(!singularities.size()) return;
 	
@@ -119,7 +119,7 @@ double generalIntegratingFunctionNoCache(double x, void* params) {
 }
 */
 
-mvec Integrator::integrate(mvec (*f)(mdouble,void*), mdouble a, mdouble b, void* params) {
+mvec Integrator::integrate(mvec (*f)(double,void*), double a, double b, void* params) {
 
 	integratingParams p;
 	p.fparams = params;
@@ -136,7 +136,7 @@ mvec Integrator::integrate(mvec (*f)(mdouble,void*), mdouble a, mdouble b, void*
 	//return _integrate_v(p, &generalIntegratingFunctionNoCache, a, b) * (isneg?-1:1);
 }
 
-mvec Integrator::_integrate_v(integratingParams& p, double (*integf)(double,void*), mdouble a, mdouble b) {
+mvec Integrator::_integrate_v(integratingParams& p, double (*integf)(double,void*), double a, double b) {
 	p.m.clear();
 	
 	gsl_function F;
@@ -171,7 +171,7 @@ void Integrator::printErrorCodes() {
 //
 
 
-void Integrator2D::setup_singularities(mdouble a, mdouble b) {
+void Integrator2D::setup_singularities(double a, double b) {
 	singularities.clear();
 	for(std::vector<vec2>::iterator it = xysingularities.begin(); it != xysingularities.end(); it++)
 		singularities.insert((*it)[0]);
@@ -181,12 +181,12 @@ void Integrator2D::setup_singularities(mdouble a, mdouble b) {
 /// Contains arguments for general 2D integrating function
 class integratingParams_2D {
 public:
-	mdouble (*f2)(vec2,void*);	//< pointer to the 2D function being integrated
+	double (*f2)(vec2,void*);	//< pointer to the 2D function being integrated
 	void* fparams;				//< parameters for integrating function
 	Integrator* yIntegrator;	//< Integrator for y-direction integrals
-	mdouble x;					//< x value being integrated
-	mdouble y0;					//< y lower bound of integration
-	mdouble y1;					//< y upper bound of integration
+	double x;					//< x value being integrated
+	double y0;					//< y lower bound of integration
+	double y1;					//< y upper bound of integration
 };
 
 // slice of a 2D function at constant x
@@ -201,7 +201,7 @@ double xslice_integral(double x, void* params) {
 	return p->yIntegrator->integrate(&xslice, p->y0, p->y1, p);
 }
 
-mdouble Integrator2D::integrate2D(mdouble (*f)(vec2,void*), vec2 ll, vec2 ur, void* params) {
+double Integrator2D::integrate2D(double (*f)(vec2,void*), vec2 ll, vec2 ur, void* params) {
 		
 	integratingParams_2D p;
 	p.yIntegrator = &yIntegrator;
@@ -225,13 +225,13 @@ class integratingParams_V2D: public integratingParams {
 public:
 	mvec (*f2)(vec2,void *);	//< pointer to the 2D function being integrated
 	Integrator* yIntegrator;	//< Integrator for y-direction integrals
-	mdouble x;					//< x value being integrated
-	mdouble y0;					//< y lower bound of integration
-	mdouble y1;					//< y upper bound of integration
+	double x;					//< x value being integrated
+	double y0;					//< y lower bound of integration
+	double y1;					//< y upper bound of integration
 };
 
 // slice of a 2D function at constant x
-mvec xslice_v(mdouble y, void* params) {
+mvec xslice_v(double y, void* params) {
 	integratingParams_V2D* p = (integratingParams_V2D*)params;
 	return p->f2(vec2(p->x,y),p->fparams);
 }
@@ -286,14 +286,14 @@ class integratingParams_V2D_P: public integratingParams {
 public:
 	mvec (*f2)(vec2,void *);	//< pointer to the 2D function being integrated
 	Integrator* yIntegrator;	//< Integrator for y-direction integrals
-	mdouble r;					//< r distance
+	double r;					//< r distance
 	vec2 c;						//< integration center point
 	vec2 ll;					//< integration rectangle lower corner
 	vec2 ur;					//< integration rectangle upper corner
 };
 
 // arc of a 2D function
-mvec polar_slice_v(mdouble y, void* params) {
+mvec polar_slice_v(double y, void* params) {
 	integratingParams_V2D_P* p = (integratingParams_V2D_P*)params;
 	return p->f2( p->c + vec2(cos(y),sin(y))*p->r, p->fparams);
 }
@@ -364,8 +364,8 @@ double polar_slice_v_integral(double x, void* params) {
 	return 0;
 }
 
-mdouble r_max(vec2 ll, vec2 ur, vec2 c) {
-	mdouble r[4];
+double r_max(vec2 ll, vec2 ur, vec2 c) {
+	double r[4];
 	r[0] = (c-ll).mag2();
 	r[1] = (c-vec2(ll[0],ur[1])).mag2();
 	r[2] = (c-vec2(ur[0],ll[1])).mag2();
@@ -373,7 +373,7 @@ mdouble r_max(vec2 ll, vec2 ur, vec2 c) {
 	return sqrt(*std::max_element(r,r+4));
 }
 
-mvec Integrator2D::polarIntegrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, vec2 c, void* params, mdouble r1, mdouble r0) {
+mvec Integrator2D::polarIntegrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, vec2 c, void* params, double r1, double r0) {
 
 	if(r1==-666) r1 = r_max(ll, ur, c); // auto-range
 	

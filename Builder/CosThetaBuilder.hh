@@ -14,7 +14,7 @@ public:
 	/// destructor
 	virtual ~AnglePositioner() {}
 	/// get wire angle
-	virtual mdouble angle(unsigned int i, unsigned int ncoils) const = 0;
+	virtual double angle(unsigned int i, unsigned int ncoils) const = 0;
 	/// get information in Stringmap form
 	virtual Stringmap getInfo() const = 0;
 };
@@ -23,13 +23,13 @@ public:
 class ShiftPositioner: public AnglePositioner {
 public:
 	/// constructor
-	ShiftPositioner(const VarVec<mdouble>& v = VarVec<mdouble>(0)): shift(v) {}
+	ShiftPositioner(const VarVec<double>& v = VarVec<double>(0)): shift(v) {}
 	/// get wire angle
-	virtual mdouble angle(unsigned int i, unsigned int ncoils) const;
+	virtual double angle(unsigned int i, unsigned int ncoils) const;
 	/// get information in Stringmap form
 	virtual Stringmap getInfo() const;
 	
-	VarVec<mdouble> shift; //< shifting parameters
+	VarVec<double> shift; //< shifting parameters
 };
 
 //--------------------------------------------------------------------
@@ -66,7 +66,7 @@ public:
 class CosThetaBuilder {
 public:
 	/// constructor
-	CosThetaBuilder(unsigned int n, mdouble r, mdouble l,
+	CosThetaBuilder(unsigned int n, double r, double l,
 					AnglePositioner* ap = new ShiftPositioner(), EndTranslator* et = NULL):
 	ncoils(n), radius(r), length(l), AP(ap), ET(et), nArc(100)  { myCap[0] = myCap[1] = CAP_ARC; }
 	

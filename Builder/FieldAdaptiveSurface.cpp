@@ -1,7 +1,7 @@
 #include "FieldAdaptiveSurface.hh"
 #include <iostream>
 
-FieldAdaptiveSurface::FieldAdaptiveSurface(const DVFunc1<2,mdouble>& f): l_remap(100), F(f) {
+FieldAdaptiveSurface::FieldAdaptiveSurface(const DVFunc1<2,double>& f): l_remap(100), F(f) {
 	setConstantSpacing();
 	period = F.period;
 }
@@ -28,7 +28,7 @@ void FieldAdaptiveSurface::optimizeSpacing(const FieldEstimator2D& fes, double p
 	double fstr[npts];
 	fstr[0]=0;
 	for(unsigned int i=1; i < npts; i++) {
-		mdouble l = float(i-0.5)/float(npts-1.);
+		double l = float(i-0.5)/float(npts-1.);
 		vec2 zr = F(l);
 		if(useDeriv) {
 			// bunch up at high field derivatives along profile curve
@@ -42,7 +42,7 @@ void FieldAdaptiveSurface::optimizeSpacing(const FieldEstimator2D& fes, double p
 	
 	// add "slope" to cumulative curve for fixed partitions
 	pfixed = pfixed<=1e-3 ? 1e-3 : (pfixed>=0.999 ? 0.999:pfixed);
-	mdouble slope = (fstr[npts-1]+1e-8) * pfixed/(1.-pfixed) / float(npts);
+	double slope = (fstr[npts-1]+1e-8) * pfixed/(1.-pfixed) / float(npts);
 	//printf("Optimized surface z spacing: to accumulated x=%g, adding slope %g\n",fstr[npts-1],slope*npts);
 	for(unsigned int i=0; i < npts; i++) {
 		fstr[i] += i*slope;
@@ -59,7 +59,7 @@ void FieldAdaptiveSurface::optimizeSpacing(const FieldEstimator2D& fes, double p
 	int i=1;
 	while(n < l_remap.NX-1) {
 		if(fstr[i] >= n) {
-			double l = (mdouble(i)-(fstr[i]-n)/(fstr[i]-fstr[i-1]))/(npts-1.); // interpolated partition point
+			double l = (double(i)-(fstr[i]-n)/(fstr[i]-fstr[i-1]))/(npts-1.); // interpolated partition point
 			l_remap.set(n++, l);
 			continue;
 		}

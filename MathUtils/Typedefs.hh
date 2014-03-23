@@ -6,15 +6,13 @@
 #include "VarVec.hh"
 #include "VarMat.hh"
 
-typedef double mdouble; //< Sets precision at which most calculations are carried out
+typedef Vec<4,double> vec4;
+typedef Vec<3,double> vec3;
+typedef Vec<2,double> vec2;
+typedef Matrix<3,3,double> mat3;
 
-typedef Vec<4,mdouble> vec4;
-typedef Vec<3,mdouble> vec3;
-typedef Vec<2,mdouble> vec2;
-typedef Matrix<3,3,mdouble> mat3;
-
-typedef VarMat<mdouble> mmat;
-typedef VarVec<mdouble> mvec;
+typedef VarMat<double> mmat;
+typedef VarVec<double> mvec;
 
 template<typename T>
 inline T sign(T t) { if(t<0) return -1; return (t==0)?0:1; }

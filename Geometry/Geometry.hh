@@ -16,7 +16,7 @@ public:
 	/// Default constructor (uninitialized endpoints)
 	Line(): len(0) {}
 	/// Get a point along the line, parametrized by x
-	vec3 position(mdouble x) const { return s + (e-s)*x; }
+	vec3 position(double x) const { return s + (e-s)*x; }
 	///print info to stdout
 	void display() const { printf("Line: "); s.display(); printf(" to "); e.display("\n"); }
 	///draw to visualizer
@@ -25,7 +25,7 @@ public:
 	
 	const vec3 s; //< Starting point
 	const vec3 e; //< Ending point
-	const mdouble len; //< Length of the line, \f$ |e-s| \f$
+	const double len; //< Length of the line, \f$ |e-s| \f$
 	vec3 dv; //< Normalized direction \f$ \frac{e-s}{|e-s|} \f$
 };
 
@@ -34,12 +34,12 @@ public:
 class annulusSpec {
 public:
 	/// constructor
-	annulusSpec(vec2 s = vec2(), vec2 e = vec2(), mdouble dth = 0, mdouble th0 = 0): start(s), end(e), theta0(th0), dTheta(dth) {}
+	annulusSpec(vec2 s = vec2(), vec2 e = vec2(), double dth = 0, double th0 = 0): start(s), end(e), theta0(th0), dTheta(dth) {}
 	
 	/// length along z
-	mdouble dl() const { return (end-start).mag(); }
+	double dl() const { return (end-start).mag(); }
 	/// central length along phi
-	mdouble dr() const { return (end[1]+start[1])*0.5*dTheta; }
+	double dr() const { return (end[1]+start[1])*0.5*dTheta; }
 	
 	/// annulusSpec with translated start and endpoints
 	annulusSpec translated(vec2 v) const { annulusSpec a = *this; a.start += v; a.end += v; return a; }
@@ -55,19 +55,19 @@ public:
 		assert(nZ>0 && nTheta>0);
 		std::vector<annulusSpec> v = std::vector<annulusSpec>();
 		for(unsigned int z=0; z<nZ; z++) {
-			mdouble lz0 = 1.0-mdouble(z)/mdouble(nZ);
-			mdouble lz1 = 1.0-mdouble(z+1)/mdouble(nZ);
+			double lz0 = 1.0-double(z)/double(nZ);
+			double lz1 = 1.0-double(z+1)/double(nZ);
 			for(unsigned int t=0; t<nTheta; t++)
-				v.push_back( annulusSpec(start*lz0+end*(1.0-lz0),start*lz1+end*(1.0-lz1), dTheta/mdouble(nTheta),
-										 theta0 - (0.5 - (mdouble(t)+0.5)/nTheta)*dTheta ) );
+				v.push_back( annulusSpec(start*lz0+end*(1.0-lz0),start*lz1+end*(1.0-lz1), dTheta/double(nTheta),
+										 theta0 - (0.5 - (double(t)+0.5)/nTheta)*dTheta ) );
 		}
 		return v;
 	}
 	
 	vec2 start;		//< starting (z,r)
 	vec2 end;		//< ending (z,r)
-	mdouble theta0;	//< center angle
-	mdouble dTheta;	//< subtended angle
+	double theta0;	//< center angle
+	double dTheta;	//< subtended angle
 };
 
 /// An (oriented) plane, represented by an origin and two width/direction vectors
@@ -79,7 +79,7 @@ public:
 	Plane(annulusSpec a);
 	
 	/// Parametrizes positions on the plane in a local coordinate system
-	vec3 position(mdouble x, mdouble z) const { return o + dx*(x*0.5) + dz*(0.5*z); }
+	vec3 position(double x, double z) const { return o + dx*(x*0.5) + dz*(0.5*z); }
 	/// Project a vec3 onto the plane's local coordinates
 	vec2 localProjection(vec3 v) const { return vec2(v.dot(dx)/wx, v.dot(dz)/wz); }
 	/// get projection matrix to local coordinates
@@ -88,7 +88,7 @@ public:
 	void display() const { printf("Plane (a=%g)\n\to:\t",(double)area); o.display(); printf("\tdx:\t"); dx.display(); printf("\tdz:\t"); dz.display(); }
 	
 	/// get subtended angle around z axis
-	mdouble dTheta() const { return 2*atan2(0.5*wx,vec2(o[0],o[1]).mag()); }
+	double dTheta() const { return 2*atan2(0.5*wx,vec2(o[0],o[1]).mag()); }
 	///draw to visualizer
 	void _visualize() const;
 	///draw local coordinate axes
@@ -104,15 +104,15 @@ public:
 	/// transform local plane-coordinates vector to global coordinates
 	vec3 surfacePosition(const vec2& v) const { return o + dx*v[0] + dz*v[1]; }
 	/// plane rotated around the z axis
-	Plane zrotated(mdouble th) const { return Plane(zrotate(o,th),zrotate(dx,th),zrotate(dz,th)); }
+	Plane zrotated(double th) const { return Plane(zrotate(o,th),zrotate(dx,th),zrotate(dz,th)); }
 	/// Rotate a vector around the z axis
-	static vec3 zrotate(const vec3& v, mdouble th);
+	static vec3 zrotate(const vec3& v, double th);
 	/// split into grid of sub-sections
 	std::vector<Plane> subdivide(unsigned int nX, unsigned int nZ) const;
 	
-	mdouble area; //< area of the plane
-	mdouble wx;	//< width in "x" (\f$\hat\phi\f$) direction
-	mdouble wz;	//< width along z direction
+	double area; //< area of the plane
+	double wx;	//< width in "x" (\f$\hat\phi\f$) direction
+	double wz;	//< width along z direction
 	vec3 o; //< center of the plane
 	vec3 dx; //< vector along the "x" edge of the plane
 	vec3 dz; //< vector along the "z" edge of the plane
@@ -122,7 +122,7 @@ public:
 
 class AnnularBoxel: public annulusSpec {
 public:
-	AnnularBoxel(annulusSpec a, mdouble thickness): annulusSpec(a), d(thickness) {
+	AnnularBoxel(annulusSpec a, double thickness): annulusSpec(a), d(thickness) {
 		top = translated(vec2(0,0.5*d)).flipped();
 		bottom = translated(vec2(0,-0.5*d));
 		front = annulusSpec(top.end,bottom.start,dTheta,theta0);
@@ -134,7 +134,7 @@ public:
 		right = Plane(p.o-p.dx*0.5,(p1.o-p1.dx*0.5-p2.o+p2.dx*0.5),-p.dz);
 	}
 	
-	mdouble d;
+	double d;
 	annulusSpec top;
 	annulusSpec bottom;
 	annulusSpec front;

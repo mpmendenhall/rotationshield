@@ -1,12 +1,12 @@
 #include "FieldAnalyzer.hh"
 #include "ProgressBar.hh"
 
-mdouble FieldAnalyzer::simpsonCoeff(unsigned int n, unsigned int ntot) {
+double FieldAnalyzer::simpsonCoeff(unsigned int n, unsigned int ntot) {
 	if(ntot == 1) return 1.0;
 	if(ntot == 2) return 0.5;
-	if(n==0 || n==ntot-1) return 1.0/(3.0*mdouble(ntot-1));
-	if(n%2==0) return 2.0/(3.0*mdouble(ntot-1));
-	return 4.0/(3.0*mdouble(ntot-1));
+	if(n==0 || n==ntot-1) return 1.0/(3.0*double(ntot-1));
+	if(n%2==0) return 2.0/(3.0*double(ntot-1));
+	return 4.0/(3.0*double(ntot-1));
 }
 
 void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, unsigned int nZ, std::ostream& statsout, std::ostream& datsout) const {
@@ -18,8 +18,8 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
 	vec3 dx = (ur - ll)/vec3(n[0],n[1],n[2]);
 	for(int i=0; i<3; i++) if(n[i]==0) { dx[i] = 0; ll[i] = 0.5*(ll[i]+ur[i]); }
 	vec3 b, x, bsZ, bsYZ, bsXYZ, bssZ, bssYZ, bssXYZ;
-	mdouble avgBx0 = 0;
-	mdouble avgBx1 = 0;
+	double avgBx0 = 0;
+	double avgBx1 = 0;
 	
 	// set up results tables
 	gsl_matrix* coords = gsl_matrix_alloc(nX*nY*nZ,3);
@@ -67,24 +67,24 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
 	
 	
 	// summary data and field fit
-	mdouble bRMS = sqrt(bssXYZ.sum());
+	double bRMS = sqrt(bssXYZ.sum());
 	statsout << "#Field Shape" << std::endl;
 	statsout << "#<B> = (" << bsXYZ[0] << " " << bsXYZ[1] << " " << bsXYZ[2] << ")\n";
 	statsout << "#<B^2> = (" << bssXYZ[0] << " " << bssXYZ[1] << " " << bssXYZ[2] << ")\n";
 	statsout << "#sigmaBx/Bx0 = " << sqrt(bssXYZ[0] - bsXYZ[0]*bsXYZ[0])/bsXYZ[0] << std::endl;
 	statsout << "#<dBx/dx>/Bx0 = " << (avgBx1-avgBx0)/(bsXYZ[0]*(ur[0]-ll[0])) << std::endl;
-	mdouble resids;
+	double resids;
 	char axisnames[] = "xyz";
 	
 	unsigned int polOrder = 0;
 	for(unsigned int i=1; i<=6; i++)
 		if(nX>i && nY>i && nZ>i) polOrder = i;
-	Polynomial<3,mdouble> p = Polynomial<3,mdouble>::lowerTriangleTerms(polOrder);
+	Polynomial<3,double> p = Polynomial<3,double>::lowerTriangleTerms(polOrder);
 	for(int i=0; i<3; i++) {
 		resids = polynomialFit(coords, bfield[i], p);
 		gsl_vector_free(bfield[i]);
 		statsout << "#" << polOrder << "th order polynomial (" << p.terms.size() << " terms) fit to B" << axisnames[i] << " centered at < 0 0 0 >, rms residual = " << resids << std::endl;
-		Polynomial<3,mdouble> p2 = p;
+		Polynomial<3,double> p2 = p;
 		p2.prune(1e-9*bRMS);
 		p2.tableForm(statsout);
 		//statsout << "#4th order Polynomial for B" << axisnames[i] << " recentered at " << (ll+ur)*0.5 << std::endl;

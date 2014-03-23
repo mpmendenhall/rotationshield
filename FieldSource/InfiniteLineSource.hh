@@ -8,9 +8,9 @@
 class InfiniteLineSource: public FieldSource {
 public:
 	/// Constructor
-	InfiniteLineSource(vec3 startv, vec3 endv, mdouble current): FieldSource(), l(startv,endv), j(current) {}
+	InfiniteLineSource(vec3 startv, vec3 endv, double current): FieldSource(), l(startv,endv), j(current) {}
 	/// Constructor for 2D positioning
-	InfiniteLineSource(vec2 v0, mdouble current): FieldSource(), l(vec3(v0[0],v0[1],-0.5),vec3(v0[0],v0[1],0.5)), j(current) {}
+	InfiniteLineSource(vec2 v0, double current): FieldSource(), l(vec3(v0[0],v0[1],-0.5),vec3(v0[0],v0[1],0.5)), j(current) {}
 	/// Destructor
 	~InfiniteLineSource() {}
 	
@@ -26,7 +26,7 @@ public:
 		
 private:
 	const Line l;	//< The line along which current flows
-	const mdouble j; //< The current
+	const double j; //< The current
 };
 
 #endif

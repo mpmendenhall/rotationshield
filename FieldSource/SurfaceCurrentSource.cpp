@@ -40,9 +40,9 @@ void SurfaceCurrentSource::_visualize() const {
 	
 	if(!mySurface || !sj) return;
 	
-	mdouble dl1 = 1./vis_n1;
-	mdouble dl2 = 1./vis_n2;
-	mdouble logmax = 3.0;
+	double dl1 = 1./vis_n1;
+	double dl2 = 1./vis_n2;
+	double logmax = 3.0;
 	
 	for(unsigned int n1 = 0; n1 < vis_n1; n1++) {
 		for(unsigned int n2 = 0; n2 < vis_n2; n2++) {

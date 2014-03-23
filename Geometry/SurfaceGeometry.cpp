@@ -18,11 +18,11 @@ vec2 SurfaceGeometry::d_pathlength(vec2 l) const {
 	return vec2(deriv(l,0).mag(), deriv(l,1).mag());
 }
 
-Matrix<3,3,mdouble> SurfaceGeometry::rotToLocal(const vec2& x) const {
+Matrix<3,3,double> SurfaceGeometry::rotToLocal(const vec2& x) const {
 	vec3 v0 = deriv(x,0).normalized();
 	vec3 v1 = deriv(x,1).normalized();
 	vec3 v2 = cross(v0,v1);
-	Matrix<3,3,mdouble> M;
+	Matrix<3,3,double> M;
 	for(unsigned int i=0; i<3; i++) {
 		M(0,i) = v0[i];
 		M(1,i) = v1[i];
@@ -31,16 +31,16 @@ Matrix<3,3,mdouble> SurfaceGeometry::rotToLocal(const vec2& x) const {
 	return M;
 }
 
-mdouble SurfaceGeometry::dA(const vec2& l) const {
+double SurfaceGeometry::dA(const vec2& l) const {
 	return snorm(l,false).mag();
 }
 
-mdouble integration_dA(vec2 l, void* params) {
+double integration_dA(vec2 l, void* params) {
 	SurfaceGeometry* S = (SurfaceGeometry*)params;
 	return S->dA(l);
 }
 
-mdouble SurfaceGeometry::area(const vec2& ll, const vec2& ur) {
+double SurfaceGeometry::area(const vec2& ll, const vec2& ur) {
 	return myIntegrator.integrate2D(&integration_dA, ll, ur, this);
 }
 
@@ -56,7 +56,7 @@ void SurfaceGeometry::cache_sincos(double theta, double& s, double& c) const {
 void SurfaceGeometry::proximity(vec3 p, vec2 ll, vec2 ur, double& mn, double& mx) const {
 	const int nx = 4;
 	const int ny = 4;
-	mdouble r[nx*ny];
+	double r[nx*ny];
 	
 	unsigned int i=0;
 	for(int x = 0; x<nx; x++) {
@@ -74,9 +74,9 @@ void SurfaceGeometry::proximity(vec3 p, vec2 ll, vec2 ur, double& mn, double& mx
 
 //--------------------------------------
 
-vec2 CylSurfaceGeometry::cache_profile(mdouble l) const {
+vec2 CylSurfaceGeometry::cache_profile(double l) const {
 	assert(zr_profile);
-	static mdouble c_l = l;
+	static double c_l = l;
 	static vec2 c_v = (*zr_profile)(l);
 	if(c_l != l) { c_l = l; c_v = (*zr_profile)(l); }
 	return c_v;
@@ -84,7 +84,7 @@ vec2 CylSurfaceGeometry::cache_profile(mdouble l) const {
 
 vec3 CylSurfaceGeometry::operator()(const vec2& p) const {
 	vec2 zr = cache_profile(p[0]);
-	mdouble phi = 2*M_PI*p[1];
+	double phi = 2*M_PI*p[1];
 	double s,c;
 	cache_sincos(phi,s,c);
 	return vec3(zr[1]*c, zr[1]*s, zr[0]);
@@ -94,7 +94,7 @@ vec3 CylSurfaceGeometry::deriv(const vec2& p, unsigned int i) const {
 
 	assert(zr_profile);
 	vec2 zr = cache_profile(p[0]);
-	mdouble phi = 2*M_PI*p[1];
+	double phi = 2*M_PI*p[1];
 	double s,c;
 	cache_sincos(phi,s,c);
 	
@@ -110,7 +110,7 @@ vec3 CylSurfaceGeometry::deriv(const vec2& p, unsigned int i) const {
 	return vec3(0,0,0);
 }
 
-mdouble CylSurfaceGeometry::dA(const vec2& l) const {
+double CylSurfaceGeometry::dA(const vec2& l) const {
 	vec2 zr = cache_profile(l[0]);
 	vec2 dzr = zr_profile->deriv(l[0]);
 	return 2*M_PI*zr[1]*dzr.mag();
@@ -121,7 +121,7 @@ double integration_cyl_dA(double x, void* params) {
 	return S->dA(vec2(x,0));
 }
 
-mdouble CylSurfaceGeometry::area(const vec2& ll, const vec2& ur) {
+double CylSurfaceGeometry::area(const vec2& ll, const vec2& ur) {
 	return myIntegrator.integrate(&integration_cyl_dA, ll[0], ur[0], this)*(ur[1]-ll[1]);
 }
 

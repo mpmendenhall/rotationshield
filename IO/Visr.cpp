@@ -228,7 +228,7 @@ namespace vsr {
 	
 	void _dot(std::vector<float>& p) {
 		assert(p.size()==3);
-		mdouble l = viewrange/100.0;
+		double l = viewrange/100.0;
 		glBegin(GL_QUADS);
 		glVertex3f(p[0]+l,p[1],p[2]);
 		glVertex3f(p[0],p[1]+l,p[2]);

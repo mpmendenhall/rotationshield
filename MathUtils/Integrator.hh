@@ -41,7 +41,7 @@ public:
 	virtual ~integratingParams() {}
 	
 	void* fparams; 					//< additional arguments for the function being integrated
-	mvec (*f)(mdouble,void *);		//< pointer to the function being integrated
+	mvec (*f)(double,void *);		//< pointer to the function being integrated
 	unsigned int axis;				//< which of the three vector components is currently being integrated
 	unsigned int n_dim;				//< dimension of return vector
 	std::map<double,mvec> m;		//< cache for evaluated function points
@@ -73,7 +73,7 @@ public:
 	 \param a lower bound of integration
 	 \param b upper bound of integration
 	 \param params additional parameters for the integrated function */
-	mvec integrate(mvec (*f)(mdouble,void*), mdouble a, mdouble b, void* params = NULL);
+	mvec integrate(mvec (*f)(double,void*), double a, double b, void* params = NULL);
 	
 	double rel_err;					//< relative error target, OR
 	double abs_err;					//< absolute error target
@@ -93,13 +93,13 @@ public:
 	
 protected:
 	/// internal multi-variate integration
-	mvec _integrate_v(integratingParams& p, double (*integf)(double,void*), mdouble a, mdouble b);
+	mvec _integrate_v(integratingParams& p, double (*integf)(double,void*), double a, double b);
 	
 	/// internal calls to GSL integration
 	double _integrate(gsl_function* F, double a, double b);
 	
 	/// set list of interesting singularities
-	virtual void setup_singularities(mdouble a, mdouble b);
+	virtual void setup_singularities(double a, double b);
 	std::vector<double> _singularities;	//< singularities in integrating range
 	
 	Integration_Method myMethod;					//< selection of internal integration method
@@ -120,7 +120,7 @@ public:
 	 \param y0 lower y bound of integration
 	 \param y1 upper y bound of integration
 	 \param params additional parameters for the integrated function */
-	mdouble integrate2D(mdouble (*f)(vec2,void*), vec2 ll, vec2 ur, void* params = NULL);
+	double integrate2D(double (*f)(vec2,void*), vec2 ll, vec2 ur, void* params = NULL);
 	
 	/// Integrates a vector-valued function \f$ \int_{x_0}^{x_1} \int_{y_0}^{y_1} \vec f(x,y) dy dx\f$
 	/** \param f vector-valued function of a real variable to be integrated
@@ -132,7 +132,7 @@ public:
 	mvec integrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, void* params = NULL);
 	
 	/// performs polar integral around point, clipped to specfied rectangle
-	mvec polarIntegrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, vec2 c, void* params = NULL, mdouble r1 = -666, mdouble r0 = 0);
+	mvec polarIntegrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, vec2 c, void* params = NULL, double r1 = -666, double r0 = 0);
 	
 	std::vector<vec2> xysingularities;	//< known singularities
 	
@@ -145,7 +145,7 @@ public:
 protected:
 	
 	/// set list of interesting singularities
-	virtual void setup_singularities(mdouble a, mdouble b);
+	virtual void setup_singularities(double a, double b);
 	
 	Integrator yIntegrator; //< integrator for second dimension
 };

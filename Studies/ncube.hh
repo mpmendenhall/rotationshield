@@ -20,9 +20,9 @@ public:
 	~NRotator() { gsl_matrix_free(M); }
 	
 	/// rotate by theta in the i-j plane
-	void rotate(int i, int j, mdouble th);
+	void rotate(int i, int j, double th);
 	/// apply rotation matrix to the given N-vector
-	Vec<N,mdouble> apply(const Vec<N,mdouble>& v) const;
+	Vec<N,double> apply(const Vec<N,double>& v) const;
 	
 private:
 	gsl_matrix* M; //< the rotation matrix
@@ -35,11 +35,11 @@ NRotator<N>::NRotator() {
 }
 
 template<int N>
-void NRotator<N>::rotate(int i, int j, mdouble th) {
+void NRotator<N>::rotate(int i, int j, double th) {
 	gsl_matrix* R = gsl_matrix_calloc(N,N);
 	for(int n=0; n<N; n++) gsl_matrix_set(R,n,n,1.0);
-	mdouble c = cos(th);
-	mdouble s = sin(th);
+	double c = cos(th);
+	double s = sin(th);
 	gsl_matrix_set(R,i,i,c);
 	gsl_matrix_set(R,i,j,-s);
 	gsl_matrix_set(R,j,i,s);
@@ -53,8 +53,8 @@ void NRotator<N>::rotate(int i, int j, mdouble th) {
 }
 
 template<int N>
-Vec<N,mdouble> NRotator<N>::apply(const Vec<N,mdouble>& v) const{
-	Vec<N,mdouble> r = Vec<N,mdouble>();
+Vec<N,double> NRotator<N>::apply(const Vec<N,double>& v) const{
+	Vec<N,double> r = Vec<N,double>();
 	for(int i=0; i<N; i++)
 		for(int j=0; j<N; j++)
 			r[i] += gsl_matrix_get(M,i,j)*v[j];
@@ -66,17 +66,17 @@ Vec<N,mdouble> NRotator<N>::apply(const Vec<N,mdouble>& v) const{
 template<int N>
 struct reprojectparams {
 	void* p;
-	Vec<3,mdouble> (*f)(Vec<N,mdouble>,void*);
-	mdouble d;
+	Vec<3,double> (*f)(Vec<N,double>,void*);
+	double d;
 	int fixedplane;
 	NRotator<N>* rotator;
 };
 
 template<int N>
-vec3 reproject(Vec<N-1,mdouble> v, void* params) {
+vec3 reproject(Vec<N-1,double> v, void* params) {
 	reprojectparams<N> p = *(reprojectparams<N>*)params;
 	
-	Vec<N,mdouble> vN;
+	Vec<N,double> vN;
 	for(int i=0; i<p.fixedplane; i++)
 		vN[i] = v[i];
 	vN[p.fixedplane] = p.d;
@@ -86,10 +86,10 @@ vec3 reproject(Vec<N-1,mdouble> v, void* params) {
 }
 
 template<int N>
-vec3 top_reproject(Vec<N-1,mdouble> v, void* params) {
+vec3 top_reproject(Vec<N-1,double> v, void* params) {
 	reprojectparams<N> p = *(reprojectparams<N>*)params;
 	
-	Vec<N,mdouble> vN;
+	Vec<N,double> vN;
 	for(int i=0; i<p.fixedplane; i++)
 		vN[i] = v[i];
 	vN[p.fixedplane] = p.d;
@@ -114,7 +114,7 @@ public:
 	/// draw the NCube
 	void visualize(NRotator<N>* rotator = NULL, bool istop = true);
 	/// draw the NCube as a face of a higher-dimensional NCube
-	void sub_visualize(Vec<3,mdouble> (*f)(Vec<N,mdouble>,void*), void* params);
+	void sub_visualize(Vec<3,double> (*f)(Vec<N,double>,void*), void* params);
 };
 
 
@@ -141,7 +141,7 @@ void NCube<N>::visualize(NRotator<N>* rotator, bool istop) {
 }
 
 template<int N>
-void NCube<N>::sub_visualize(Vec<3,mdouble> (*f)(Vec<N,mdouble>,void*), void* params) {
+void NCube<N>::sub_visualize(Vec<3,double> (*f)(Vec<N,double>,void*), void* params) {
 	NCube<N-1> C;
 	
 	reprojectparams<N> p;
@@ -160,15 +160,15 @@ void NCube<N>::sub_visualize(Vec<3,mdouble> (*f)(Vec<N,mdouble>,void*), void* pa
 
 
 template<>
-void NCube<0>::sub_visualize(Vec<3,mdouble> (*f)(Vec<0,mdouble>,void*), void* params) {
-	Vec<0,mdouble> v0;
-	Vec<3,mdouble> v3 = (*f)(v0,params);
+void NCube<0>::sub_visualize(Vec<3,double> (*f)(Vec<0,double>,void*), void* params) {
+	Vec<0,double> v0;
+	Vec<3,double> v3 = (*f)(v0,params);
 	vsr::setColor(1.0,0.0,0.0,1.0);
 	vsr::dot(v3);
 }
 
 template<>
-void NCube<1>::sub_visualize(Vec<3,mdouble> (*f)(Vec<1,mdouble>,void*), void* params) {
+void NCube<1>::sub_visualize(Vec<3,double> (*f)(Vec<1,double>,void*), void* params) {
 	NCube<0> C;
 	
 	reprojectparams<1> p;
@@ -180,8 +180,8 @@ void NCube<1>::sub_visualize(Vec<3,mdouble> (*f)(Vec<1,mdouble>,void*), void* pa
 	p.d = 0.5;
 	C.sub_visualize(&reproject<1>,(void*)&p);
 	
-	Vec<1,mdouble> v1;
-	Vec<3,mdouble> vs,ve;
+	Vec<1,double> v1;
+	Vec<3,double> vs,ve;
 	
 	v1[0] = -0.5;
 	vs = (*f)(v1,params);
@@ -193,7 +193,7 @@ void NCube<1>::sub_visualize(Vec<3,mdouble> (*f)(Vec<1,mdouble>,void*), void* pa
 }
 
 template<>
-void NCube<2>::sub_visualize(Vec<3,mdouble> (*f)(Vec<2,mdouble>,void*), void* params) {
+void NCube<2>::sub_visualize(Vec<3,double> (*f)(Vec<2,double>,void*), void* params) {
 	NCube<1> C;
 	
 	reprojectparams<2> p;
@@ -207,8 +207,8 @@ void NCube<2>::sub_visualize(Vec<3,mdouble> (*f)(Vec<2,mdouble>,void*), void* pa
 		C.sub_visualize(&reproject<2>,(void*)&p);
 	}
 	
-	Vec<2,mdouble> v2;
-	Vec<3,mdouble> vc;
+	Vec<2,double> v2;
+	Vec<3,double> vc;
 	float xyz[12];
 	
 	for(int dx = 0; dx<2; dx++) {

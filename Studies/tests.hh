@@ -6,7 +6,7 @@
 #include "Typedefs.hh"
 
 /// Print a comparison between expected and calculated values for a data point
-bool compareResults(mdouble a, mdouble b, const char* label = 0x0);
+bool compareResults(double a, double b, const char* label = 0x0);
 
 /// Basic test that everything is working well
 bool reference_sanity_check();

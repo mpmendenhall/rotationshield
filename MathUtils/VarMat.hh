@@ -4,6 +4,7 @@
 #include "VarVec.hh"
 #include "Matrix.hh"
 #include <vector>
+#include <algorithm>
 
 /// A templatized, dynamically allocated matrix class.
 /**
@@ -52,6 +53,8 @@ public:
 	VarMat<T> transposed() const;
 	/// inplace inverse
 	const VarMat<T>& invert();
+	/// trace of matrix
+	T trace() const;
 	
 	/// throw error if dimensions mismatches
 	void checkDimensions(const VarMat& m) const throw(DimensionMismatchError) { if(m.nRows() != N || m.nCols() != M) throw(DimensionMismatchError()); }
@@ -201,6 +204,15 @@ const VarVec<V> VarMat<T>::rMultiply(const VarVec<U>& v) const {
 			a.getData().back() += v[r] * (*this)(r,c);
 	}
 	return a;
+}
+
+template<typename T>
+T VarMat<T>::trace() const {
+	if(!size()) return T();
+	T s = vv[0];
+	for(unsigned int i=1; i<std::min(N,M); i++)
+		s += (*this)(i,i);
+	return  s;
 }
 
 template<typename T>

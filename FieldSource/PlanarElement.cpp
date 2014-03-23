@@ -3,7 +3,7 @@
 
 void PlanarElement::_visualize() const {
 
-	mdouble logmax = 3.0;
+	double logmax = 3.0;
 	float smag = state.mag2();
 	if(smag)
 		smag = std::max(0.,std::min(1.0,0.1*(log(smag)+10-logmax)));

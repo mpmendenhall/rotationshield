@@ -48,7 +48,7 @@ protected:
 	
 	//======================================
 	/// set state for i^th sub-element
-	virtual void setSubelDF(unsigned int el, unsigned int df, mdouble v) { surfacels[el]->setState(df,v); }
+	virtual void setSubelDF(unsigned int el, unsigned int df, double v) { surfacels[el]->setState(df,v); }
 	/// sub-element reaction to RS via protocol
 	virtual mvec subelReaction(unsigned int el, ReactiveSet* R);
 	//======================================
@@ -66,7 +66,7 @@ class ShieldSegment: public RefCounter {
 public:
 	ShieldSegment(unsigned int n, PlanarElement* b): nTheta(n), base(b) { base->retain(); }
 	~ShieldSegment() { base->release(); }
-	PlanarElement* genElement(unsigned int n) { return base->replicateRotated(2.0*n*M_PI/mdouble(nTheta)); }
+	PlanarElement* genElement(unsigned int n) { return base->replicateRotated(2.0*n*M_PI/double(nTheta)); }
 	const unsigned int nTheta;
 protected:
 	
@@ -91,7 +91,7 @@ public:
 	void OptCone(unsigned int nZ0, unsigned int nZ1, vec2 s, vec2 e, PlanarElement* base, FieldEstimator2D* fes = NULL);
 	
 	/// make a cylindrical shield
-	void makeOptCyl(unsigned int nZ0, unsigned int nZ1, mdouble r, mdouble z0, mdouble z1, PlanarElement* base, FieldEstimator2D* fe = NULL) { OptCone(nZ0,nZ1,vec2(z0,r),vec2(z1,r),base,fe); }
+	void makeOptCyl(unsigned int nZ0, unsigned int nZ1, double r, double z0, double z1, PlanarElement* base, FieldEstimator2D* fe = NULL) { OptCone(nZ0,nZ1,vec2(z0,r),vec2(z1,r),base,fe); }
 	
 protected:
 	std::vector<ShieldSegment*> segments;	//< element generators for each ring in shield

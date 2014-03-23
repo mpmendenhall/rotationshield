@@ -11,7 +11,7 @@
 class FieldEstimator2D {
 public:
 	/// Constructor
-	FieldEstimator2D(): sources(std::vector<vec2>()), currents(std::vector<mdouble>()) {}
+	FieldEstimator2D() {}
 	/// Destructor
 	virtual ~FieldEstimator2D() {}
 	/// Estimated field at a point
@@ -19,10 +19,10 @@ public:
 	/// estimate rate of change in given direction
 	virtual vec2 derivAt(const vec2& v, const vec2& dx) const;
 	/// Add a "line source" perpendicular to plane of interest
-	void addsource(const vec2& v, mdouble j) { sources.push_back(v); currents.push_back(j); }
+	void addsource(const vec2& v, double j) { sources.push_back(v); currents.push_back(j); }
 protected:
 	std::vector<vec2> sources;
-	std::vector<mdouble> currents;
+	std::vector<double> currents;
 };
 
 /// Field estimator based off 3D field source

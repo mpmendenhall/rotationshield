@@ -70,6 +70,8 @@ public:
 	double norm_L2() const;
 	/// determinant of circulant matrix
 	double det() const;
+	/// trace of circulant matrix
+	double trace() const;
 	
 	/// Return a pointer to the CMatrix's Fourier representation
 	std::vector<cdouble>& getKData();

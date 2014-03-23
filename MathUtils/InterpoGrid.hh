@@ -12,7 +12,7 @@ template<class V>
 class InterpoBasis
 {
 public:
-	InterpoBasis(int ns, mdouble (*sf)(mdouble)): nsupport(ns*ns), splinefunc(sf),
+	InterpoBasis(int ns, double (*sf)(double)): nsupport(ns*ns), splinefunc(sf),
 	supportx((int*)malloc(ns*ns*sizeof(int))), supporty((int*)malloc(ns*ns*sizeof(int)))
 	{
 		for(int i=0; i<ns; i++)
@@ -26,30 +26,30 @@ public:
 	}
 	virtual ~InterpoBasis() { free(supportx); free(supporty); }
 	
-	virtual V eval(mdouble x, mdouble y, V** coeffs) const
+	virtual V eval(double x, double y, V** coeffs) const
 	{
 		V a;
 		for(int i=0; i<nsupport; i++)
 		{
-			a = a + (*coeffs[i])*splinefunc(mdouble(supportx[i])-x-0.5)*splinefunc(mdouble(supporty[i])-y-0.5);
+			a = a + (*coeffs[i])*splinefunc(double(supportx[i])-x-0.5)*splinefunc(double(supporty[i])-y-0.5);
 		}
 		return a;
 	}
-	mdouble (*splinefunc)(mdouble);
+	double (*splinefunc)(double);
 	int nsupport;
 	int* supportx;
 	int* supporty;
 };
 
 
-mdouble linInterp(mdouble x)
+double linInterp(double x)
 {
 	x = fabs(x);
 	if(x>1) return 0;
 	return 1-x;
 }
 	
-mdouble cubInterp(mdouble x)
+double cubInterp(double x)
 {
 	if(x<0) x=-x;
 	if(x>2) return 0;
@@ -57,16 +57,16 @@ mdouble cubInterp(mdouble x)
 	return ( ( x - 9.0/5.0 ) * x -   1.0/5.0     ) * x + 1.0;
 }
 
-mdouble sp16(mdouble x)
+double sp16(double x)
 {
 	if(x<0) x=-x;
 	if(x>2) return 0;
-	mdouble A = -0.75;
+	double A = -0.75;
 	if(x>1) return (( A * x - 5.0 * A ) * x + 8.0 * A ) * x - 4.0 * A;
 	return (( A + 2.0 )*x - ( A + 3.0 ))*x*x +1.0;	
 }
 
-mdouble sp36(mdouble x)
+double sp36(double x)
 {
 	if(x<0) x=-x;
 	if(x>3) return 0;
@@ -133,7 +133,7 @@ public:
 	virtual int doSplit(const int d) { return 0; }
 	virtual V interpolate(const int d, const int lx, const int ly) { return V(); }
 	virtual void visualize(bool istop = true) {}
-	virtual void visualize_cyl(mdouble r = 0) {}
+	virtual void visualize_cyl(double r = 0) {}
 	virtual void markForSplit(int d, int lx, int ly) {}
 	
 protected:
@@ -167,13 +167,13 @@ public:
 	/// Destructor
 	virtual ~InterpSquare() { }
 	
-	virtual V interpolate(mdouble lx, mdouble ly) const
+	virtual V interpolate(double lx, double ly) const
 	{ 
 		int c = (lx<0)+2*(ly<0);
 		if(split[c])
 		{
-			mdouble nx = 2*lx-0.5; if(nx>=0.5) nx -= 1.0;
-			mdouble ny = 2*ly-0.5; if(nx>=0.5) ny -= 1.0;
+			double nx = 2*lx-0.5; if(nx>=0.5) nx -= 1.0;
+			double ny = 2*ly-0.5; if(nx>=0.5) ny -= 1.0;
 			return ((InterpSquare*)this->subTrees[c])->interpolate(nx,ny);
 		}
 		return tm->b->eval(lx,ly,coeffs);
@@ -192,12 +192,12 @@ public:
 		return tm->b->eval(location(d,lx),location(d,ly),coeffs);
 	}
 	
-	inline mdouble location(const int d, const int lx) const
+	inline double location(const int d, const int lx) const
 	{
-		return mdouble(lx)/mdouble(1<<d)-0.5;
+		return double(lx)/double(1<<d)-0.5;
 	}
 	
-	inline mdouble absLocation(const int d, const int n, const bool xaxis) const
+	inline double absLocation(const int d, const int n, const bool xaxis) const
 	{
 		return tm->absLocation(mydepth+d, absx*(1<<d)+n, xaxis);
 	}
@@ -310,7 +310,7 @@ public:
 		}
 	}
 	
-	virtual void visualize_cyl(mdouble r = 0.75)
+	virtual void visualize_cyl(double r = 0.75)
 	{
 		
 		int nsub = 0;
@@ -327,7 +327,7 @@ public:
 		{
 			
 			float xyzcorners[12];
-			mdouble x,y,z;
+			double x,y,z;
 			for(int i=0; i<3; i++)
 			{
 				if(i==0)
@@ -463,12 +463,12 @@ class TopMesh
 {
 public:
 	/// Constructor
-	TopMesh(int NX, int NY, mdouble X0, mdouble Y0, mdouble X1, mdouble Y1, V (*ff)(mdouble, mdouble), InterpoBasis<V>* B, mdouble relerr, mdouble abserr):
-	nx(NX), ny(NY), f(ff), b(B), xdivs((mdouble*)malloc((NX+1)*sizeof(mdouble))), ydivs((mdouble*)malloc((NY+1)*sizeof(mdouble))),
+	TopMesh(int NX, int NY, double X0, double Y0, double X1, double Y1, V (*ff)(double, double), InterpoBasis<V>* B, double relerr, double abserr):
+	nx(NX), ny(NY), f(ff), b(B), xdivs((double*)malloc((NX+1)*sizeof(double))), ydivs((double*)malloc((NY+1)*sizeof(double))),
 	squares((InterpSquare<V>**)malloc(NX*NY*sizeof(InterpSquare<V>*))), splitdepth(0), relerr2(relerr*relerr), abserr2(abserr*abserr)
 	{
-		for(int i=0; i<=nx; i++) xdivs[i] = X0 + (X1-X0)*mdouble(i)/mdouble(nx);
-		for(int i=0; i<=ny; i++) ydivs[i] = Y0 + (Y1-Y0)*mdouble(i)/mdouble(ny);
+		for(int i=0; i<=nx; i++) xdivs[i] = X0 + (X1-X0)*double(i)/double(nx);
+		for(int i=0; i<=ny; i++) ydivs[i] = Y0 + (Y1-Y0)*double(i)/double(ny);
 		
 		for(int i=0; i<nx; i++)
 		{
@@ -484,12 +484,12 @@ public:
 		while(refine()) {}
 	}
 	
-	TopMesh(int NX, int NY, mdouble X0, mdouble Y0, mdouble X1, mdouble Y1, V (*ff)(mdouble, mdouble), InterpoBasis<V>* B, mdouble relerr, mdouble abserr, bool NOSQUARES):
-	nx(NX), ny(NY), f(ff), b(B), xdivs((mdouble*)malloc((NX+1)*sizeof(mdouble))), ydivs((mdouble*)malloc((NY+1)*sizeof(mdouble))),
+	TopMesh(int NX, int NY, double X0, double Y0, double X1, double Y1, V (*ff)(double, double), InterpoBasis<V>* B, double relerr, double abserr, bool NOSQUARES):
+	nx(NX), ny(NY), f(ff), b(B), xdivs((double*)malloc((NX+1)*sizeof(double))), ydivs((double*)malloc((NY+1)*sizeof(double))),
 	squares((InterpSquare<V>**)malloc(NX*NY*sizeof(InterpSquare<V>*))), splitdepth(0), relerr2(relerr*relerr), abserr2(abserr*abserr)
 	{
-		for(int i=0; i<=nx; i++) xdivs[i] = X0 + (X1-X0)*mdouble(i)/mdouble(nx);
-		for(int i=0; i<=ny; i++) ydivs[i] = Y0 + (Y1-Y0)*mdouble(i)/mdouble(ny);
+		for(int i=0; i<=nx; i++) xdivs[i] = X0 + (X1-X0)*double(i)/double(nx);
+		for(int i=0; i<=ny; i++) ydivs[i] = Y0 + (Y1-Y0)*double(i)/double(ny);
 	}
 	
 	/// Destructor
@@ -504,13 +504,13 @@ public:
 		return nsplit;
 	}
 
-	mdouble absLocation(const int d, const int n, const bool xaxis) const
+	double absLocation(const int d, const int n, const bool xaxis) const
 	{
 		int c = n/(1<<d);
 		int r = n%(1<<d);
-		mdouble* divs = xdivs;
+		double* divs = xdivs;
 		if(!xaxis) divs = ydivs;
-		return divs[c]+(divs[c+1]-divs[c])*mdouble(r)/mdouble(1<<d);
+		return divs[c]+(divs[c+1]-divs[c])*double(r)/double(1<<d);
 	}
 					  
 	virtual void checkSubdivide(int d)
@@ -527,7 +527,7 @@ public:
 		return nsplit;
 	}
 	
-	virtual mdouble interpolate(mdouble lx, mdouble ly) const
+	virtual double interpolate(double lx, double ly) const
 	{
 		return 0;
 	}
@@ -554,7 +554,7 @@ public:
 	
 	bool closeEnough(V actualval, V interpval) const
 	{
-		mdouble m = (actualval-interpval).mag2();
+		double m = (actualval-interpval).mag2();
 		if(m < abserr2) return true;
 		if(m/actualval.mag2() < relerr2) return true;
 		return false;
@@ -589,12 +589,12 @@ public:
 protected:
 	int nx,ny;
 	int splitdepth;
-	mdouble* xdivs;
-	mdouble* ydivs;
-	mdouble relerr2;
-	mdouble abserr2;
+	double* xdivs;
+	double* ydivs;
+	double relerr2;
+	double abserr2;
 	InterpSquare<V>** squares;
-	V (*f)(mdouble, mdouble);
+	V (*f)(double, double);
 };
 
 
@@ -603,8 +603,8 @@ class TubeMesh: public TopMesh<V>
 {
 public:
 	/// Constructor
-	TubeMesh(int NX, int NY, mdouble Y0, mdouble Y1, V (*ff)(mdouble, mdouble), InterpoBasis<V>* B, mdouble relerr, mdouble abserr):
-	TopMesh<V>(NX, NY+2, -M_PI, Y0-(Y1-Y0)/mdouble(NY), M_PI, Y1+(Y1-Y0)/mdouble(NY), ff, B, relerr, abserr, true)
+	TubeMesh(int NX, int NY, double Y0, double Y1, V (*ff)(double, double), InterpoBasis<V>* B, double relerr, double abserr):
+	TopMesh<V>(NX, NY+2, -M_PI, Y0-(Y1-Y0)/double(NY), M_PI, Y1+(Y1-Y0)/double(NY), ff, B, relerr, abserr, true)
 	{
 		for(int i=0; i<this->nx; i++)
 		{

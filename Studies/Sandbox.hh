@@ -64,7 +64,7 @@ void comparison_shield(std::ostream& gridf, std::ostream& fitf) {
 }
 
 
-void shieldingFactorTest(std::ostream& outf, mdouble mu) {
+void shieldingFactorTest(std::ostream& outf, double mu) {
 	
 	SurfacelCyl SB = SurfacelCyl(128);
 	//SB.makeOptCyl(30, 0, .6223, -3.9624/2, 3.9624/2, new DipolePlane(Plane(),mu,0.001) );

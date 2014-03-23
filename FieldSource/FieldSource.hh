@@ -21,9 +21,9 @@ public:
 	/// Magnetic field at a specified point
 	virtual vec3 fieldAt(const vec3& v) const = 0;
 	/// Magnetic field at a point, with interaction matrix (optionally subclass for improved numerics)
-	virtual vec2 fieldAtWithTransform2(const vec3& v, const Matrix<2,3,mdouble>& M2) const { return M2*fieldAt(v); }
+	virtual vec2 fieldAtWithTransform2(const vec3& v, const Matrix<2,3,double>& M2) const { return M2*fieldAt(v); }
 	/// Magnetic field at a point, with interaction matrix (optionally subclass for improved numerics)
-	virtual vec3 fieldAtWithTransform3(const vec3& v, const Matrix<3,3,mdouble>& M3) const { return M3*fieldAt(v); }
+	virtual vec3 fieldAtWithTransform3(const vec3& v, const Matrix<3,3,double>& M3) const { return M3*fieldAt(v); }
 	/// Magnetic field averaged over specified line
 	virtual vec3 fieldOverLine(Line l) const;
 	/// Magnetic field averaged over specified plane

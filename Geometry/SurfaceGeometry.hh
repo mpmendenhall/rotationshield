@@ -6,7 +6,7 @@
 #include "Integrator.hh"
 
 /// base class for defining surface mapping [0,1]^2 -> R^3
-class SurfaceGeometry: public DVFunc<2,3,mdouble> {
+class SurfaceGeometry: public DVFunc<2,3,double> {
 public:
 	/// constructor
 	SurfaceGeometry() { myIntegrator.setMethod(INTEG_GSL_QAG); }
@@ -23,13 +23,13 @@ public:
 	virtual vec2 d_pathlength(vec2 l) const;
 	
 	/// differential area dA / dl1 dl2
-	virtual mdouble dA(const vec2& l) const;
+	virtual double dA(const vec2& l) const;
 	
 	/// surface area corresponding to l range ll to ur
-	virtual mdouble area(const vec2& ll, const vec2& ur);
+	virtual double area(const vec2& ll, const vec2& ur);
 	
 	/// calculate rotation to surface local coordinates v_local = M*v
-	Matrix<3,3,mdouble> rotToLocal(const vec2& x) const;
+	Matrix<3,3,double> rotToLocal(const vec2& x) const;
 	
 	/// calculate min and max distance to corners of region
 	void proximity(vec3 x, vec2 ll, vec2 ur, double& mn, double& mx) const;
@@ -59,7 +59,7 @@ public:
 class CylSurfaceGeometry: public SurfaceGeometry {
 public:
 	/// constructor
-	CylSurfaceGeometry(DVFunc1<2,mdouble>* f = NULL): zr_profile(f) {}
+	CylSurfaceGeometry(DVFunc1<2,double>* f = NULL): zr_profile(f) {}
 	
 	/// evaluate function
 	virtual vec3 operator()(const vec2& x) const;
@@ -68,20 +68,20 @@ public:
 	virtual vec3 deriv(const vec2& x, unsigned int i) const;
 	
 	/// differential area dA / dl1 dl2
-	virtual mdouble dA(const vec2& l) const;
+	virtual double dA(const vec2& l) const;
 	
 	/// surface area corresponding to l range ll to ur
-	virtual mdouble area(const vec2& ll, const vec2& ur);
+	virtual double area(const vec2& ll, const vec2& ur);
 	
 	// geometry-defining functions
-	DVFunc1<2,mdouble>* zr_profile;	//< z,r (l) profile
+	DVFunc1<2,double>* zr_profile;	//< z,r (l) profile
 	
 	/// whether surface is closed/periodic along particular axis
 	virtual bool isClosed(unsigned int a) const { return a==0 ? (zr_profile && zr_profile->period) : a==1; }
 	
 protected:
 	// cache profile calls, since likely to be for same value
-	vec2 cache_profile(mdouble l) const;
+	vec2 cache_profile(double l) const;
 };
 
 

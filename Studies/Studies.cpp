@@ -96,8 +96,8 @@ Stringmap shieldFrame::getInfo() const {
 
 Stringmap fieldCell::getInfo() const {
 	Stringmap m;
-	m.insert(std::string("ll"),vtos(vec2doublevec<3,mdouble>(ll)));
-	m.insert(std::string("ur"),vtos(vec2doublevec<3,mdouble>(ur)));
+	m.insert(std::string("ll"),vtos(vec2doublevec<3,double>(ll)));
+	m.insert(std::string("ur"),vtos(vec2doublevec<3,double>(ur)));
 	m.insert("nx",nx);
 	m.insert("ny",ny);
 	m.insert("nz",nz);
@@ -185,13 +185,13 @@ void fullScaleCoil(std::ostream& gridf, std::ostream& fitf) {
 	
 	MixedSource* ms = new MixedSource();
 	ms->retain();
-	mdouble cradius = 0.648; //64.8cm radius
-	mdouble shieldDistance = 0.069; //6.9cm spacing to shield
-	mdouble sradius = cradius + shieldDistance;
-	mdouble clen = 4.292;
-	mdouble slen = clen + 0.40;
+	double cradius = 0.648; //64.8cm radius
+	double shieldDistance = 0.069; //6.9cm spacing to shield
+	double sradius = cradius + shieldDistance;
+	double clen = 4.292;
+	double slen = clen + 0.40;
 	
-	VarVec<mdouble> pert = VarVec<mdouble>(1);
+	VarVec<double> pert = VarVec<double>(1);
 	pert[0] = -0.00295;
 	CosThetaBuilder b = CosThetaBuilder(15, cradius, clen, &shiftPositioner);
 	b.regularCoil(*ms,&pert);
@@ -224,10 +224,10 @@ void bareFullScaleCoil(std::ostream& gridf, std::ostream& fitf) {
 	
 	MixedSource* ms = new MixedSource();
 	ms->retain();
-	mdouble cradius = 0.648;
-	mdouble clen = 4.292;
+	double cradius = 0.648;
+	double clen = 4.292;
 	
-	VarVec<mdouble> pert = VarVec<mdouble>(1);
+	VarVec<double> pert = VarVec<double>(1);
 	pert[0] = -0.00295;
 	CosThetaBuilder b = CosThetaBuilder(15, cradius, clen, &shiftPositioner);
 	b.regularCoil(*ms,&pert);
@@ -266,9 +266,9 @@ void mi_sampleShieldVis(std::deque<std::string>&, std::stack<std::string>&) {
 	// set up cos theta coil
 	MixedSource* ms = new MixedSource();
 	ms->retain();
-	mdouble cradius = 0.648;	// coil radius
-	mdouble clen = 4.292;		// coil length
-	VarVec<mdouble> pert = VarVec<mdouble>(1);
+	double cradius = 0.648;	// coil radius
+	double clen = 4.292;		// coil length
+	VarVec<double> pert = VarVec<double>(1);
 	pert[0] = -0.00295;	// coil distortion parameter
 	CosThetaBuilder b = CosThetaBuilder(15, cradius, clen, &shiftPositioner);
 	b.regularCoil(*ms,&pert);
@@ -277,9 +277,9 @@ void mi_sampleShieldVis(std::deque<std::string>&, std::stack<std::string>&) {
 	
 	// optional: construct shield
 	if(1) {
-		mdouble shieldDistance = 0.069;				// distance of shield from wires, 6.9cm
-		mdouble sradius = cradius + shieldDistance;	// shield radius
-		mdouble slen = clen + 0.40;					// shield length, coil + 40cm
+		double shieldDistance = 0.069;				// distance of shield from wires, 6.9cm
+		double sradius = cradius + shieldDistance;	// shield radius
+		double slen = clen + 0.40;					// shield length, coil + 40cm
 		FieldEstimator2D* fe = new FieldEstimator2D();
 		fe->addsource(vec2(-clen/2.0,cradius),1.0);
 		fe->addsource(vec2(clen/2.0,cradius),1.0);

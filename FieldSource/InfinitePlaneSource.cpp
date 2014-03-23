@@ -4,17 +4,17 @@
 mmat InfinitePlaneSource::fieldAtComponents(vec3 p0) const {
 	
 	vec3 v = p0 - p.o;
-	mdouble a = v.dot(p.sn);
-	mdouble aa = a*a;
-	mdouble x0 = v.dot(p.dx)/p.wx;
-	mdouble x1 = x0-0.5*p.wx;
-	mdouble x2 = x0+0.5*p.wx;
+	double a = v.dot(p.sn);
+	double aa = a*a;
+	double x0 = v.dot(p.dx)/p.wx;
+	double x1 = x0-0.5*p.wx;
+	double x2 = x0+0.5*p.wx;
 	
 	// parallel components
-	mdouble par = (atan(x2/a)-atan(x1/a))/(2*M_PI);
+	double par = (atan(x2/a)-atan(x1/a))/(2*M_PI);
 	
 	// perpendicular component
-	mdouble perp = (log((x2*x2+aa)/(x1*x1+aa)))/(4*M_PI);
+	double perp = (log((x2*x2+aa)/(x1*x1+aa)))/(4*M_PI);
 	
 	// filter out NANs
 	if(!(perp == perp)) perp = 0;
