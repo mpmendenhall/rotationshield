@@ -10,7 +10,7 @@
 #include "CMatrix.hh"
 #include "VarVec.hh"
 
-/// Block Circulant matrix
+/// Block Circulant matrix: Deprecated! Use VarMat< CMatrix<T> >
 /** A Block Circulant matrix is a matrix which can be subdivided into equal-size blocks which are circulant matrices
  (stored as a CMatrix). Since the circulant matrix components are commutative, a \f$ (n\cdot c)\times (m\cdot c)\f$
  block circulant matrix composed of \f$ n \times m \f$ \f$ c \times c \f$ circulant blocks can be handled much like

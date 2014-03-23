@@ -22,10 +22,15 @@ template<class T>
 class VarVec {
 public:
 	/// Constructor
-	VarVec(unsigned int n = 0): data(std::vector<T>(n)) {}
+	VarVec(unsigned int n = 0): data(n) {}
+	/// Constructor with fill element
+	VarVec(unsigned int n, const T& i): data(n,i) {}
 	/// Constructor from fixed-length vector
 	template<unsigned int N>
-	VarVec(const Vec<N,T>& v): data(std::vector<T>(N)) { for(unsigned int i=0; i<N; i++) data[i] = v[i]; }
+	VarVec(const Vec<N,T>& v): data(&v[0],&v[0]+N) { }
+	/// construct from start/end pointers
+	template <class InputIterator>
+	VarVec(InputIterator first, InputIterator last): data(first,last) {}
 	/// Destructor
 	~VarVec() {}
 	
@@ -70,6 +75,10 @@ public:
 	T mag2() const { return dot(*this); }
 	/// magnitude \f$ \sqrt{v\cdot v} \f$
 	T mag() const { return sqrt(mag2()); }
+	/// L2 norm of this vector (= mag() for float/double)
+	double norm_L2() const;
+	/// maximum L2-norm over all elements
+	double max_norm_L2() const;
 	/// sum of vector elements
 	T sum() const { T s = data[0]; for(unsigned int i=1; i<size(); i++) s += data[i]; return s; }
 	/// product of vector elements
@@ -359,6 +368,33 @@ varvec2doublevec(const VarVec<T>& v) {
 	std::vector<double> dv(v.size());
 	for(unsigned int i=0; i<v.size(); i++) dv[i] = (double)v[i];
 	return dv;
+}
+
+namespace VarVec_element_norm_L2 {
+	template<typename T>
+	inline double norm_L2(T t) { return t.norm_L2(); }
+  	template<>
+	inline double norm_L2(float t) { return fabs(t); }
+	template<>
+	inline double norm_L2(double t) { return fabs(t); }
+}
+
+template<typename T>
+double VarVec<T>::max_norm_L2() const {
+	std::vector<double> vn;
+	for(typename std::vector<T>::const_iterator it = data.begin(); it != data.end(); it++)
+		vn.push_back(VarVec_element_norm_L2::norm_L2(*it));
+	return *std::max_element(vn.begin(), vn.end());
+}
+
+template<typename T>
+double VarVec<T>::norm_L2() const {
+	double s = 0;
+	for(typename std::vector<T>::const_iterator it = data.begin(); it != data.end(); it++) {
+		double n = VarVec_element_norm_L2::norm_L2(*it);
+		s += n*n;
+	}
+	return sqrt(s);
 }
 
 /// string output representation for vectors

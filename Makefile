@@ -37,7 +37,7 @@ BASE_INCLUDE_DIRS  = -I$(OS_DIR)/include
 BASE_LIB_DIRS  = -L$(OS_DIR)/lib
 
 # optmization
-GCC_OPTIMIZATION_LEVEL = 3
+GCC_OPTIMIZATION_LEVEL = 0
 
 CPPFLAGS = -g $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -Wall -Wuninitialized \
 	-I. -IMathUtils -IGeometry -IFieldSource -ISolver -IBuilder -IStudies -IIO $(BASE_INCLUDE_DIRS)

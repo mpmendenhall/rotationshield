@@ -8,19 +8,23 @@
 /// A templatized, dynamically allocated matrix class.
 /**
  Not particularly optimized or clever, but convenient for smallish matrices
- or matrices of unusual special types
+ or matrices of unusual special types (e.g. block circulant matrices, with CMatrix<T> entries)
  */
 template<typename T>
 class VarMat {
 public:
 	/// constructor
-	VarMat(unsigned int n = 0, unsigned int m = 0): N(n), M(m), vv(VarVec<T>(n*m)) { }
+	VarMat(unsigned int n = 0, unsigned int m = 0): N(n), M(m), vv(n*m) { }
+	/// constructor with prototype element
+	VarMat(unsigned int n, unsigned int m, const T& i): N(n), M(m), vv(n*m,i) { }
 	/// constructor from fixed matrix
 	template<unsigned int NN, unsigned int MM>
 	VarMat(Matrix<NN,MM,T> A): N(NN), M(MM), vv(A.getData()) {}
 	/// destructor
 	~VarMat() {}
 	
+	/// generate an "identity" matrix, using specified values on/off diagonal
+	static VarMat<T> identity(unsigned int n, const T& one = 1, const T& zero = 0);
 	/// generate a random-filled VarMat
 	static VarMat<T> random();
 	
@@ -42,10 +46,12 @@ public:
 	/// const vector element access
 	const T& operator[](unsigned int i) const { return vv[i]; }
 	
-	/// transpose
-	VarMat<T> transposed() const;
 	///unary minus
 	const VarMat<T> operator-() const;
+	/// transpose
+	VarMat<T> transposed() const;
+	/// inplace inverse
+	const VarMat<T>& invert();
 	
 	/// throw error if dimensions mismatches
 	void checkDimensions(const VarMat& m) const throw(DimensionMismatchError) { if(m.nRows() != N || m.nCols() != M) throw(DimensionMismatchError()); }
@@ -70,17 +76,16 @@ public:
 	/// VarMat multiplication
 	const VarMat<T> operator*(const VarMat<T>& B) const;
 	/// left-multiply a vector
-	const VarVec<T> lMultiply(const VarVec<T>& v) const;
+	template<typename U, typename V>
+	const VarVec<V> lMultiply(const VarVec<U>& v) const;
 	/// right-multiply a vector
-	const VarVec<T> rMultiply(const VarVec<T>& v) const;
-	/// vector multiplication
-	const VarVec<T> operator*(const VarVec<T>& v) const { return lMultiply(v); }
+	template<typename U, typename V>
+	const VarVec<V> rMultiply(const VarVec<U>& v) const;
+	/// vector multiplication, when all objects are of same type
+	const VarVec<T> operator*(const VarVec<T>& v) const { return lMultiply<T,T>(v); }
 	
 	/// VarMat multiplication and assignment
 	void operator*=(const VarMat<T>& B) { (*this) = (*this)*B; }
-	
-	/// inplace inverse
-	const VarMat<T>& invert();
 	
 private:
 	
@@ -100,6 +105,13 @@ VarMat<T> VarMat<T>::random() {
 	return foo; 
 }
 
+template<typename T>
+VarMat<T> VarMat<T>::identity(unsigned int n, const T& one, const T& zero) {
+	VarMat<T> foo(n,n,zero);
+	for(unsigned int i=0; i<n; i++)
+		foo(i,i) = one;
+	return foo;
+}
 
 template<typename T>
 VarMat<T> VarMat<T>::transposed() const {
@@ -164,24 +176,30 @@ const VarMat<T> VarMat<T>::operator*(const VarMat<T>& B) const {
 }
 
 template<typename T>
-const VarVec<T> VarMat<T>::lMultiply(const VarVec<T>& v) const {
+template<typename U, typename V>
+const VarVec<V> VarMat<T>::lMultiply(const VarVec<U>& v) const {
 	if(v.size() != M)
 		throw(DimensionMismatchError());
-	VarVec<T> a = VarVec<T>(N);
-	for(unsigned int r=0; r<N; r++)
-		for(unsigned int c=0; c<M; c++)
-			a[r] += (*this)(r,c)*v[c];
+	VarVec<V> a;
+	for(unsigned int r=0; r<N; r++) {
+		a.push_back((*this)(r,0)*v[0]);
+		for(unsigned int c=1; c<M; c++)
+			a.getData().back() += (*this)(r,c)*v[c];
+	}
 	return a;
 }
 
 template<typename T>
-const VarVec<T> VarMat<T>::rMultiply(const VarVec<T>& v) const {
+template<typename U, typename V>
+const VarVec<V> VarMat<T>::rMultiply(const VarVec<U>& v) const {
 	if(v.size() != N)
 		throw(DimensionMismatchError());
-	VarVec<T> a = VarVec<T>(M);
-	for(unsigned int r=0; r<N; r++)
-		for(unsigned int c=0; c<M; c++)
-			a[c] += v[r]*(*this)(r,c);
+	VarVec<V> a;
+	for(unsigned int c=0; c<M; c++) {
+		a.push_back(v[0] * (*this)(0,c));
+		for(unsigned int r=1; r<N; r++)
+			a.getData().back() += v[r] * (*this)(r,c);
+	}
 	return a;
 }
 
@@ -252,8 +270,6 @@ void VarMat<T>::subinvert(unsigned int n) {
 	}
 	
 }
-
-
 
 /// string output representation for VarMat
 template<typename T>

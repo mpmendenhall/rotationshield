@@ -16,6 +16,8 @@ public:
 	T mag2() const { return z[0]*z[0] + z[1]*z[1]; }
 	/// magnitude
 	T mag() const { return sqrt(mag2()); }
+	/// L2 norm, a.k.a. magnitude
+	double norm_L2() const { return mag(); }
 
 	/// unary minus operator
 	const ComplexT<T> operator-() const;

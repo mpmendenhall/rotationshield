@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <fftw3.h>
 #include <vector>
+#include <algorithm>
 #include "VarVec.hh"
 #include "ComplexT.hh"
 
@@ -39,6 +40,9 @@ class CMatrix {
 public:
 	/// Constructor
 	CMatrix(unsigned int ncyc = 0);
+	/// COnstructor from data
+	template <class InputIterator>
+	CMatrix(InputIterator first, InputIterator last);
 	/// Destructor
 	~CMatrix() {}
 	
@@ -66,11 +70,18 @@ public:
 	/// mutable element access
 	T& operator[](unsigned int n);
 	
+	/// L2 (Spectral) norm of circulant matrix
+	T norm_L2() const;
+	
 	/// Return a pointer to the CMatrix's Fourier representation
 	std::vector<cdouble>& getKData();
 	/// Return a pointer to the CMatrix's Fourier representation (read only)
 	const std::vector<cdouble>& getKData() const;	
-	
+	/// Return a pointer to the CMatrix's real-space representation
+	std::vector<T>& getRealData();
+	/// Return a pointer to the CMatrix's real-space representation (read only)
+	const std::vector<T>& getRealData() const;
+		
 	/// Allocate memory for the real-space data of the matrix
 	void alloc_data() const;
 	/// Allocate memory for the k-space data of the matrix
@@ -134,9 +145,13 @@ std::vector<cmatrix_fft> CMatrix<T>::ffters = std::vector<cmatrix_fft>();
 // Constructor and Destructor ------______------______-------_______------______------
 
 template<typename T>
-CMatrix<T>::CMatrix(unsigned int ncyc): ncycles(ncyc), data(std::vector<T>()), kdata(std::vector<cdouble>()), has_realspace(false), has_kspace(false) {
+CMatrix<T>::CMatrix(unsigned int ncyc): ncycles(ncyc), data(), kdata(), has_realspace(false), has_kspace(false) {
 }
 
+template<typename T>
+template <class InputIterator>
+CMatrix<T>::CMatrix(InputIterator first, InputIterator last): ncycles(last-first), data(first,last), kdata(), has_realspace(true), has_kspace(false) {
+}
 
 template<typename T>
 void CMatrix<T>::writeToFile(std::ostream& o) const {
@@ -287,6 +302,42 @@ const std::vector<cdouble>& CMatrix<T>::getKData() const {
 	}
 	calculateKData();
 	return kdata;
+}
+
+template<typename T>
+std::vector<T>& CMatrix<T>::getRealData() {
+	if(has_realspace)
+		return data;
+	if(!has_kspace) {
+		alloc_data();
+		return data;
+	}
+	calculateRealData();
+	has_kspace = false;
+	return data;
+}
+
+template<typename T>
+const std::vector<T>& CMatrix<T>::getRealData() const {
+	if(has_realspace)
+		return data;
+	if(!has_kspace) {
+		alloc_data();
+		return data;
+	}
+	calculateRealData();
+	return data;
+}
+
+// Matrix properties ------______------______-------_______------______------
+
+template<typename T>
+T CMatrix<T>::norm_L2() const {
+	const std::vector<cdouble>& v = getKData();
+	std::vector<double> vn;
+	for(std::vector<cdouble>::const_iterator it = v.begin(); it < v.end(); it++)
+		vn.push_back(it->mag());
+	return *std::max_element(vn.begin(),vn.end());
 }
 
 
