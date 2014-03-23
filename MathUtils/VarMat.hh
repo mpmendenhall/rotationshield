@@ -8,7 +8,7 @@
 /// A templatized, dynamically allocated matrix class.
 /**
  Not particularly optimized or clever, but convenient for smallish matrices
- or matrices of unusual special types (e.g. block circulant matrices, with CMatrix<T> entries)
+ or matrices of unusual special types (e.g. block circulant matrices, with CMatrix entries)
  */
 template<typename T>
 class VarMat {

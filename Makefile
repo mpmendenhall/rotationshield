@@ -56,7 +56,7 @@ VPATH = ./:MathUtils/:Geometry/:FieldSource/:Solver/:Builder/:Studies/:IO/
 # things to build
 obj_IO = Visr.o strutils.o ControlMenu.o QFile.o SMExcept.o PathUtils.o VisSurface.o ProgressBar.o
 
-obj_MathUtils = Geometry.o Integrator.o RefCounter.o linmin.o InterpolationHelper.o BicubicGrid.o
+obj_MathUtils = Geometry.o Integrator.o RefCounter.o linmin.o CMatrix.o InterpolationHelper.o BicubicGrid.o
 
 obj_Geometry = Angles.o SurfaceGeometry.o SurfaceProfiles.o
 

@@ -9,7 +9,7 @@
 #include "VarMat.hh"
 #include <string>
 
-typedef  VarMat< CMatrix<mdouble> > BlockCMat;
+typedef  VarMat<CMatrix> BlockCMat;
 
 /// Green's Function solver for systems of linear interactions with a periodic symmetry between interaction terms (represented by ReactiveSets with nPhi > 1)
 

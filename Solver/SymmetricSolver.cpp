@@ -21,7 +21,7 @@ void SymmetricSolver::circulantMul(const BlockCMat& M, mvec& v, unsigned int nPh
 }
 
 BlockCMat SymmetricSolver::makeIdentity(unsigned int N, unsigned int nPhi) {
-	return BlockCMat::identity(N, CMatrix<mdouble>::identity(nPhi), CMatrix<mdouble>(nPhi));
+	return BlockCMat::identity(N, CMatrix::identity(nPhi), CMatrix(nPhi));
 }
 
 double SymmetricSolver::checkInversion(const BlockCMat& M, const BlockCMat& MI, unsigned int nPhi) {
@@ -41,7 +41,7 @@ void SymmetricSolver::buildInteractionMatrix(ReactiveSet& R) {
 	if(verbose) printf("Building interaction matrix for %i = %i x %i DF...\n", R.nDF(), R.nPhi, R.nDF()/R.nPhi);
 	ProgressBar pb = ProgressBar(R.nDF(), R.nPhi, verbose);
 	
-	the_ixn = BlockCMat(R.nDF()/R.nPhi, R.nDF()/R.nPhi, CMatrix<mdouble>(R.nPhi));
+	the_ixn = BlockCMat(R.nDF()/R.nPhi, R.nDF()/R.nPhi, CMatrix(R.nPhi));
 	
 	R.startInteractionScan();
 	for(unsigned int DF=0; DF<R.nDF(); DF++) {
