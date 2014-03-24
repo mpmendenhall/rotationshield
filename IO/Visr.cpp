@@ -409,23 +409,23 @@ bool Visualizable::vis_on = false;
 
 namespace vsr {
 
-	void initWindow(const std::string& title) { }
+	void initWindow(const std::string&) { }
 	void clearWindow() {}
 	void resetViewTransformation() {}
 	void updateViewWindow() {}
-	void startRecording(bool newseg) {}
+	void startRecording(bool) {}
 	void stopRecording() {}
 	void pause() {}
-	void setClearColor(float r, float g, float b, float a) {}
-	void setColor(float r, float g, float b, float a) {}
-	void line(vec3 s, vec3 e) {}
-	void plane(vec3 o, vec3 dx, vec3 dy) {}
-	void quad(float* xyz) {}
-	void filledquad(float* xyz) {}
-	void dot(vec3 p) {}
+	void setClearColor(float, float, float, float) {}
+	void setColor(float, float, float, float) {}
+	void line(vec3, vec3) {}
+	void plane(vec3, vec3, vec3) {}
+	void quad(float*) {}
+	void filledquad(float*) {}
+	void dot(vec3) {}
 	
 	void startLines() {}
-	void vertex(vec3 v) {}
+	void vertex(vec3) {}
 	void endLines() {}
 	
 	void doGlutLoop() {}

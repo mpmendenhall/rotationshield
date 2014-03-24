@@ -25,10 +25,10 @@ protected:
 
 class VerboseRefCounter: public RefCounter {
 public:
-	VerboseRefCounter(): RefCounter() { printf("*%p created\n",this); }
-	virtual ~VerboseRefCounter() { printf("*%p destroyed\n",this); }
-	virtual void retain() const { RefCounter::retain();  printf("*%p retained [%i]\n",this,refcount); }
-	virtual void release() const { printf("*%p released [%i]\n",this,refcount-1); RefCounter::release(); }
+	VerboseRefCounter(): RefCounter() { printf("'%s' *%p created\n",ref_name.c_str(),(void*)this); }
+	virtual ~VerboseRefCounter() { printf("'%s' *%p destroyed\n",ref_name.c_str(),(void*)this); }
+	virtual void retain() const { RefCounter::retain();  printf("'%s' *%p retained [%i]\n",ref_name.c_str(),(void*)this,refcount); }
+	virtual void release() const { printf("'%s' *%p released [%i]\n",ref_name.c_str(),(void*)this,refcount-1); RefCounter::release(); }
 };
 
 

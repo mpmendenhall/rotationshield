@@ -39,7 +39,7 @@ BASE_LIB_DIRS  = -L$(OS_DIR)/lib
 # optmization
 GCC_OPTIMIZATION_LEVEL = 3
 
-CPPFLAGS = -g -std=c++0x $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -ansi -pedantic -Wall -Wextra \
+CPPFLAGS = -g -std=c++0x $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -pedantic -Wall -Wextra \
 	-I. -IMathUtils -IGeometry -IFieldSource -ISolver -IBuilder -IStudies -IIO $(BASE_INCLUDE_DIRS)
 
 #LDFLAGS += -lblas
