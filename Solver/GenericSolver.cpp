@@ -17,12 +17,12 @@ void GenericSolver::solve(ReactiveSet& R) {
 	// invert matrix
 	int sig;
 	gsl_permutation* P = gsl_permutation_alloc(R.nDF());
-	gsl_matrix* I = gsl_matrix_alloc(R.nDF(),R.nDF());
+	gsl_matrix* GFI = gsl_matrix_alloc(R.nDF(),R.nDF());
 	assert(!gsl_linalg_LU_decomp (the_GF, P, &sig));
-	assert(!gsl_linalg_LU_invert (the_GF, P, I));
+	assert(!gsl_linalg_LU_invert (the_GF, P, GFI));
 	gsl_permutation_free(P);
 	gsl_matrix_free(the_GF);
-	the_GF = I;
+	the_GF = GFI;
 }
 
 void GenericSolver::buildInteractionMatrix(ReactiveSet& R) {

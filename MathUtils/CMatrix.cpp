@@ -18,7 +18,7 @@ void CMatrix::writeToFile(std::ostream& o) const {
 	if(has_realspace)
 		o.write((char*)&data.front(),sizeof(double)*ncycles);
 	if(has_kspace)
-		o.write((char*)&kdata.front(),sizeof(cdouble)*(ncycles/2+1));
+		o.write((char*)&kdata.front(),sizeof( complex<double> )*(ncycles/2+1));
 }
 
 CMatrix CMatrix::readFromFile(std::istream& s) {
@@ -34,7 +34,7 @@ CMatrix CMatrix::readFromFile(std::istream& s) {
 	}
 	if(hkd) {
 		foo.alloc_kdata();
-		s.read((char*)&foo.kdata.front(),sizeof(cdouble)*(ncyc/2+1));
+		s.read((char*)&foo.kdata.front(),sizeof( complex<double> )*(ncyc/2+1));
 	}
 	return foo;
 }
@@ -51,7 +51,7 @@ void CMatrix::zero() {
 	has_kspace = true;
 	has_realspace = true;
 	data = std::vector<double>(ncycles);
-	kdata = std::vector<cdouble>(ncycles/2+1);
+	kdata = std::vector< complex<double> >(ncycles/2+1);
 }
 
 CMatrix CMatrix::ramp(unsigned int nc, double r0) {
@@ -76,7 +76,7 @@ void CMatrix::alloc_data() const {
 }
 
 void CMatrix::alloc_kdata() const {
-	kdata = std::vector<cdouble>(ncycles);
+	kdata = std::vector< complex<double> >(ncycles);
 	has_kspace = true;
 }
 
@@ -126,7 +126,7 @@ void CMatrix::calculateKData() const {
 	has_kspace = true;
 }
 
-std::vector<cdouble>& CMatrix::getKData() {
+std::vector< complex<double> >& CMatrix::getKData() {
 	if(has_kspace)
 		return kdata;
 	if(!has_realspace) {
@@ -138,7 +138,7 @@ std::vector<cdouble>& CMatrix::getKData() {
 	return kdata;
 }
 
-const std::vector<cdouble>& CMatrix::getKData() const {
+const std::vector< complex<double> >& CMatrix::getKData() const {
 	if(has_kspace)
 		return kdata;
 	if(!has_realspace) {
@@ -175,29 +175,29 @@ const std::vector<double>& CMatrix::getRealData() const {
 // Matrix properties ------______------______-------_______------______------
 
 double CMatrix::norm_L2() const {
-	const std::vector<cdouble>& v = getKData();
+	const std::vector< complex<double> >& v = getKData();
 	std::vector<double> vn;
-	for(std::vector<cdouble>::const_iterator it = v.begin(); it < v.end(); it++)
-		vn.push_back(it->mag());
+	for(std::vector< complex<double> >::const_iterator it = v.begin(); it < v.end(); it++)
+		vn.push_back(abs(*it));
 	return *std::max_element(vn.begin(),vn.end());
 }
 
 double CMatrix::det() const {
-	const std::vector<cdouble>& v = getKData();
-	double d = v.begin()->z[0];
+	const std::vector< complex<double> >& v = getKData();
+	double d = v.begin()->real();
 	for(unsigned int i=1; i<v.size(); i++)
-		d *= v[i].mag2();
-	if(!(ncycles%2)) d /= v.back().z[0];
+		d *= norm(v[i]);
+	if(!(ncycles%2)) d /= v.back().real();
 	return d;
 }
 
 double CMatrix::trace() const {
 	if(has_realspace) return ncycles*data[0];
 	else if(has_kspace) {
-		double s = kdata.begin()->z[0];
-		for(std::vector<cdouble>::const_iterator it = kdata.begin()+1; it < kdata.end(); it++)
-			s += it->z[0]*2;
-		if(!(ncycles%2)) s -= kdata.back().z[0];
+		double s = kdata.begin()->real();
+		for(std::vector< complex<double> >::const_iterator it = kdata.begin()+1; it < kdata.end(); it++)
+			s += it->real()*2;
+		if(!(ncycles%2)) s -= kdata.back().real();
 		return s;
 	} else return 0;
 }
@@ -252,7 +252,7 @@ CMatrix& CMatrix::operator+=(const CMatrix& m) {
 	}
 	
 	if(has_kspace && (m.has_kspace || !has_realspace)) {
-		const std::vector<cdouble>& kd = m.getKData();
+		const std::vector< complex<double> >& kd = m.getKData();
 		for(unsigned int i=0; i<ncycles/2+1; i++)
 			kdata[i] += kd[i];
 		kdata_ok = true;
@@ -290,7 +290,7 @@ CMatrix& CMatrix::operator-=(const CMatrix& m) {
 	}
 	
 	if(has_kspace && (m.has_kspace || !has_realspace)) {
-		const std::vector<cdouble>& kd = m.getKData();
+		const std::vector< complex<double> >& kd = m.getKData();
 		for(unsigned int i=0; i<ncycles/2+1; i++)
 			kdata[i] -= kd[i];
 		kdata_ok = true;
@@ -342,7 +342,7 @@ const CMatrix CMatrix::operator-() const {
 
 CMatrix& CMatrix::operator*=(const CMatrix& m) {
 	getKData();
-	const std::vector<cdouble>& mkd = m.getKData();
+	const std::vector< complex<double> >& mkd = m.getKData();
 	has_realspace = false;
 	for(unsigned int i=0; i<ncycles/2+1; i++)
 		kdata[i] *= mkd[i];
@@ -358,7 +358,7 @@ const CMatrix CMatrix::operator*(const CMatrix& m) const {
 
 const VarVec<double> CMatrix::operator*(const VarVec<double>& v) const {
 	
-	const std::vector<cdouble>& kd = getKData();
+	const std::vector< complex<double> >& kd = getKData();
 	
 	cmatrix_fft& f = get_ffter();
 	f.realspace[0] = v[0];
@@ -378,9 +378,9 @@ const VarVec<double> CMatrix::operator*(const VarVec<double>& v) const {
 }
 
 CMatrix& CMatrix::invert() {
-	std::vector<cdouble>& kd = getKData();
+	std::vector< complex<double> >& kd = getKData();
 	for(unsigned int i=0; i<ncycles/2+1; i++)
-		kd[i] = kd[i].inverse();
+		kd[i] = 1./kd[i];
 	return *this;
 }
 
@@ -414,7 +414,7 @@ void CMatrix::add_inverter() const {
 	
 	newInverter.ncyc = ncycles;
 	newInverter.realspace = new double[ncycles];
-	newInverter.kspace = new cdouble[ncycles/2+1];
+	newInverter.kspace = new  complex<double> [ncycles/2+1];
 	
 	FILE* fin = fopen("fftw_wisdom","r");
 	if(fin) {

@@ -11,6 +11,7 @@
 #include "tests.hh"
 #include "Studies.hh"
 #include "ncube.hh"
+//#include "LAPACKE_Matrix.hh"
 
 /// run self-tests
 void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {

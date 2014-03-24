@@ -102,7 +102,7 @@ public:
 	/// set default choice
 	virtual void setDefault(std::string s) { defaultArgs[0] = s; }
 	/// set catchall action
-	virtual void setCatchall(streamInteractor* I) { catchAll = I; }
+	virtual void setCatchall(streamInteractor* SI) { catchAll = SI; }
 	/// prevent adding arguments (doesn't make sense in this context)
 	virtual void addArg(const std::string&, const std::string& = "", const std::string& = "", namedInteractor* = NULL) { assert(false); }
 	/// prevent adding arguments (doesn't make sense in this context)

@@ -6,10 +6,10 @@
 #include <iostream>
 #include <fftw3.h>
 #include <vector>
+#include <complex.h>
 #include "VarVec.hh"
-#include "ComplexT.hh"
 
-typedef ComplexT<double> cdouble;
+using namespace std;
 
 /// Stores fftw data for FFT'ing 
 struct cmatrix_fft {
@@ -17,7 +17,7 @@ struct cmatrix_fft {
 	fftw_plan forwardplan; //< FFTW data for forward Fourier Transforms of this size
 	fftw_plan reverseplan; //< FFTW data for inverse Fourier Transforms of this size
 	double* realspace; //< array for holding real-space side of transform data
-	cdouble* kspace; //< array for holding kspace-side of transform data
+	complex<double>* kspace; //< array for holding kspace-side of transform data
 };
 
 /// Circulant matrices
@@ -74,9 +74,9 @@ public:
 	double trace() const;
 	
 	/// Return a pointer to the CMatrix's Fourier representation
-	std::vector<cdouble>& getKData();
+	std::vector< complex<double> >& getKData();
 	/// Return a pointer to the CMatrix's Fourier representation (read only)
-	const std::vector<cdouble>& getKData() const;	
+	const std::vector< complex<double> >& getKData() const;
 	/// Return a pointer to the CMatrix's real-space representation
 	std::vector<double>& getRealData();
 	/// Return a pointer to the CMatrix's real-space representation (read only)
@@ -133,10 +133,10 @@ private:
 	/// calculate real-space data from K-space
 	void calculateRealData() const;
 	
-	mutable std::vector<double> data;		//< real-space data
-	mutable std::vector<cdouble> kdata;		//< K-space data
-	mutable bool has_realspace;				//< whether the real-space representation of this matrix has been calculated
-	mutable bool has_kspace;				//< whether the k-space representation of this matrix has been calculated
+	mutable std::vector<double> data;				//< real-space data
+	mutable std::vector< complex<double>> kdata;	//< K-space data
+	mutable bool has_realspace;						//< whether the real-space representation of this matrix has been calculated
+	mutable bool has_kspace;						//< whether the k-space representation of this matrix has been calculated
 	
 	static std::vector<cmatrix_fft> ffters;	//< cache of FFTW plans for FFT'ing various sizes of CMatrix
 };

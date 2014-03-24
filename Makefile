@@ -32,15 +32,17 @@ CC = cc
 CXX = g++
 
 # include directories for GSL, FFTW, etc.
-BASE_INCLUDE_DIRS  = -I$(OS_DIR)/include
+BASE_INCLUDE_DIRS  = -I$(OS_DIR)/include -IExtra_Headers
 # lib dir flags for GSL, FFTW, etc.
 BASE_LIB_DIRS  = -L$(OS_DIR)/lib
 
 # optmization
-GCC_OPTIMIZATION_LEVEL = 0
+GCC_OPTIMIZATION_LEVEL = 3
 
-CPPFLAGS = -g $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -Wall -Wuninitialized \
+CPPFLAGS = -g -std=c++11 $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -Wall -Wuninitialized \
 	-I. -IMathUtils -IGeometry -IFieldSource -ISolver -IBuilder -IStudies -IIO $(BASE_INCLUDE_DIRS)
+
+LDFLAGS += -lblas
 
 ifdef ROTSHIELD_VIS
 	CPPFLAGS += -DWITH_OPENGL $(GL_INCLUDES) 

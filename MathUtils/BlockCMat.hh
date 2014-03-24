@@ -124,9 +124,9 @@ BlockCMat<T> BlockCMat<T>::readFromFile(std::istream& s)
 
 template<typename T>
 BlockCMat<T> BlockCMat<T>::identity(unsigned int nrw, unsigned int ncy) {
-	BlockCMat<T> I = BlockCMat<T>(nrw,nrw,ncy);
-	for(int r=0; r<nrw; r++) I.getBlock(r,r) = CMatrix<T>::identity(ncy);
-	return I;
+	BlockCMat<T> ID = BlockCMat<T>(nrw,nrw,ncy);
+	for(int r=0; r<nrw; r++) ID.getBlock(r,r) = CMatrix<T>::identity(ncy);
+	return ID;
 }
 
 template<typename T>

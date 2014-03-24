@@ -15,12 +15,12 @@ template<typename T>
 class VarMat {
 public:
 	/// constructor
-	VarMat(unsigned int n = 0, unsigned int m = 0): N(n), M(m), vv(n*m) { }
+	VarMat(unsigned int n = 0, unsigned int m = 0, bool rmajor = true): N(n), M(m), row_major_order(rmajor), vv(n*m) { }
 	/// constructor with prototype element
-	VarMat(unsigned int n, unsigned int m, const T& i): N(n), M(m), vv(n*m,i) { }
+	VarMat(unsigned int n, unsigned int m, const T& i, bool rmajor = true): N(n), M(m), row_major_order(rmajor), vv(n*m,i) { }
 	/// constructor from fixed matrix
 	template<unsigned int NN, unsigned int MM>
-	VarMat(Matrix<NN,MM,T> A): N(NN), M(MM), vv(A.getData()) {}
+	VarMat(Matrix<NN,MM,T> A): N(NN), M(MM), row_major_order(true), vv(A.getData()) {}
 	/// destructor
 	~VarMat() {}
 	
@@ -35,11 +35,13 @@ public:
 	unsigned int nCols() const { return M; }
 	/// get total size
 	unsigned int size() const { return vv.size(); }
+	/// get row ordering
+	bool isRowMajor() const { return row_major_order; }
 	
 	/// const element access
-	const T& operator()(unsigned int n, unsigned int m) const { assert(n<N && m<M); return vv[n*M+m]; }
+	const T& operator()(unsigned int n, unsigned int m) const { assert(n<N && m<M); return row_major_order ? vv[n*M+m]: vv[n+m*N]; }
 	/// mutable element access
-	T& operator()(unsigned int n, unsigned int m) { assert(n<N && m<M); return vv[n*M+m]; }
+	T& operator()(unsigned int n, unsigned int m) { assert(n<N && m<M); return row_major_order ? vv[n*M+m]: vv[n+m*N]; }
 	/// direct access to data vector
 	const VarVec<T>& getData() const { return vv; }
 	/// mutable vector element access
@@ -68,11 +70,11 @@ public:
 	/// division by a constant
 	const VarMat<T> operator/(const T& c) const;
 	/// inplace addition of a VarMat
-	void operator+=(const VarMat<T>& rhs) { checkDimensions(rhs); vv += rhs.getData(); }
+	void operator+=(const VarMat<T>& rhs) { checkDimensions(rhs); if(rhs.isRowMajor()==row_major_order) vv += rhs.getData(); else assert(false); }
 	/// addition of a VarMat
 	const VarMat<T> operator+(const VarMat<T>& rhs) const;
 	/// inplace subtraction of a VarMat
-	void operator-=(const VarMat<T>& rhs) { checkDimensions(rhs); vv -= rhs.getData(); }
+	void operator-=(const VarMat<T>& rhs) { checkDimensions(rhs); if(rhs.isRowMajor()==row_major_order) vv -= rhs.getData(); else assert(false); }
 	/// subtraction of a VarMat
 	const VarMat<T> operator-(const VarMat<T>& rhs) const;
 	
@@ -94,7 +96,10 @@ private:
 	
 	unsigned int N;
 	unsigned int M;
+	bool row_major_order;
 	VarVec<T> vv;
+	
+	
 	
 	/// step in inversion process
 	void subinvert(unsigned int n);
@@ -127,7 +132,7 @@ VarMat<T> VarMat<T>::transposed() const {
 
 template<typename T>
 const VarMat<T> VarMat<T>::operator-() const {
-	VarMat<T> foo = VarMat(N,M); 
+	VarMat<T> foo = VarMat(N,M,row_major_order);
 	for(unsigned int i=0; i<N*M; i++)
 		foo[i] = -(*this)[i];
 	return foo;
