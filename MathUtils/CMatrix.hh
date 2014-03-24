@@ -134,7 +134,7 @@ private:
 	void calculateRealData() const;
 	
 	mutable std::vector<double> data;				//< real-space data
-	mutable std::vector< complex<double>> kdata;	//< K-space data
+	mutable std::vector< complex<double> > kdata;	//< K-space data
 	mutable bool has_realspace;						//< whether the real-space representation of this matrix has been calculated
 	mutable bool has_kspace;						//< whether the k-space representation of this matrix has been calculated
 	

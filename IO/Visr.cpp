@@ -350,18 +350,18 @@ namespace vsr {
 		usleep(10000);
 	}
 	
-	void keypress(unsigned char key, int x, int y) {
+	void keypress(unsigned char key, int, int) {
 		if(key == 32 || key == 13) // spacebar or return
 			pause_display = false;
 		if(key == 27) // escape
 			resetViewTransformation();
 	}
 	
-	void specialKeypress(int key, int x, int y) {
+	void specialKeypress(int, int, int) {
 		
 	}
 	
-	void startMouseTracking(int button, int state, int x, int y) {
+	void startMouseTracking(int, int state, int x, int y) {
 		modifier = glutGetModifiers();
 		if(state == GLUT_DOWN) {
 			clickx0 = x;

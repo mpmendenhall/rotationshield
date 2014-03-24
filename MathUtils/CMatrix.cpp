@@ -213,7 +213,7 @@ void CMatrix::printRow(int r) const {
 
 void CMatrix::display() const {
 	std::cout << "CMatrix " << ncycles << " " << has_realspace << " " << has_kspace << std::endl;
-	for(int r=0; r<ncycles; r++) {
+	for(unsigned int r=0; r<ncycles; r++) {
 		printRow(r);
 		printf("\n");
 	}
@@ -222,14 +222,14 @@ void CMatrix::display() const {
 
 void CMatrix::displayK() const {
 	std::cout << "{ ";
-	for(int i=0; i<ncycles/2+1; i++) std::cout << getKData()[i] << " ";
+	for(unsigned int i=0; i<ncycles/2+1; i++) std::cout << getKData()[i] << " ";
 	std::cout << "}" << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& o, const CMatrix& m) {
 	for(unsigned int r=0; r<m.ncycles; r++) {
 		o << "| ";
-		for(int c=0; c<m.ncycles; c++)
+		for(unsigned int c=0; c<m.ncycles; c++)
 			o << m[(c+(m.ncycles-r))%m.ncycles] << " ";
 		o << "|\n";
 	}
@@ -401,7 +401,7 @@ const CMatrix CMatrix::transpose() const {
 	CMatrix m = CMatrix(ncycles);
 	std::vector<double>& md = m.getRealData(); 
 	md[0] = (*this)[0];
-	for(int n=1; n<ncycles; n++) md[n] = (*this)[ncycles-n];
+	for(unsigned int n=1; n<ncycles; n++) md[n] = (*this)[ncycles-n];
 	return m;
 }
 

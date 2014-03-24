@@ -35,7 +35,7 @@ public:
 	void proximity(vec3 x, vec2 ll, vec2 ur, double& mn, double& mx) const;
 	
 	/// whether surface is closed/periodic along particular axis
-	virtual bool isClosed(unsigned int a) const { return false; }
+	virtual bool isClosed(unsigned int) const { return false; }
 	
 protected:
 

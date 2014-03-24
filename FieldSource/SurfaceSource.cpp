@@ -116,7 +116,7 @@ void SurfaceSource::visualize_region(vec2 ll, vec2 ur) const {
 	visualize_line(vec2(ur[0],ll[1]),ur);
 	visualize_line(ur,vec2(ll[0],ur[1]));
 	visualize_line(vec2(ll[0],ur[1]),ll);
-};
+}
 
 
 

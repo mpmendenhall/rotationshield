@@ -16,11 +16,11 @@ public:
 	vec3 B; //< the uniform field vector
 	
 	/// Magnetic field at a specified point
-	virtual vec3 fieldAt(const vec3& v) const { return B; }
+	virtual vec3 fieldAt(const vec3&) const { return B; }
 	/// Magnetic field averaged over specified line
-	virtual vec3 fieldOverLine(Line l) const { return B; }
+	virtual vec3 fieldOverLine(Line) const { return B; }
 	/// Magnetic field averaged over specified plane
-	virtual vec3 fieldOverPlane(Plane pl) const { return B; }
+	virtual vec3 fieldOverPlane(Plane) const { return B; }
 
 	/// visualization
 	virtual void _visualize() const {}

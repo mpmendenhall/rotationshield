@@ -96,7 +96,7 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 	bool self_ixn = BField_Protocol::BFP->caller == this && el == ixn_el;
 
 	// distance between active and responding element
-	int delta_phi = (i_nphi-c_np + 2*nPhi)%nPhi;
+	unsigned int delta_phi = (i_nphi-c_np + 2*nPhi)%nPhi;
 	if(delta_phi >= nPhi/2) delta_phi -= nPhi;
 	int delta_z = i_nz-c_nz;
 	if(mySurface->isClosed(0)) {

@@ -56,7 +56,7 @@ public:
 	/// return reference point location
 	vec2 refPt(GeomRefPt p) const;
 	/// construct into mixed source
-	void construct(MixedSource& ms, CosThetaBuilder* ct, const std::string& fcache = "");
+	void construct(MixedSource& ms, const std::string& fcache = "");
 	/// shield info as Stringmap
 	Stringmap getInfo() const;
 };

@@ -41,7 +41,7 @@ vec2 shieldFrame::refPt(GeomRefPt p) const {
 	return vec2(0,0);
 }
 	
-void shieldFrame::construct(MixedSource& ms, CosThetaBuilder* ct, const std::string& fcache) {
+void shieldFrame::construct(MixedSource& ms, const std::string& fcache) {
 
 	if(!mySections.size() || !pSegs) return;
 
@@ -120,7 +120,7 @@ void nEDM_Geom::construct() {
 	coil.buildCoil(*ms);
 	ms->visualize();
 	if(shield.mySections.size()) {
-		shield.construct(*ms,&coil);
+		shield.construct(*ms);
 		ms->visualize();
 	}
 }

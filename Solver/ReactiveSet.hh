@@ -24,7 +24,7 @@ public:
 	/// get DF for given phi reacting to state R
 	virtual mvec getReactionTo(ReactiveSet* R, unsigned int phi = 0) = 0;
 	/// respond to interaction protocol; return whether protocol recognized
-	virtual bool queryInteraction(void* ip) { return false; }
+	virtual bool queryInteraction(void*) { return false; }
 	/// prepare incident state vector
 	virtual void prepareIncident() { if(incidentState.size() != nDF()) incidentState = mvec(nDF()); }
 	//=====================================

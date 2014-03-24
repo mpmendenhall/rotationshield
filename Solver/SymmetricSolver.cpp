@@ -70,12 +70,12 @@ void SymmetricSolver::selfInteract(ReactiveSet& R) {
 	R.setFinalState(v);
 }
 
-void SymmetricSolver::writeToFile(std::ostream& o) const {
+void SymmetricSolver::writeToFile(std::ostream&) const {
 	assert(false);
 	//the_GF.writeToFile(o);
 }
 
-void SymmetricSolver::readFromFile(std::istream& s) const {
+void SymmetricSolver::readFromFile(std::istream&) const {
 	assert(false);
 	//the_GF.readFromFile(s);
 }

@@ -4,7 +4,7 @@ BField_Protocol* BField_Protocol::BFP = new BField_Protocol();
 
 void MagRSCombiner::addSet(ReactiveSet* R) {
 	ReactiveSetCombiner::addSet(R);
-};
+}
 
 void MagRSCombiner::calculateIncident(const FieldSource& f) {
 	for(std::vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++) {

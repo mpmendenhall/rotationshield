@@ -39,10 +39,10 @@ BASE_LIB_DIRS  = -L$(OS_DIR)/lib
 # optmization
 GCC_OPTIMIZATION_LEVEL = 3
 
-CPPFLAGS = -g -std=c++11 $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -Wall -Wuninitialized \
+CPPFLAGS = -g -std=c++0x $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -ansi -pedantic -Wall -Wextra \
 	-I. -IMathUtils -IGeometry -IFieldSource -ISolver -IBuilder -IStudies -IIO $(BASE_INCLUDE_DIRS)
 
-LDFLAGS += -lblas
+#LDFLAGS += -lblas
 
 ifdef ROTSHIELD_VIS
 	CPPFLAGS += -DWITH_OPENGL $(GL_INCLUDES) 
