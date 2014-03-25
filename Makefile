@@ -60,6 +60,8 @@ endif
 
 VPATH = ./:MathUtils/:Geometry/:FieldSource/:Solver/:Builder/:Studies/:IO/
 
+LDFLAGS +=  -L. -lRotationShield $(BASE_LIB_DIRS) -lgsl -lfftw3 -lgslcblas
+
 # things to build
 obj_IO = Visr.o strutils.o ControlMenu.o QFile.o SMExcept.o PathUtils.o VisSurface.o ProgressBar.o
 
@@ -77,10 +79,15 @@ obj_Builder = CosThetaBuilder.o SurfacelCyl.o FieldAdaptiveSurface.o
 obj_Studies = FieldAnalyzer.o tests.o Studies.o
 
 objects = $(obj_IO) $(obj_MathUtils) $(obj_Geometry) $(obj_FieldSource) $(obj_Solver) $(obj_Builder) $(obj_Studies)
-	
-RotationShield : main.cpp $(objects)
-	$(CXX) main.cpp $(objects) -o RotationShield $(CPPFLAGS) $(LDFLAGS) $(BASE_LIB_DIRS) -lgsl -lfftw3 -lgslcblas
-	
+
+all: RotationShield
+
+libRotationShield.a: $(objects)
+	ar rs libRotationShield.a $(objects)
+
+RotationShield: main.cpp libRotationShield.a
+	$(CXX) $(CPPFLAGS) main.cpp $(LDFLAGS)  -o RotationShield
+
 
 #
 # documentation via Doxygen
@@ -99,5 +106,6 @@ clean:
 	-rm -rf *.o
 	-rm -rf latex/
 	-rm -rf html/
-	-rm RotationShield
+	-rm -f RotationShield
+	-rm -f libRotationShield.a
 	
