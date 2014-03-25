@@ -363,12 +363,11 @@ void tube_test() {
 	vis_test_sequence(RS, MxS, vec3(0.1,0,0.5), vec3(0.1,0,0));
 }
 
-
 void flux_trap_test() {
 
 	std::cout << "Calculating trapped-flux state of superconducting ring..." << std::endl;
 	
-	RoundedTube* RT = new RoundedTube(vec2(0,0.25), vec2(0,0.8), 0.1);
+	RoundedTube* RT = new RoundedTube(vec2(-.2, 0.25), vec2(0.2, 0.8), 0.1);
 	CylSurfaceGeometry* SG = new CylSurfaceGeometry(RT);
 	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG, 10, 18);
 	RS->setSurfaceResponse(SurfaceI_Response(0));
@@ -379,21 +378,27 @@ void flux_trap_test() {
 	
 	std::cout << "Setting initial current loop distribution..." << std::endl;
 	RS->setZeroState();
-	//RS->set_current_loop(0,1.0,false);
 	RS->set_current_loop(9,1.0);
 	RS->setFinalState(RS->finalState.normalized()*(0.05*RS->nDF()));
+	std::cout << "Total state vector magnitude: " << RS->finalState.mag() << std::endl;
 	RS->visualize();
 	vsr::pause();
+	
+	std::cout << "Selecting singular component from SVD, which indicates ``self-interacting'' mode without external field:" << std::endl;
+	RS->incidentState = RS->finalState;
+	SS.set_singular_epsilon(-0.01);	// pick out only singular component of solution
+	SS.calculateResult(*RS);		// apply singular state
+	RS->visualize();
+	std::cout << "Total state vector magnitude: " << RS->finalState.mag() << std::endl;
+	qsurvey(RS, vec3(0,.75,0), vec3(0,0,0), 6);
+	vsr::pause();
+	
+	for(unsigned int i=0; i<5; i++) {
 		
-	for(unsigned int i=0; i<100; i++) {
-		
-		std::cout << "Iterating solution to stable trapped-flux state..." << std::endl;
+		std::cout << "Checking stability of trapped-flux state by repeatedly applying interaction operator..." << std::endl;
 		RS->incidentState = RS->finalState;
-		//SS.calculateResult(*RS);	// alternate, gets there faster, but with huge normalization isse
-		SS.selfInteract(*RS);
-		
-		std::cout << RS->finalState.mag() << std::endl;
-		RS->setFinalState(RS->finalState.normalized()*(0.05*RS->nDF()));
+		SS.selfInteract(*RS);	// state should be stable under self-interaction
+		std::cout << "Total state vector magnitude: " << RS->finalState.mag() << std::endl;
 		std::cout << "Initial/final state difference magnitude: " << (RS->finalState - RS->incidentState).mag() << std::endl;
 		
 		qsurvey(RS, vec3(0,.75,0), vec3(0,0,0), 6);
@@ -401,8 +406,9 @@ void flux_trap_test() {
 		RS->visualize();
 		vsr::pause();
 	}
-
 }
+
+
 
 bool csurface_test() {
 

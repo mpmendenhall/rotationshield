@@ -39,10 +39,15 @@ BASE_LIB_DIRS  = -L$(OS_DIR)/lib
 # optmization
 GCC_OPTIMIZATION_LEVEL = 3
 
-CPPFLAGS = -g -std=c++0x $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -pedantic -Wall -Wextra \
+CPPFLAGS = -g -std=c++0x $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -pedantic -Wall -Wextra -Weffc++ \
 	-I. -IMathUtils -IGeometry -IFieldSource -ISolver -IBuilder -IStudies -IIO $(BASE_INCLUDE_DIRS)
 
-#LDFLAGS += -lblas
+ifdef ROTSHIELD_LAPACKE
+	# BLAS and LAPACK(E) libraries for matrix manipulation; also, need gfortran for LAPACK linking
+	LDFLAGS += -llapacke -llapack -lblas -lgfortran
+	BASE_LIB_DIRS += -L$(OS_DIR)/lib/lapack/ -L$(OS_DIR)/lib/gcc4.8/lib/
+	CPPFLAGS += -DWITH_LAPACKE
+endif
 
 ifdef ROTSHIELD_VIS
 	CPPFLAGS += -DWITH_OPENGL $(GL_INCLUDES) 
@@ -58,7 +63,7 @@ VPATH = ./:MathUtils/:Geometry/:FieldSource/:Solver/:Builder/:Studies/:IO/
 # things to build
 obj_IO = Visr.o strutils.o ControlMenu.o QFile.o SMExcept.o PathUtils.o VisSurface.o ProgressBar.o
 
-obj_MathUtils = Geometry.o Integrator.o RefCounter.o linmin.o CMatrix.o InterpolationHelper.o BicubicGrid.o
+obj_MathUtils = Geometry.o Integrator.o CMatrix.o LAPACKE_Matrix.o BlockCMat.o RefCounter.o linmin.o InterpolationHelper.o BicubicGrid.o
 
 obj_Geometry = Angles.o SurfaceGeometry.o SurfaceProfiles.o
 

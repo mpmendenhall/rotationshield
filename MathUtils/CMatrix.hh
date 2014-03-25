@@ -5,19 +5,32 @@
 
 #include <iostream>
 #include <fftw3.h>
-#include <vector>
+#include <map>
 #include <complex.h>
 #include "VarVec.hh"
 
 using namespace std;
 
-/// Stores fftw data for FFT'ing 
-struct cmatrix_fft {
-	unsigned int ncyc; //< size of CMatrix this is meant for
-	fftw_plan forwardplan; //< FFTW data for forward Fourier Transforms of this size
-	fftw_plan reverseplan; //< FFTW data for inverse Fourier Transforms of this size
-	double* realspace; //< array for holding real-space side of transform data
-	complex<double>* kspace; //< array for holding kspace-side of transform data
+/// Stores fftw data for FFT'ing
+class cmatrix_fft {
+public:
+	/// constructor
+	cmatrix_fft(unsigned int m);
+	/// destructor
+	~cmatrix_fft() { delete[] realspace; delete[] kspace; }
+	
+	const unsigned int M;			//< number of elements
+	fftw_plan forwardplan;			//< FFTW data for forward Fourier Transforms of this size
+	fftw_plan reverseplan;			//< FFTW data for inverse Fourier Transforms of this size
+	double* realspace;				//< array for holding real-space side of transform data
+	complex<double>* kspace;		//< array for holding kspace-side of transform data
+
+	/// get FFTer for dimension m
+	static cmatrix_fft& get_ffter(unsigned int m);
+	
+protected:
+
+	static std::map<unsigned int,cmatrix_fft*> ffters;	//< loaded FFTers
 };
 
 /// Circulant matrices
@@ -28,7 +41,7 @@ struct cmatrix_fft {
  Fourier basis, allowing for computationally efficient handling of matrix operations
  (multiplication, inversion, etc.) of circulant matrices.
  Note, the internal data representation is the transpose of the matrix as defined above;
- 	the necessary permutation of component order is automatically applied for vector multiplication.
+ the necessary permutation of component order is automatically applied for vector multiplication.
  The FFTs are performed by the <a href="http://www.fftw.org">FFTW library</a>,
  which pre-calculates plans to expedite FFT'ing specific length data arrays. The CMatrix class keeps a cache of
  the FFTW data needed for each size of CMatrix instantiated (which could become inefficient if a wide variety of
@@ -37,25 +50,24 @@ struct cmatrix_fft {
 class CMatrix {
 public:
 	/// Constructor
-	CMatrix(unsigned int ncyc = 0);
+	CMatrix(unsigned int m = 0): M(m), data(M,0.), kdata(M/2+1,0.), has_realspace(true), has_kspace(true) { }
 	
-	/// Make a CMatrix using a data array for the first column
-	static CMatrix cmatrixFromColumn(int ncyc, double* coldat);
-	
+	/*
 	/// Save matrix to a file (to be read by readFromFile())
 	void writeToFile(std::ostream& o) const;
 	/// Read matrix from a file written by writeToFile()
 	static CMatrix readFromFile(std::istream& s);
+	*/
 	
 	/// generate an identity CMatrix
-	static CMatrix identity(unsigned int nc);
-	/// Fill the first row of this matrix with the ascending sequence \f$ r_0,r_0+1,r_0+2,\cdots \f$
-	static CMatrix ramp(unsigned int nc, double r0);
+	static CMatrix identity(unsigned int m);
 	/// Fill this CMatrix with random numbers in [0,1]
-	static CMatrix random(unsigned int nc);
+	static CMatrix random(unsigned int m);
 	
-	/// zero all entries in this CMatrix
-	void zero();
+	unsigned int nRows() const { return M; }
+	unsigned int nCols() const { return M; }
+	unsigned int size() const { return M*M; }
+	
 	/// Print this CMatrix to stdout
 	void display() const;
 	/// Print kspace data for this CMatrix to stdout
@@ -76,12 +88,12 @@ public:
 	/// Return a pointer to the CMatrix's Fourier representation
 	std::vector< complex<double> >& getKData();
 	/// Return a pointer to the CMatrix's Fourier representation (read only)
-	const std::vector< complex<double> >& getKData() const;
+	const std::vector< complex<double> >&  getKData() const;
 	/// Return a pointer to the CMatrix's real-space representation
-	std::vector<double>& getRealData();
+	std::vector<double>&  getRealData();
 	/// Return a pointer to the CMatrix's real-space representation (read only)
 	const std::vector<double>& getRealData() const;
-			
+	
 	/// Calculate the inverse of this CMatrix
 	const CMatrix inverse() const;
 	/// Invert this CMatrix inplace
@@ -115,33 +127,24 @@ public:
 	/// Print the rth row of the matrix to stdout
 	void printRow(int r) const;
 	
-	unsigned int ncycles; //< number of rows (columns)
-	
 private:
 	
-	/// Allocate memory for the real-space data of the matrix
-	void alloc_data() const;
-	/// Allocate memory for the k-space data of the matrix
-	void alloc_kdata() const;
-	/// create a new FFTW plan for a different size of CMatrix
-	void add_inverter() const;
-	/// get the appropriate FFTW plans for this size of CMatrix
-	cmatrix_fft& get_ffter() const;
+	unsigned int M;	//< number of cycles
 	
 	/// calculate K-space data from real space
 	void calculateKData() const;
 	/// calculate real-space data from K-space
 	void calculateRealData() const;
 	
-	mutable std::vector<double> data;				//< real-space data
-	mutable std::vector< complex<double> > kdata;	//< K-space data
-	mutable bool has_realspace;						//< whether the real-space representation of this matrix has been calculated
-	mutable bool has_kspace;						//< whether the k-space representation of this matrix has been calculated
+	/// zero all entries in this CMatrix
+	void zero() const;
 	
-	static std::vector<cmatrix_fft> ffters;	//< cache of FFTW plans for FFT'ing various sizes of CMatrix
+	mutable std::vector<double> data;						//< real-space data
+	mutable std::vector< complex<double> > kdata;			//< K-space data
+	mutable bool has_realspace;								//< whether the real-space representation of this matrix has been calculated
+	mutable bool has_kspace;								//< whether the k-space representation of this matrix has been calculated
 };
 
-/// string format for CMatrix display
 std::ostream& operator<<(std::ostream& o, const CMatrix& m);
 
 #endif

@@ -7,8 +7,11 @@ void SymmetricSolver::circulantMul(const BlockCMat& M, mvec& v, unsigned int nPh
 	assert(!(v.size()%nPhi));
 	assert(M.nCols()*nPhi == v.size());
 	
+	//std::cout << "Max value in = " << v.max_norm_L2() << "\n";
+	//std::cout << "Max value M = " << M.getData().max_norm_L2() << "\n";
+	
 	// stuff vector into vector-of-vectors for circulant blocks
-	VarVec< mvec > vv;
+	VarVec<mvec> vv;
 	for(unsigned int i=0; i<v.size()/nPhi; i++)
 		vv.push_back(mvec(&v[i*nPhi], &v[i*nPhi]+nPhi));
 	vv = M.lMultiply<mvec,mvec>(vv);
@@ -18,22 +21,21 @@ void SymmetricSolver::circulantMul(const BlockCMat& M, mvec& v, unsigned int nPh
 	for(unsigned int i=0; i<M.nRows(); i++)
 		for(unsigned int j=0; j<nPhi; j++)
 			v[i*nPhi+j] = vv[i][j];
-}
-
-BlockCMat SymmetricSolver::makeIdentity(unsigned int N, unsigned int nPhi) {
-	return BlockCMat::identity(N, CMatrix::identity(nPhi), CMatrix(nPhi));
+	//std::cout << "Max value out = " << v.max_norm_L2() << "\n";
 }
 
 double SymmetricSolver::checkInversion(const BlockCMat& M, const BlockCMat& MI, unsigned int nPhi) {
-	return (M * MI - makeIdentity(M.nRows(),nPhi)).getData().max_norm_L2();
+	return (M * MI - makeBlockCMatIdentity(M.nRows(),nPhi)).getData().max_norm_L2();
 }
 
 void SymmetricSolver::solve(ReactiveSet& R) {
 	buildInteractionMatrix(R);
 	printf("Solving for Green's Function... ");
-	BlockCMat M = the_GF; // save a copy for inversion check
-	the_GF.invert();
-	printf(" %g inversion error.",checkInversion(M,the_GF,R.nPhi));
+	if(the_GF) delete(the_GF);
+	BlockCMat ImR = makeBlockCMatIdentity(R.nDF()/R.nPhi, R.nPhi) - the_ixn;
+	the_GF = new BlockCMat_SVD(ImR);
+	std::cout << "Inversion error " << checkInversion(ImR, the_GF->calc_pseudo_inverse(singular_epsilon), R.nPhi) << "\n";
+	print_singular_values();
 	printf(" Done.\n");
 }
 
@@ -52,22 +54,32 @@ void SymmetricSolver::buildInteractionMatrix(ReactiveSet& R) {
 			the_ixn(i, DF/R.nPhi)[DF%R.nPhi] = v[i];
 		pb.update(DF);
 	}
-	the_GF = makeIdentity(R.nDF()/R.nPhi, R.nPhi) - the_ixn;
 }
 
 void SymmetricSolver::calculateResult(ReactiveSet& R) {
 	if(verbose) printf("Calculating resulting surface current..."); fflush(stdout);
 	R.prepareIncident();
 	R.finalState = R.incidentState;
-	circulantMul(the_GF, R.finalState, R.nPhi);
+	circulantMul(the_GF->calc_pseudo_inverse(singular_epsilon), R.finalState, R.nPhi);
 	R.setFinalState(R.finalState);
 	if(verbose) printf(" Done.\n");
 }
 
 void SymmetricSolver::selfInteract(ReactiveSet& R) {
-	VarVec<double> v = R.incidentState;
-	circulantMul(the_ixn, v, R.nPhi);
-	R.setFinalState(v);
+	R.finalState = R.incidentState;
+	circulantMul(the_ixn, R.finalState, R.nPhi);
+	R.setFinalState(R.finalState);
+}
+
+void SymmetricSolver::print_singular_values() const {
+	if(!the_GF) return;
+	std::cout << "Most Singular values:\n";
+	const std::vector<double>& S = the_GF->singular_values();
+	for(unsigned int i=0; i<S.size(); i++) {
+		std::cout << S[i]/S.back() << "\t";
+		if(S[i] > 100*S[0] || S[i] > 0.1*S.back()) break;
+	}
+	std::cout << "\n\n";
 }
 
 void SymmetricSolver::writeToFile(std::ostream&) const {

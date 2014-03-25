@@ -46,8 +46,6 @@ public:
 	T* getDataPtr() { return &data.front(); }
 	/// pointer to beginning of array
 	const T* getDataPtr() const { return &data.front(); }
-	/// immutable access to the whole data vector
-	//const std::vector<T>& getDataC() const { return data; }
 	/// append
 	void push_back(const T& x) { data.push_back(x); }
 	/// generate sub-vector
@@ -372,11 +370,11 @@ varvec2doublevec(const VarVec<T>& v) {
 
 namespace VarVec_element_norm_L2 {
 	template<typename T>
-	inline double norm_L2(T t) { return t.norm_L2(); }
+	inline double norm_L2(const T& t) { return t.norm_L2(); }
   	template<>
-	inline double norm_L2(float t) { return fabs(t); }
+	inline double norm_L2(const float& t) { return fabs(t); }
 	template<>
-	inline double norm_L2(double t) { return fabs(t); }
+	inline double norm_L2(const double& t) { return fabs(t); }
 }
 
 template<typename T>
