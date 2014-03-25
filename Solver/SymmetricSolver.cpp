@@ -7,9 +7,6 @@ void SymmetricSolver::circulantMul(const BlockCMat& M, mvec& v, unsigned int nPh
 	assert(!(v.size()%nPhi));
 	assert(M.nCols()*nPhi == v.size());
 	
-	//std::cout << "Max value in = " << v.max_norm_L2() << "\n";
-	//std::cout << "Max value M = " << M.getData().max_norm_L2() << "\n";
-	
 	// stuff vector into vector-of-vectors for circulant blocks
 	VarVec<mvec> vv;
 	for(unsigned int i=0; i<v.size()/nPhi; i++)
@@ -21,7 +18,6 @@ void SymmetricSolver::circulantMul(const BlockCMat& M, mvec& v, unsigned int nPh
 	for(unsigned int i=0; i<M.nRows(); i++)
 		for(unsigned int j=0; j<nPhi; j++)
 			v[i*nPhi+j] = vv[i][j];
-	//std::cout << "Max value out = " << v.max_norm_L2() << "\n";
 }
 
 double SymmetricSolver::checkInversion(const BlockCMat& M, const BlockCMat& MI, unsigned int nPhi) {
@@ -82,36 +78,52 @@ void SymmetricSolver::print_singular_values() const {
 	std::cout << "\n\n";
 }
 
-void SymmetricSolver::writeToFile(std::ostream&) const {
-	assert(false);
-	//the_GF.writeToFile(o);
+void SymmetricSolver::writeToFile(std::ostream& o) const {
+	writeString("(SymmetricSolver)",o);
+	the_ixn.writeToFile(o);
+	o.write((char*)&singular_epsilon,		sizeof(singular_epsilon));
+	o.write((char*)&the_GF,					sizeof(the_GF));
+	if(the_GF) the_GF->writeToFile(o);
+	writeString("(/SymmetricSolver)",o);
 }
 
-void SymmetricSolver::readFromFile(std::istream&) const {
-	assert(false);
-	//the_GF.readFromFile(s);
+SymmetricSolver* SymmetricSolver::readFromFile(std::istream& s) {
+	SymmetricSolver* foo = new SymmetricSolver();
+	checkString("(SymmetricSolver)",s);
+	foo->the_ixn = BlockCMat::readFromFile(s);
+	s.read((char*)&foo->singular_epsilon,	sizeof(foo->singular_epsilon));
+	s.read((char*)&foo->the_GF,				sizeof(foo->the_GF));
+	if(foo->the_GF) foo->the_GF = BlockCMat_SVD::readFromFile(s);
+	checkString("(/SymmetricSolver)",s);
+	return foo;
 }
 
-void SymmetricSolver::cachedSolve(ReactiveSet& R, const std::string& fname) {
+SymmetricSolver* SymmetricSolver::cachedSolve(ReactiveSet& R, const std::string& fname) {
 	
+	SymmetricSolver* foo = NULL;
 	if(!fname.size()) {
-		solve(R);
-		return;
+		foo = new SymmetricSolver();
+		foo->solve(R);
+		return foo;
 	}
 	
 	std::ifstream ifs(fname.c_str(), std::ifstream::in | std::ifstream::binary);
 	if(ifs.good()) {
 		std::cout << "Loading previous SymmetricSolver solution from '" << fname << "'." << std::endl;
-		readFromFile(ifs);
+		foo = SymmetricSolver::readFromFile(ifs);
 		ifs.close();
 	} else {
-		solve(R);
-		std::ofstream ofs(fname.c_str(), std::ifstream::out | std::ifstream::binary);
+		foo = new SymmetricSolver();
+		foo->solve(R);
+		std::cout << "Saving SymmetricSolver solution to '" << fname << "'." << std::endl;
+		std::ofstream ofs(fname.c_str(), std::ofstream::out | std::ofstream::binary);
 		if(!ofs.good()) {
 			std::cout << "Warning: SymmetricSolver unable to write to file '" << fname << "'." << std::endl;
-			return;
+			return foo;
 		}
-		writeToFile(ofs);
+		foo->writeToFile(ofs);
 		ofs.close();
 	}
+	
+	return foo;
 }

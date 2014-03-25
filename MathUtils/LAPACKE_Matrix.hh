@@ -8,7 +8,7 @@
 //#define lapack_complex_double   double _Complex
 #define lapack_complex_double  std::complex<double>
 #include "lapacke.h"
-
+#include "BinaryOutputObject.hh"
 #include <algorithm>
 #include <cassert>
 #include <gsl/gsl_cblas.h>
@@ -128,7 +128,7 @@ public:
 
 /// Templatized wrapper for SVD of matrix A = U S V^T
 template<typename T, typename CT>
-class LAPACKE_Matrix_SVD {
+class LAPACKE_Matrix_SVD: public BinaryOutputObject {
 public:
 	/// Constructor
 	LAPACKE_Matrix_SVD(VarMat<CT>& A): S(std::min(A.nRows(), A.nCols()),1), U(A.nRows(), S.nRows()), VT(S.nRows(), A.nCols()), PsI(NULL), PsI_epsilon(0) {
@@ -254,8 +254,42 @@ public:
 	
 	/// get list of singular values
 	const VarMat<T>& singular_values() const { return S; }
+	
+	/// Dump binary data to file
+	void writeToFile(std::ostream& o) const {
+		writeString("(LAPACKE_Matrix_SVD_"+std::to_string(sizeof(CT))+")",o);
+		S.writeToFile(o);
+		U.writeToFile(o);
+		VT.writeToFile(o);
+		o.write((char*)&PsI,			sizeof(PsI));
+		o.write((char*)&PsI_epsilon,	sizeof(PsI_epsilon));
+		if(PsI) PsI->writeToFile(o);
+		writeString("(/LAPACKE_Matrix_SVD_"+std::to_string(sizeof(CT))+")",o);
+	}
+
+	/// Read binary data from file
+	static LAPACKE_Matrix_SVD* readFromFile(std::istream& s) {
+		LAPACKE_Matrix_SVD* foo = new LAPACKE_Matrix_SVD();
+		
+		checkString("(LAPACKE_Matrix_SVD_"+std::to_string(sizeof(CT))+")",s);
+		foo->S = VarMat<T>::readFromFile(s);
+		foo->U = VarMat<CT>::readFromFile(s);
+		foo->VT = VarMat<CT>::readFromFile(s);
+		s.read((char*)&foo->PsI,		sizeof(foo->PsI));
+		s.read((char*)&foo->PsI_epsilon,sizeof(foo->PsI_epsilon));
+		if(foo->PsI) {
+			foo->PsI = new VarMat<CT>();
+			*foo->PsI = VarMat<CT>::readFromFile(s);
+		}
+		checkString("(/LAPACKE_Matrix_SVD_"+std::to_string(sizeof(CT))+")",s);
+		return foo;
+	}
 
 protected:
+
+	/// non-calculating constructor
+	LAPACKE_Matrix_SVD(): PsI(NULL), PsI_epsilon(0) {}
+
 	VarMat<T> S;		//< singular values diagonal
 	VarMat<CT> U;		//< left singular vectors
 	VarMat<CT> VT;		//< right singular vectors

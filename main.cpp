@@ -15,6 +15,8 @@
 
 /// run self-tests
 void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
+	reference_simpleshield_cached();
+	return;
 	printf("Simple shield self-test...\n");
 	reference_simpleshield();
 }
@@ -222,7 +224,9 @@ void menuSystem(std::deque<std::string> args=std::deque<std::string>()) {
 	selectDemo.addChoice("superconducting sphere","sc");
 	selectDemo.addChoice("superconductor-mirrored cos theta coil","mr");
 	selectDemo.addChoice("cos-theta coil in ferromagnetic tube","tb");
+#ifdef WITH_LAPACKE
 	selectDemo.addChoice("trapped-flux state of superconducting ring","ft");
+#endif
 	inputRequester demos("Demonstration calculations",&mi_demos);
 	demos.addArg(&selectDemo);
 	

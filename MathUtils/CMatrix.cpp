@@ -42,34 +42,38 @@ cmatrix_fft& cmatrix_fft::get_ffter(unsigned int m) {
 
 // File IO ------______------______-------_______------______------
 
-/*
 void CMatrix::writeToFile(std::ostream& o) const {
-	unsigned int ncyc = M;
-	o.write((char*)&ncyc,sizeof(unsigned int));
-	o.write((char*)&has_realspace,sizeof(bool));
-	o.write((char*)&has_kspace,sizeof(bool));
+	writeString("(CMatrix)",o);
+	o.write((char*)&M,					sizeof(M));
+	o.write((char*)&has_realspace,		sizeof(has_realspace));
+	o.write((char*)&has_kspace,			sizeof(has_kspace));
+
 	if(has_realspace)
-		o.write((char*)data,sizeof(data[0])*M);
+		o.write((char*)&data[0],		sizeof(data[0])*M);
 	if(has_kspace)
-		o.write((char*)kdata,sizeof(kdata[0])*(M/2+1));
+		o.write((char*)&kdata[0],		sizeof(kdata[0])*(M/2+1));
+	writeString("(/CMatrix)",o);
 }
 
+
 CMatrix CMatrix::readFromFile(std::istream& s) {
-	unsigned int M;
-	bool hrd, hkd;
-	s.read((char*)&M,sizeof(unsigned int));
-	s.read((char*)&hrd,sizeof(bool));
-	s.read((char*)&hkd,sizeof(bool));
-	CMatrix foo(M);
-	if(hrd) {
-		s.read((char*)foo.data,sizeof(foo.data[0])*M);
+	checkString("(CMatrix)",s);
+	CMatrix foo;
+	s.read((char*)&foo.M,				sizeof(foo.M));
+	s.read((char*)&foo.has_realspace,	sizeof(foo.has_realspace));
+	s.read((char*)&foo.has_kspace,		sizeof(foo.has_realspace));
+	
+	if(foo.has_realspace) {
+		foo.data.resize(foo.M);
+		s.read((char*)&foo.data[0],		sizeof(foo.data[0])*foo.M);
 	}
-	if(hkd) {
-		s.read((char*)foo.kdata,sizeof(foo.data[0])*(M/2+1));
+	if(foo.has_kspace) {
+		foo.kdata.resize(foo.M/2+1);
+		s.read((char*)&foo.kdata[0],	sizeof(foo.kdata[0])*(foo.M/2+1));
 	}
+	checkString("(/CMatrix)",s);
 	return foo;
 }
-*/
 
 // Special Matrices ------______------______-------_______------______------
 

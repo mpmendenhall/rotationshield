@@ -3,8 +3,10 @@
 
 #include "VarVec.hh"
 #include "Matrix.hh"
+#include "BinaryOutputObject.hh"
 #include <vector>
 #include <algorithm>
+#include <cassert>
 
 /// A templatized, dynamically allocated matrix class.
 /**
@@ -13,7 +15,7 @@
  Data internally in *column major* order, for easier LAPACK compatibility
  */
 template<typename T>
-class VarMat {
+class VarMat: public BinaryOutputObject {
 public:
 	/// constructor with prototype element
 	VarMat(unsigned int m=0, unsigned int n=0, const T& i = 0): M(m), N(n), vv(n*m,i) { }
@@ -92,13 +94,16 @@ public:
 	/// vector multiplication, when all objects are of same type
 	const VarVec<T> operator*(const VarVec<T>& v) const { return lMultiply<T,T>(v); }
 	
+	/// Dump binary data to file
+	void writeToFile(std::ostream& o) const;
+	/// Read binary data from file
+	static VarMat<T> readFromFile(std::istream& s);
+	
 private:
 	
 	unsigned int M;
 	unsigned int N;
 	VarVec<T> vv;
-	
-	
 	
 	/// step in inversion process
 	void subinvert(unsigned int n);
@@ -317,6 +322,27 @@ std::ostream& operator<<(std::ostream& o, const VarMat<T>& A) {
 		o << " ],\n";
 	}
 	return o;
+}
+
+template<typename T>
+void VarMat<T>::writeToFile(std::ostream& o) const {
+	writeString("(VarMat_"+std::to_string(sizeof(T))+")",o);
+	o.write((char*)&M, sizeof(M));
+	o.write((char*)&N, sizeof(N));
+	vv.writeToFile(o);
+	writeString("(/VarMat_"+std::to_string(sizeof(T))+")",o);
+}
+
+template<typename T>
+VarMat<T> VarMat<T>::readFromFile(std::istream& s) {
+	checkString("(VarMat_"+std::to_string(sizeof(T))+")",s);
+	VarMat<T> foo;
+	s.read((char*)&foo.M, sizeof(foo.M));
+	s.read((char*)&foo.N, sizeof(foo.N));
+	foo.vv = VarVec<T>::readFromFile(s);
+	assert(foo.M*foo.N == foo.vv.size());
+	checkString("(/VarMat_"+std::to_string(sizeof(T))+")",s);
+	return foo;
 }
 
 #endif

@@ -7,7 +7,7 @@
 #include <vector>
 #include "Vec.hh"
 #include "Permutation.hh"
-#include <iostream>
+#include "BinaryOutputObject.hh"
 #include <algorithm>
 #include <exception>
 
@@ -19,7 +19,7 @@ class DimensionMismatchError: public std::exception {
 
 /// Dynamically allocated length vectors
 template<class T>
-class VarVec {
+class VarVec: public BinaryOutputObject {
 public:
 	/// Constructor
 	VarVec(unsigned int n = 0): data(n) {}
@@ -161,6 +161,11 @@ public:
 	const VarVec<T> permuted(const Permutation& p) const;
 	/// Permute the order of this vector's elements
 	VarVec<T>& permute(const Permutation& p);
+	
+	/// Dump binary data to file
+	void writeToFile(std::ostream& o) const;
+	/// Read binary data from file
+	static VarVec<T> readFromFile(std::istream& s);
 	
 protected:
 	std::vector<T> data;
@@ -403,6 +408,44 @@ std::ostream& operator<<(std::ostream& o, const VarVec<T>& v) {
 		o << v[i] << " ";
 	o << ">";
 	return o;
+}
+
+namespace VarVec_element_IO {
+	template<typename T>
+	inline void writeToFile(const T& t, std::ostream& o) { t.writeToFile(o); }
+	template<>
+	inline void writeToFile(const float& t, std::ostream& o) { o.write((char*)&t, sizeof(t)); }
+	template<>
+	inline void writeToFile(const double& t, std::ostream& o) { o.write((char*)&t, sizeof(t)); }
+	
+	template<typename T>
+	inline T readFromFile(std::istream& s) { return T::readFromFile(s); }
+	template<>
+	inline float readFromFile(std::istream& s) { float x; s.read((char*)&x, sizeof(x)); return x; }
+	template<>
+	inline double readFromFile(std::istream& s) { double x; s.read((char*)&x, sizeof(x)); return x; }
+}
+
+template<typename T>
+void VarVec<T>::writeToFile(std::ostream& o) const {
+	writeString("(VarVec_"+std::to_string(sizeof(T))+")",o);
+	unsigned int N = size();
+	o.write((char*)&N,	sizeof(N));
+	for(unsigned int i=0; i<N; i++)
+		VarVec_element_IO::writeToFile<T>(data[i],o);
+	writeString("(/VarVec_"+std::to_string(sizeof(T))+")",o);
+}
+
+template<typename T>
+VarVec<T> VarVec<T>::readFromFile(std::istream& s) {
+	checkString("(VarVec_"+std::to_string(sizeof(T))+")",s);
+	VarVec<T> foo;
+	unsigned int N;
+	s.read((char*)&N,	sizeof(N));
+	for(unsigned int i=0; i<N; i++)
+		foo.push_back(VarVec_element_IO::readFromFile<T>(s));
+	checkString("(/VarVec_"+std::to_string(sizeof(T))+")",s);
+	return foo;
 }
 
 #endif

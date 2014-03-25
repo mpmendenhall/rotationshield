@@ -13,6 +13,8 @@ bool reference_simpleshield();
 
 /// tests for integrator routines
 bool integrator_tests();
+/// test cacheing solver to file
+bool reference_simpleshield_cached();
 
 /// superconducting ball in uniform field
 void superball_test();

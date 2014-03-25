@@ -8,6 +8,7 @@
 #include <map>
 #include <complex.h>
 #include "VarVec.hh"
+#include "BinaryOutputObject.hh"
 
 using namespace std;
 
@@ -33,6 +34,14 @@ protected:
 	static std::map<unsigned int,cmatrix_fft*> ffters;	//< loaded FFTers
 };
 
+namespace VarVec_element_IO {
+	template<>
+	inline void writeToFile(const complex<double>& t, std::ostream& o) { o.write((char*)&t, sizeof(t)); }
+	
+	template<>
+	inline complex<double> readFromFile(std::istream& s) { complex<double> x; s.read((char*)&x, sizeof(x)); return x; }
+}
+
 /// Circulant matrices
 /** A circulant matrix is a square matrix in which each row is a cyclic permutation by one of the previous row, e.g.
  \f$ \left| \begin{array}{ccc} a & b & c \\ c & a & b \\ b & c & a \end{array} \right| \f$.
@@ -47,7 +56,7 @@ protected:
  the FFTW data needed for each size of CMatrix instantiated (which could become inefficient if a wide variety of
  CMatrix sizes are used in the same code, but is suitable for this application where only one size of CMatrix is used
  for a particular interaction symmetry).*/
-class CMatrix {
+class CMatrix: public BinaryOutputObject {
 public:
 	/// Constructor
 	CMatrix(unsigned int m = 0): M(m), data(M,0.), kdata(M/2+1,0.), has_realspace(true), has_kspace(true) { }
@@ -126,6 +135,11 @@ public:
 	
 	/// Print the rth row of the matrix to stdout
 	void printRow(int r) const;
+	
+	/// Dump binary data to file
+	void writeToFile(std::ostream& o) const;
+	/// Read binary data from file
+	static CMatrix readFromFile(std::istream& s);
 	
 private:
 	

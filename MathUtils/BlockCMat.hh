@@ -9,7 +9,7 @@
 #include <cassert>
 #include "CMatrix.hh"
 #include "VarMat.hh"
-
+#include "BinaryOutputObject.hh"
 #ifdef WITH_LAPACKE
 #include "LAPACKE_Matrix.hh"
 #endif
@@ -20,7 +20,7 @@ BlockCMat makeBlockCMatIdentity(unsigned int n, unsigned int mc);
 BlockCMat makeBlockCMatRandom(unsigned int n, unsigned int mc);
 
 /// singular-value decomposition of block circulant matrix
-class BlockCMat_SVD {
+class BlockCMat_SVD: public BinaryOutputObject {
 public:
 	/// constructor
 	BlockCMat_SVD(const BlockCMat& BC);
@@ -31,16 +31,24 @@ public:
 	const BlockCMat& calc_pseudo_inverse(double epsilon = 0);
 	
 	/// return sorted list of singular values, for threshold determination
-	const std::vector<double>& singular_values() const { return svalues; }
+	const std::vector<double>& singular_values() const { return svalues.getData(); }
+	
+	/// Dump binary data to file
+	void writeToFile(std::ostream& o) const;
+	/// Read binary data from file
+	static BlockCMat_SVD* readFromFile(std::istream& s);
 	
 protected:
+	/// empty constructor without calculation
+	BlockCMat_SVD() {}
+
 	unsigned int M, N, Mc;
 #ifdef WITH_LAPACKE
 	std::vector< LAPACKE_Matrix_SVD<double,lapack_complex_double>* > block_SVDs;
 #endif
-	std::vector<double> svalues;	//< sorted singular values
-	BlockCMat* PsI;					//< pseudo-inverse
-	double PsI_epsilon;				//< threshold for singular vectors
+	VarVec<double> svalues;		//< sorted singular values
+	BlockCMat* PsI;				//< pseudo-inverse
+	double PsI_epsilon;			//< threshold for singular vectors
 };
 
 #endif

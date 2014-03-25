@@ -6,16 +6,19 @@
 #include "Typedefs.hh"
 #include "InteractionSolver.hh"
 #include "BlockCMat.hh"
+#include "BinaryOutputObject.hh"
 #include <string>
 #include <cassert>
 
 /// Green's Function solver for systems of linear interactions with a periodic symmetry between interaction terms (represented by ReactiveSets with nPhi > 1)
 
-class SymmetricSolver: public InteractionSolver {
+class SymmetricSolver: public InteractionSolver, public BinaryOutputObject {
 public:
 	/// Constructor
 	SymmetricSolver(): InteractionSolver(true), singular_epsilon(1e-4), the_GF(NULL) {}
-
+	/// Destructor
+	virtual ~SymmetricSolver() { if(the_GF) delete the_GF; }
+	
 	/// Solve for the Greene's Function of a ReactiveSet system
 	virtual void solve(ReactiveSet& R);
 	/// Apply solution to ReactiveSet system initial state
@@ -23,12 +26,12 @@ public:
 	/// Apply self-interaction to final state
 	virtual void selfInteract(ReactiveSet& R);
 	
-	/// Write solution to file
+	/// Dump binary data to file
 	void writeToFile(std::ostream& o) const;
-	/// Read solution from file
-	void readFromFile(std::istream& s) const;
+	/// Read binary data from file
+	static SymmetricSolver* readFromFile(std::istream& s);
 	/// Read solution from file if available; otherwise, solve; save result to same file
-	void cachedSolve(ReactiveSet& R, const std::string& fname);
+	static SymmetricSolver* cachedSolve(ReactiveSet& R, const std::string& fname);
 
 #ifdef WITH_LAPACKE
 	/// set singular values threshold
@@ -39,7 +42,7 @@ public:
 #endif
 	/// show singular values
 	void print_singular_values() const;
-
+	
 protected:
 	
 	/// Assembles the interaction matrix

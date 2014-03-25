@@ -13,6 +13,7 @@
 #include "Angles.hh"
 #include "UniformField.hh"
 #include "SurfaceProfiles.hh"
+#include "PathUtils.hh"
 
 bool compareResults(double a, double b, const char* label) {
 	bool pass = true;
@@ -98,6 +99,54 @@ bool reference_simpleshield() {
 	SB->release();
 	return pass;
 }
+
+bool reference_simpleshield_cached() {
+
+	// Test solution cache IO
+	
+	//center scan lines
+	vec3 origin(0,0,0);
+	vec3 xscan(0.15,0,0);
+	vec3 yscan(0,0.06,0);
+	vec3 zscan(0,0,0.25);
+	
+	MixedSource* MxS = new MixedSource();
+	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 3.92);
+	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_LINE;
+	b.buildCoil(*MxS);
+	FieldAnalyzer FA = FieldAnalyzer(MxS);
+	
+	FieldEstimator2D fe;
+	fe.addsource(vec2(-3.92/2,0.55),1.0);
+	fe.addsource(vec2(3.92/2,0.55),1.0);
+	
+	SurfacelCyl* SB = new SurfacelCyl(32);
+	SB->retain();
+	SB->makeOptCyl(10, 2, .6223, -3.9624/2, 3.9624/2, new PlaneSource(Plane(),10000.0), &fe);
+	SB->calculateIncident(*MxS);
+	
+	SymmetricSolver* SS = SymmetricSolver::cachedSolve(*SB,getEnvSafe("ROTSHIELD_OUT",".")+"/ref_simpleshield_sol.dat");
+	SS->calculateResult(*SB);
+	
+	MxS->addsource(SB);
+	MxS->visualize();
+	
+	// interacting field reaction
+	bool pass = true;
+	double b0 = MxS->fieldAt(origin)[0];
+	pass &= compareResults(b0,1.59941232856854e+00,"origin, wires + interacting shield");
+	pass &= compareResults(MxS->fieldAt(xscan)[0]-b0,2.62856023674884e-03,"+x");
+	pass &= compareResults(MxS->fieldAt(yscan)[0]-b0,-3.80588069445853e-04,"+y");
+	pass &= compareResults(MxS->fieldAt(zscan)[0]-b0,-2.67641333622226e-04,"+z");
+	pass &= compareResults(MxS->fieldAt(-xscan)[0]-b0,2.62856023674840e-03,"-x");
+	pass &= compareResults(MxS->fieldAt(-yscan)[0]-b0,-3.80588069445409e-04,"-y");
+	pass &= compareResults(MxS->fieldAt(-zscan)[0]-b0,-2.67641333894009e-04,"-z");
+	
+	vsr::pause();
+	SB->release();
+	return pass;
+}
+
 
 mvec f_integ2_test_1(vec2 xy, void*) {
 	double x = xy[0];
