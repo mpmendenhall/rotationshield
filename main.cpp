@@ -15,11 +15,8 @@
 
 /// run self-tests
 void mi_runtests(std::deque<std::string>&, std::stack<std::string>&) {
-	
 	printf("Simple shield self-test...\n");
 	reference_simpleshield();
-	//printf("\n\nReference self-test...\n");
-	//reference_sanity_check();
 }
 
 void mi_demos(std::deque<std::string>&, std::stack<std::string>& stack) {

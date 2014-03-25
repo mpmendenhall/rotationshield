@@ -8,22 +8,14 @@
 /// Print a comparison between expected and calculated values for a data point
 bool compareResults(double a, double b, const char* label = 0x0);
 
-/// Basic test that everything is working well
-bool reference_sanity_check();
-
-/// Faster test with a very crudely gridded shield
+/// Test of line source fields and symmetric solver using crudely-gridded "old-style" shield
 bool reference_simpleshield();
 
 /// tests for integrator routines
 bool integrator_tests();
 
-/// testing continuous surface current routine
-bool csurface_test();
-
 /// superconducting ball in uniform field
 void superball_test();
-/// superconducting plate blocking current loop
-void blockade_test();
 /// endless costheta between SC caps
 void mirror_test();
 /// thick ferromagnetic tube
