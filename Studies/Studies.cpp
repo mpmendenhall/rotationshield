@@ -1,96 +1,14 @@
 #include "Studies.hh"
 #include "strutils.hh"
 #include "PathUtils.hh"
-#include "SurfaceCurrentRS.hh"
 #include "FieldAdaptiveSurface.hh"
-#include "SurfaceGeometry.hh"
-#include "SurfacelCyl.hh"
-#include "PlaneSource.hh"
 #include "FieldAnalyzer.hh"
+#include "LineSource.hh"
+#include "UniformField.hh"
+#include "SurfaceGeometry.hh"
+#include "SurfaceProfiles.hh"
+#include "SurfaceCurrentRS.hh"
 #include <cassert>
-
-shieldSection::shieldSection(): mu(10000) {
-	endpts[0] = GEOMREF_NEGRADIUS;
-	endpts[1] = GEOMREF_POSRADIUS;
-	for(unsigned int i=0; i<2; i++) {
-		endoff[i] = vec2(0,0);
-	}
-}
-
-Stringmap shieldSection::getInfo() const {
-	Stringmap m;
-	m.insert("cSegs",itos(cSegs));
-	m.insert("vSegs",itos(vSegs));
-	m.insert("mu",mu);
-	for(int i=0; i<2; i++) {
-		m.insert("ref_"+itos(i),endpts[i]);
-		m.insert("off_dz_"+itos(i),endoff[i][0]);
-		m.insert("off_dr_"+itos(i),endoff[i][1]);
-	}
-	return m;
-}
-
-vec2 shieldFrame::refPt(GeomRefPt p) const {
-	if(p==GEOMREF_ORIGIN) return vec2(0,0);
-	if(p==GEOMREF_CENTER) return vec2(0,0);
-	if(p==GEOMREF_NEGAXIS) return vec2(-0.5*length,0);
-	if(p==GEOMREF_POSAXIS) return vec2(0.5*length,0);
-	if(p==GEOMREF_NEGRADIUS) return vec2(-0.5*length,radius);
-	if(p==GEOMREF_POSRADIUS) return vec2(0.5*length,radius);
-	assert(false);
-	return vec2(0,0);
-}
-	
-void shieldFrame::construct(MixedSource& ms, const std::string& fcache) {
-
-	if(!mySections.size() || !pSegs) return;
-
-	if(RSC) delete RSC;
-	RSC = new MagRSCombiner(pSegs);
-	RSC->ownSets = true;
-	
-	FieldEstimator2Dfrom3D fe(&ms);
-	
-	bool quick_mode = false;
-	if(quick_mode) {
-		// Legacy quicker rough mode
-		SurfacelCyl* G = new SurfacelCyl(pSegs);
-	
-		for(std::vector<shieldSection>::const_iterator it = mySections.begin(); it != mySections.end(); it++) {
-			G->OptCone(it->cSegs, it->vSegs,
-						refPt(it->endpts[0])+it->endoff[0],
-						refPt(it->endpts[1])+it->endoff[1],
-						new PlaneSource(Plane(),it->mu), &fe);
-		}
-		RSC->addSet(G);
-		
-	} else {
-		
-		
-		for(std::vector<shieldSection>::const_iterator it = mySections.begin(); it != mySections.end(); it++) {
-			Line2D* L2D = new Line2D(refPt(it->endpts[0])+it->endoff[0], refPt(it->endpts[1])+it->endoff[1]);
-			FieldAdaptiveSurface* FAS = new FieldAdaptiveSurface(*L2D);
-			FAS->optimizeSpacing(fe, float(it->cSegs)/(it->cSegs+it->vSegs));
-			CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
-			SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG,pSegs,it->cSegs+it->vSegs);
-			RS->setSurfaceResponse(SurfaceI_Response(it->mu));
-			RSC->addSet(RS);
-		}
-	}
-	
-	SS.cachedSolve(*RSC,fcache);
-	RSC->calculateIncident(ms);
-	SS.calculateResult(*RSC);
-	ms.addsource(RSC);
-}
-
-Stringmap shieldFrame::getInfo() const {
-	Stringmap m;
-	m.insert("pSegs",itos(pSegs));
-	m.insert("length",length);
-	m.insert("radius",radius);
-	return m;
-}
 
 //--
 
@@ -106,211 +24,315 @@ Stringmap fieldCell::getInfo() const {
 
 //--
 
-nEDM_Geom::nEDM_Geom(const std::string& dir): coil(0,0,0), cell(vec3(-.2,-.2,-.2),vec3(.2,.2,.2),11,11,11),
-saveGrid(true), basedir(dir), ms(NULL) { }
+//-------------------------------------------
+// Menu-driven user interface actions
+//-------------------------------------------
 
-nEDM_Geom::~nEDM_Geom() {
-	if(ms) ms->release();
-}
-		
-void nEDM_Geom::construct() {
-	if(ms) ms->release();
-	ms = new MixedSource();
-	ms->retain();
-	coil.buildCoil(*ms);
-	ms->visualize();
-	if(shield.mySections.size()) {
-		shield.construct(*ms);
-		ms->visualize();
-	}
+void mi_setFCrange(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	float urz = S->popFloat();
+	float ury = S->popFloat();
+	float urx = S->popFloat();
+	float llz = S->popFloat();
+	float lly = S->popFloat();
+	float llx = S->popFloat();
+	SC->cell.ll = vec3(llx,lly,llz);
+	SC->cell.ur = vec3(urx,ury,urz);
 }
 
-void nEDM_Geom::takeSample(const std::string& sName) {
-	if(!ms) {
-		printf("No field sources specified!\n");
+void mi_setFCgrid(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	SC->cell.nz = S->popInt();
+	SC->cell.ny = S->popInt();
+	SC->cell.nx = S->popInt();
+}
+
+void mi_setSaveGrid(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	SC->cell.saveGrid = S->popInt();
+}
+
+//-------------------------------------------
+
+void mi_addLineCurrent(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	float j = S->popFloat();
+	float ez = S->popFloat();
+	float ey = S->popFloat();
+	float ex = S->popFloat();
+	float sz = S->popFloat();
+	float sy = S->popFloat();
+	float sx = S->popFloat();
+	
+	SC->IncidentSource->addsource(new LineSource(vec3(sx,sy,sz), vec3(ex,ey,ez), j));
+	SC->TotalField->visualize();
+}
+
+void mi_addUnifB(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	float bz = S->popFloat();
+	float by = S->popFloat();
+	float bx = S->popFloat();
+	SC->IncidentSource->addsource(new UniformField(vec3(bx,by,bz)));
+}
+
+void mi_ClearIncident(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	SC->IncidentSource->clear();
+	SC->TotalField->visualize();
+}
+
+void mi_buildCosThetaExit(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	SC->CTB.buildCoil(*SC->IncidentSource);
+	S->mydeque->push_front(NameSelector::exit_control);
+	SC->TotalField->visualize();
+}
+
+//---------------------------------------------
+
+void mi_Solve(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	SC->solve(S->popString());
+	SC->calculate_result();
+	SC->TotalField->visualize();
+}
+
+void mi_Recalc(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	if(!SC->SS || !SC->RSC) { printf("Solver not yet generated; nothing done.\n"); return; }
+	SC->calculate_result();
+	SC->TotalField->visualize();
+}
+
+void mi_meas(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	std::string mname = S->popString();
+	if(!SC->RSC) printf("Measuring noninteracting applied fields\n");
+	else printf("Measuring resulting fields\n");
+	SC->measureFields(mname);
+	printf("Data collection complete.\n");
+}
+
+//---------------------------------------------
+
+void mi_setPhi(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	SC->initReactiveSet(S->popInt());
+}
+
+void mi_addTube(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	float o = S->popFloat();
+	unsigned int ns = S->popInt();
+	float mu = S->popFloat();
+	float r = S->popFloat();
+	float er = S->popFloat();
+	float ez = S->popFloat();
+	float sr = S->popFloat();
+	float sz = S->popFloat();
+	
+	if(!SC->RSC) {
+		std::cout << "You need to set the radial symmetry first! No action taken.\n";
 		return;
 	}
 	
-	// set up files
+	RoundedTube* RT = new RoundedTube(vec2(sz,sr), vec2(ez,er), r);
+	DVFunc1<2,double>* FAS = SC->adaptSurface(RT,o);
+	CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG, SC->RSC->nPhi, ns);
+	RS->setSurfaceResponse(SurfaceI_Response(mu));
+	SC->RSC->addSet(RS);
+	
+	SC->TotalField->visualize();
+}
+
+void mi_addSlab(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	float o = S->popFloat();
+	unsigned int ns = S->popInt();
+	float mu = S->popFloat();
+	float er = S->popFloat();
+	float r = S->popFloat();
+	float z = S->popFloat();
+	
+	if(!SC->RSC) {
+		std::cout << "You need to set the radial symmetry first! No action taken.\n";
+		return;
+	}
+	
+	RoundedSlab* SB = new RoundedSlab(z,r,2*er);
+	DVFunc1<2,double>* FAS = SC->adaptSurface(SB,o);
+	CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG, SC->RSC->nPhi, ns);
+	RS->setSurfaceResponse(SurfaceI_Response(mu));
+	SC->RSC->addSet(RS);
+	
+	SC->TotalField->visualize();
+}
+
+
+
+
+//-------------------------------------------
+//
+//-------------------------------------------
+
+SystemConfiguration::SystemConfiguration():
+basedir(getEnvSafe("ROTSHIELD_OUT","./")),
+RSC(new MagRSCombiner(32)),
+IncidentSource(new MixedSource()),
+TotalField(new MixedSource()),
+SS(NULL),
+exitMenu("Exit Menu", &menutils_Exit),
+setFCrange("Set Measurement Range", &mi_setFCrange, this),
+setFCgrid("Set Measurement Gridding", &mi_setFCgrid, this),
+setSaveGrid("Enable/disable gridded output", &mi_setSaveGrid, this),
+OMcell("Measurement Cell Options"),
+addLineCurrent("Add line segment current", &mi_addLineCurrent, this),
+addUnifB("Add uniform field", &mi_addUnifB, this),
+clearIncident("Remove all field sources", &mi_ClearIncident, this),
+buildCosThetaExit("Build coil and exit", &mi_buildCosThetaExit, this),
+OMfieldsrc("Field Source Options"),
+setPhi("Set rotational symmetry grid", &mi_setPhi, this),
+addSlab("Add circular slab", &mi_addSlab, this),
+addTube("Add solid tube", &mi_addTube, this),
+OMsurfaces("Boundary conditions"),
+doSolve("Solve boundary condition interactions",&mi_Solve,this),
+doApply("(Re)apply incident field to boundaries",&mi_Recalc,this),
+doMeas("Take field measurement",&mi_meas,this) {
+	
+	IncidentSource->retain();
+	TotalField->retain();
+	RSC->retain();
+	
+	TotalField->addsource(IncidentSource);
+	TotalField->addsource(RSC);
+	
+	//
+	setFCrange.addArg("x min","-0.20");
+	setFCrange.addArg("y min","-0.20");
+	setFCrange.addArg("z min","-0.20");
+	setFCrange.addArg("x max","0.20");
+	setFCrange.addArg("y max","0.20");
+	setFCrange.addArg("z max","0.20");
+	//
+	setFCgrid.addArg("nx","5");
+	setFCgrid.addArg("ny","5");
+	setFCgrid.addArg("nz","5");
+	//
+	setSaveGrid.addArg("Enable","1");
+	//
+	OMcell.addChoice(&setFCrange,"range");
+	OMcell.addChoice(&setFCgrid,"grid");
+	OMcell.addChoice(&setSaveGrid,"svgrd");
+	OMcell.addChoice(&exitMenu,"x");
+	
+	addLineCurrent.addArg("x0","0");
+	addLineCurrent.addArg("y0","0");
+	addLineCurrent.addArg("z0","-1");
+	addLineCurrent.addArg("x1","0");
+	addLineCurrent.addArg("y1","0");
+	addLineCurrent.addArg("z1","1");
+	addLineCurrent.addArg("I","1");
+	//
+	addUnifB.addArg("Bx","1");
+	addUnifB.addArg("By","1");
+	addUnifB.addArg("Bz","1");
+	//
+	OMfieldsrc.addChoice(&addLineCurrent,"l");
+	OMfieldsrc.addChoice(&addUnifB,"u");
+	CTB.OMcoil.addChoice(&buildCosThetaExit,"x");
+	OMfieldsrc.addChoice(&CTB.OMcoil,"c");
+	OMfieldsrc.addChoice(&clearIncident,"d");
+	OMfieldsrc.addChoice(&exitMenu,"x");
+	
+	setPhi.addArg("nPhi", std::to_string(RSC->nPhi));
+	//
+	addSlab.addArg("z","-0.7");
+	addSlab.addArg("r","0.5");
+	addSlab.addArg("end radius","0.05");
+	addSlab.addArg("mu","0");
+	addSlab.addArg("nZ","11");
+	addSlab.addArg("adapt","0");
+	//
+	addTube.addArg("z0","-0.6");
+	addTube.addArg("r0","0.6");
+	addTube.addArg("z1","0.6");
+	addTube.addArg("r1","0.6");
+	addTube.addArg("end radius","0.05");
+	addTube.addArg("mu","10000");
+	addTube.addArg("nZ","17");
+	addTube.addArg("adapt","0");
+	//
+	OMsurfaces.addChoice(&setPhi,"n");
+	OMsurfaces.addChoice(&addSlab,"s");
+	OMsurfaces.addChoice(&addTube,"t");
+	OMsurfaces.addChoice(&exitMenu,"x");
+	
+	doSolve.addArg("Saved solution file","");
+	//
+	doMeas.addArg("Output directory","");
+}
+
+SystemConfiguration::~SystemConfiguration() {
+	if(RSC) RSC->release();
+	IncidentSource->release();
+	TotalField->release();
+	if(SS) delete SS;
+}
+
+void SystemConfiguration::initReactiveSet(unsigned int nPhi) {
+	if(RSC) RSC->release();
+	RSC = new MagRSCombiner(nPhi);
+	RSC->retain();
+	TotalField->addsource(RSC);
+}
+
+
+void SystemConfiguration::solve(const std::string& cfile) {
+	assert(RSC); if(!RSC) return;
+	if(SS) delete SS;
+	SS = SymmetricSolver::cachedSolve(*RSC, cfile);
+}
+
+void SystemConfiguration::calculate_result() {
+	assert(SS); if(!SS) return;
+	assert(RSC); if(!RSC) return;
+	RSC->calculateIncident(*IncidentSource);
+	SS->calculateResult(*RSC);
+}
+
+DVFunc1<2,double>* SystemConfiguration::adaptSurface(DVFunc1<2,double>* f, double pfixed, bool useTotal) const {
+	assert(f);
+	if(!pfixed || !IncidentSource->nSources()) return f;
+	
+	FieldEstimator2Dfrom3D fe(useTotal ? TotalField : IncidentSource);
+	
+	FieldAdaptiveSurface* FAS = new FieldAdaptiveSurface(*f);
+	FAS->optimizeSpacing(fe,pfixed);
+	return FAS;
+}
+
+void SystemConfiguration::measureFields(const std::string& sName) const {
+	// set up output files
 	std::string fieldspath = basedir+"/"+sName;
 	makePath(fieldspath);
 	std::ofstream fieldsout;
 	std::ofstream statsout;
 	std::ostream nullout(NULL);
-	if(saveGrid) fieldsout.open((fieldspath+"/Fieldmap.txt").c_str());
+	if(cell.saveGrid) fieldsout.open((fieldspath+"/Fieldmap.txt").c_str());
 	statsout.open((fieldspath+"/Fieldstats.txt").c_str());
-	
-	// save geometry summary info
-	QFile qOut;
-	coil.writeInfo(qOut);
-	qOut.insert("shield",shield.getInfo());
-	for(std::vector<shieldSection>::iterator it = shield.mySections.begin(); it != shield.mySections.end(); it++)
-		qOut.insert("section",it->getInfo());
-	qOut.insert("cell",cell.getInfo());
-	qOut.commit(fieldspath+"/GeomInfo.txt");
 	
 	// run analyzer
-	FieldAnalyzer FA = FieldAnalyzer(ms);
+	FieldAnalyzer FA = FieldAnalyzer(TotalField);
 	FA.visualizeSurvey(cell.ll,cell.ur,cell.vx,cell.vy,cell.vz);
-	FA.survey(cell.ll,cell.ur,cell.nx,cell.ny,cell.nz,statsout,saveGrid?fieldsout:nullout);
-
+	FA.survey(cell.ll,cell.ur,cell.nx,cell.ny,cell.nz,statsout,cell.saveGrid?fieldsout:nullout);
+	
 	// cleanup
-	if(saveGrid) fieldsout.close();
+	if(cell.saveGrid) fieldsout.close();
 	statsout.close();
 }
 
 
 
-
-
-//----------------------------------------------------------------
-// Old studies... to be re-written with newer utility functions
-//----------------------------------------------------------------
-
-/*
-
-/// Full-scale coil
-/// N=30, radius=0.648, length=4.292,
-/// distortion a = -0.00295
-/// shield radius nominal 6.9cm outside coil
-/// shield 40cm longer than coil
-void fullScaleCoil(std::ostream& gridf, std::ostream& fitf);
-
-/// Bare Full-scale coil
-/// N=30, radius=0.648, length=4.292,
-/// distortion a = -0.00295
-void bareFullScaleCoil(std::ostream& gridf, std::ostream& fitf);
-
-void fullScaleCoil(std::ostream& gridf, std::ostream& fitf) {
-	
-	MixedSource* ms = new MixedSource();
-	ms->retain();
-	double cradius = 0.648; //64.8cm radius
-	double shieldDistance = 0.069; //6.9cm spacing to shield
-	double sradius = cradius + shieldDistance;
-	double clen = 4.292;
-	double slen = clen + 0.40;
-	
-	VarVec<double> pert = VarVec<double>(1);
-	pert[0] = -0.00295;
-	CosThetaBuilder b = CosThetaBuilder(15, cradius, clen, &shiftPositioner);
-	b.regularCoil(*ms,&pert);
-	ms->visualize();
-	
-	FieldEstimator2D fe = FieldEstimator2D();
-	fe.addsource(vec2(-clen/2.0,cradius),1.0);
-	fe.addsource(vec2(clen/2.0,cradius),1.0);
-	
-	SurfacelCyl* G = new SurfacelCyl(128);
-	G->makeOptCyl(10, 20, sradius, -slen/2, slen/2, new PlaneSource(Plane(),10000) );
-	
-	SymmetricSolver* sp = new SymmetricSolver(G);
-	
-	sp->solve();
-	sp->calculateIncident(ms);
-	sp->calculateResult();
-	
-	ms->addsource(sp);
-	ms->visualize();
-	
-	FieldAnalyzer FA = FieldAnalyzer(ms);
-	FA.visualizeSurvey(vec3(-0.25,-0.25,0.0),vec3(0.25,0.25,3.0),3,3,11);
-	FA.survey(vec3(-0.25,-0.25,0.0),vec3(0.25,0.25,3.0),9,9,31,fitf,gridf);
-	
-	ms->release();
-}
-
-void bareFullScaleCoil(std::ostream& gridf, std::ostream& fitf) {
-	
-	MixedSource* ms = new MixedSource();
-	ms->retain();
-	double cradius = 0.648;
-	double clen = 4.292;
-	
-	VarVec<double> pert = VarVec<double>(1);
-	pert[0] = -0.00295;
-	CosThetaBuilder b = CosThetaBuilder(15, cradius, clen, &shiftPositioner);
-	b.regularCoil(*ms,&pert);
-	ms->visualize();
-	
-	FieldEstimator2D fe = FieldEstimator2D();
-	fe.addsource(vec2(-clen/2.0,cradius),1.0);
-	fe.addsource(vec2(clen/2.0,cradius),1.0);
-	
-	FieldAnalyzer FA = FieldAnalyzer(ms);
-	FA.visualizeSurvey(vec3(-0.25,-0.25,0.0),vec3(0.25,0.25,3.0),3,3,11);
-	//FA.survey(vec3(-0.40,-0.40,-3.0),vec3(0.40,0.40,3.0),81,81,601,fitf,gridf);
-	FA.survey(vec3(-0.40,-0.40,-3.0),vec3(0.40,0.40,3.0),21,21,151,fitf,gridf);
-	
-	ms->release();
-}
-
-
-/// full example of doing everything the hard way...
-void mi_sampleShieldVis(std::deque<std::string>&, std::stack<std::string>&) {
-	// set up output paths
-	std::string basepath = "../";
-	std::string projectpath = basepath+"/CosThetaCoil/";
-	makePath(projectpath);
-	std::string fieldspath = projectpath+"/Fields/";
-	makePath(fieldspath);
-	std::string gfpath = projectpath+"/GFs/";
-	makePath(gfpath);
-	
-	// set up output files for field scans
-	std::ofstream fieldsout;
-	std::ofstream statsout;
-	fieldsout.open((fieldspath+"/Fieldmap.txt").c_str());
-	statsout.open((fieldspath+"/Fieldstats.txt").c_str());
-	
-	// set up cos theta coil
-	MixedSource* ms = new MixedSource();
-	ms->retain();
-	double cradius = 0.648;	// coil radius
-	double clen = 4.292;		// coil length
-	VarVec<double> pert = VarVec<double>(1);
-	pert[0] = -0.00295;	// coil distortion parameter
-	CosThetaBuilder b = CosThetaBuilder(15, cradius, clen, &shiftPositioner);
-	b.regularCoil(*ms,&pert);
-	ms->visualize();
-	//vsr::pause();
-	
-	// optional: construct shield
-	if(1) {
-		double shieldDistance = 0.069;				// distance of shield from wires, 6.9cm
-		double sradius = cradius + shieldDistance;	// shield radius
-		double slen = clen + 0.40;					// shield length, coil + 40cm
-		FieldEstimator2D* fe = new FieldEstimator2D();
-		fe->addsource(vec2(-clen/2.0,cradius),1.0);
-		fe->addsource(vec2(clen/2.0,cradius),1.0);
-		SurfacelCyl* G = new SurfacelCyl(128);	// 128 segments around shield builder
-		G->makeOptCyl(10, 20, sradius, -slen/2, slen/2, new PlaneSource(Plane(),10000), fe); // optimized grid with 10+20 divisions along z
-		// solve for shield response function
-		SymmetricSolver* sp = new SymmetricSolver(G);
-		sp->solve();
-		// calculate response to coil fields
-		sp->calculateIncident(ms);
-		sp->calculateResult();
-		ms->addsource(sp);
-		ms->visualize();
-	}
-	
-	// example of probing field value
-	vec3 b0 = ms->fieldAt(vec3(0,0,0));
-	printf("Field at center: ");
-	b0.display();
-	
-	// survey data points on grid
-	FieldAnalyzer FA = FieldAnalyzer(ms);
-	//        lower left corner,     upper right corner, nx,ny,nz, output files
-	FA.survey(vec3(0.0,0.0,0.0),vec3(0.20,0.20,0.5),10,10,10,statsout,fieldsout);
-	
-	
-	// cleanup
-	ms->release();
-	fieldsout.close();
-	statsout.close();
-	vsr::pause();
-}
-
-*/

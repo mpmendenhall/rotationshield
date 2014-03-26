@@ -12,10 +12,7 @@ public:
 	MixedSource(): FieldSource("MixedSource"), displayColor(vec3(1.0,0.0,0.0)), sources(std::vector<const FieldSource*>()) {}
 	
 	/// Destructor
-	virtual ~MixedSource() {
-		for(unsigned int i=0; i<sources.size(); i++)
-			sources[i]->release();
-	}
+	virtual ~MixedSource() { clear(); }
 	
 	/// Field at a specified point
 	vec3 fieldAt(const vec3& v) const;
@@ -25,8 +22,12 @@ public:
 	virtual vec3 fieldOverPlane(Plane p) const;
 	/// Add a new FieldSource to the source currents
 	void addsource(const FieldSource* fs) { fs->retain(); sources.push_back(fs); }
+	/// Remove all sources
+	void clear() { for(unsigned int i=0; i<sources.size(); i++) sources[i]->release(); sources.clear(); }
 	/// Add FieldSource's specified in a file
 	void loadSourcesFile(FILE* f, double scale);
+	/// Get number of sources
+	unsigned int nSources() const { return sources.size(); }
 	
 	/// Net current of the arrangement
 	vec3 net_current() const { vec3 d = vec3(); for(unsigned int i=0; i<sources.size(); i++) d += sources[i]->net_current(); return d; }

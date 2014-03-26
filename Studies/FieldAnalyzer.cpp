@@ -99,6 +99,8 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
 
 void FieldAnalyzer::visualizeSurvey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, unsigned int nZ) const {
 	
+	if(!Visualizable::vis_on) return;
+	
 	unsigned int n[3] = { nX-1, nY-1, nZ-1 };
 	vec3 dx = (ur - ll)/vec3(n[0],n[1],n[2]);
 	for(int i=0; i<3; i++) if(n[i]==0) { dx[i] = 0; ll[i] = 0.5*(ll[i]+ur[i]); }

@@ -1,5 +1,6 @@
 #include "SymmetricSolver.hh"
 #include "ProgressBar.hh"
+#include "PathUtils.hh"
 #include <cassert>
 #include <fstream>
 
@@ -116,6 +117,7 @@ SymmetricSolver* SymmetricSolver::cachedSolve(ReactiveSet& R, const std::string&
 		foo = new SymmetricSolver();
 		foo->solve(R);
 		std::cout << "Saving SymmetricSolver solution to '" << fname << "'." << std::endl;
+		makePath(fname, true);
 		std::ofstream ofs(fname.c_str(), std::ofstream::out | std::ofstream::binary);
 		if(!ofs.good()) {
 			std::cout << "Warning: SymmetricSolver unable to write to file '" << fname << "'." << std::endl;

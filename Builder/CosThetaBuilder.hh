@@ -4,6 +4,7 @@
 #include "MixedSource.hh"
 #include "Typedefs.hh"
 #include "QFile.hh"
+#include "ControlMenu.hh"
 #include <vector>
 
 /// base class for positioning wires
@@ -63,12 +64,11 @@ public:
 
 //--------------------------------------------------------------------
 
-class CosThetaBuilder {
+class CosThetaBuilder: public StreamInteractor {
 public:
 	/// constructor
-	CosThetaBuilder(unsigned int n, double r, double l,
-					AnglePositioner* ap = new ShiftPositioner(), EndTranslator* et = NULL):
-	ncoils(n), radius(r), length(l), AP(ap), ET(et), nArc(100)  { myCap[0] = myCap[1] = CAP_ARC; }
+	CosThetaBuilder(unsigned int n = 15, double r = 0.5, double l = 1.0,
+					AnglePositioner* ap = new ShiftPositioner(), EndTranslator* et = NULL);
 	
 	/// build coil into MixedSource
 	void buildCoil(MixedSource& M);
@@ -93,6 +93,14 @@ public:
 	};
 	capType myCap[2];	//< how to construct endcaps on each side
 	unsigned int nArc;
+	
+	// menu user interface
+	InputRequester setGeometry;
+	InputRequester setDistortion;
+	NameSelector selectEndcap;
+	InputRequester setEndcaps;
+	OptionsMenu OMcoil;
+	
 	
 protected:
 	

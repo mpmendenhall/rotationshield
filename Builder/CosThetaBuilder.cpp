@@ -40,6 +40,77 @@ Stringmap VecTrans::getInfo() const {
 
 //--------------------------------------------------------------------
 
+void mi_setGeometry(StreamInteractor* S) {
+	float r = S->popFloat();
+	float l = S->popFloat();
+	float n = S->popInt();
+	
+	CosThetaBuilder* CT = dynamic_cast<CosThetaBuilder*>(S);
+	CT->ncoils = n;
+	CT->radius = r;
+	CT->length = l;
+}
+
+void mi_setDistortion(StreamInteractor* S) {
+	float a = S->popFloat();
+	int n = S->popInt();
+	
+	CosThetaBuilder* CT = dynamic_cast<CosThetaBuilder*>(S);
+	assert(CT->AP);
+	ShiftPositioner* SP = dynamic_cast<ShiftPositioner*>(CT->AP);
+	if(n<=0) SP->shift = VarVec<double>(0);
+	else {
+		while(SP->shift.size()<(unsigned int)n) SP->shift.push_back(0);
+		SP->shift[n-1] = a;
+	}
+}
+
+void mi_setEndcaps(StreamInteractor* S) {
+	std::string ec[2];
+	ec[1] = S->popString();
+	ec[0] = S->popString();
+	CosThetaBuilder* CT = dynamic_cast<CosThetaBuilder*>(S);
+	for(unsigned int i=0; i<2; i++) {
+		if(ec[i]=="arc") CT->myCap[i] = CosThetaBuilder::CAP_ARC;
+		if(ec[i]=="line") CT->myCap[i] = CosThetaBuilder::CAP_LINE;
+		if(ec[i]=="none") CT->myCap[i] = CosThetaBuilder::CAP_NONE;
+	}
+}
+
+//--------------------------------------------------------------------
+
+CosThetaBuilder::CosThetaBuilder(unsigned int n, double r, double l, AnglePositioner* ap, EndTranslator* et):
+ncoils(n), radius(r), length(l), AP(ap), ET(et), nArc(100),
+setGeometry("Geometry", &mi_setGeometry, this),
+setDistortion("Distortion", &mi_setDistortion, this),
+selectEndcap("end wire shape"),
+setEndcaps("End wires", &mi_setEndcaps, this),
+OMcoil("Cos Theta Coil") {
+
+	myCap[0] = myCap[1] = CAP_ARC;
+
+	setGeometry.addArg("half-N loops","15");
+	setGeometry.addArg("radius","0.5");
+	setGeometry.addArg("length","1");
+	//
+	setDistortion.addArg("n","1");
+	setDistortion.addArg("a_n","-0.001");
+	//
+	selectEndcap.addChoice("smooth arc","arc");
+	selectEndcap.addChoice("straight line","line");
+	selectEndcap.addChoice("no end wires","none");
+	selectEndcap.setDefault("arc");
+	//
+	setEndcaps.addArg(&selectEndcap,"-z");
+	setEndcaps.addArg(&selectEndcap,"+z");
+	//
+	OMcoil.addChoice(&setGeometry,"geom");
+	OMcoil.addChoice(&setDistortion,"dist");
+	OMcoil.addChoice(&setEndcaps,"ends");
+	
+}
+
+
 void CosThetaBuilder::writeInfo(QFile& qOut) const {
 	if(AP) qOut.insert("coilPositioner",AP->getInfo());
 	if(ET) qOut.insert("coilTrans",ET->getInfo());
