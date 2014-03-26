@@ -52,6 +52,11 @@ void mi_setSaveGrid(StreamInteractor* S) {
 	SC->cell.saveGrid = S->popInt();
 }
 
+void mi_outDir(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	SC->basedir += "/" + S->popString();
+}
+
 //-------------------------------------------
 
 void mi_addLineCurrent(StreamInteractor* S) {
@@ -93,7 +98,9 @@ void mi_buildCosThetaExit(StreamInteractor* S) {
 
 void mi_Solve(StreamInteractor* S) {
 	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
-	SC->solve(S->popString());
+	std::string savenm = S->popString();
+	if(savenm=="none") savenm = "";
+	SC->solve(savenm);
 	SC->calculate_result();
 	SC->TotalField->visualize();
 }
@@ -107,10 +114,10 @@ void mi_Recalc(StreamInteractor* S) {
 
 void mi_meas(StreamInteractor* S) {
 	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
-	std::string mname = S->popString();
-	if(!SC->RSC) printf("Measuring noninteracting applied fields\n");
-	else printf("Measuring resulting fields\n");
-	SC->measureFields(mname);
+	if(!SC->RSC) printf("Measuring noninteracting applied fields:\n");
+	else printf("Measuring resulting fields:\n");
+	SC->measureFields();
+	SC->writeInfo();
 	printf("Data collection complete.\n");
 }
 
@@ -185,6 +192,7 @@ IncidentSource(new MixedSource()),
 TotalField(new MixedSource()),
 SS(NULL),
 exitMenu("Exit Menu", &menutils_Exit),
+outDir("Output directory", &mi_outDir, this),
 setFCrange("Set Measurement Range", &mi_setFCrange, this),
 setFCgrid("Set Measurement Gridding", &mi_setFCgrid, this),
 setSaveGrid("Enable/disable gridded output", &mi_setSaveGrid, this),
@@ -209,6 +217,7 @@ doMeas("Take field measurement",&mi_meas,this) {
 	TotalField->addsource(IncidentSource);
 	TotalField->addsource(RSC);
 	
+	outDir.addArg("rel. to $ROTSHIELD_OUT",".");
 	//
 	setFCrange.addArg("x min","-0.20");
 	setFCrange.addArg("y min","-0.20");
@@ -270,9 +279,7 @@ doMeas("Take field measurement",&mi_meas,this) {
 	OMsurfaces.addChoice(&addTube,"t");
 	OMsurfaces.addChoice(&exitMenu,"x");
 	
-	doSolve.addArg("Saved solution file","");
-	//
-	doMeas.addArg("Output directory","");
+	doSolve.addArg("Saved solution file","none");
 }
 
 SystemConfiguration::~SystemConfiguration() {
@@ -293,7 +300,7 @@ void SystemConfiguration::initReactiveSet(unsigned int nPhi) {
 void SystemConfiguration::solve(const std::string& cfile) {
 	assert(RSC); if(!RSC) return;
 	if(SS) delete SS;
-	SS = SymmetricSolver::cachedSolve(*RSC, cfile);
+	SS = SymmetricSolver::cachedSolve(*RSC, cfile.size()?basedir+"/"+cfile:"");
 }
 
 void SystemConfiguration::calculate_result() {
@@ -314,9 +321,9 @@ DVFunc1<2,double>* SystemConfiguration::adaptSurface(DVFunc1<2,double>* f, doubl
 	return FAS;
 }
 
-void SystemConfiguration::measureFields(const std::string& sName) const {
+void SystemConfiguration::measureFields(const std::string& xpath) const {
 	// set up output files
-	std::string fieldspath = basedir+"/"+sName;
+	std::string fieldspath = basedir+"/"+xpath;
 	makePath(fieldspath);
 	std::ofstream fieldsout;
 	std::ofstream statsout;
@@ -332,6 +339,12 @@ void SystemConfiguration::measureFields(const std::string& sName) const {
 	// cleanup
 	if(cell.saveGrid) fieldsout.close();
 	statsout.close();
+}
+
+void SystemConfiguration::writeInfo(const std::string& xpath) const {
+	QFile qout;
+	qout.insert("cell",cell.getInfo());
+	qout.commit(basedir+"/"+xpath+"/GeomInfo.txt");
 }
 
 

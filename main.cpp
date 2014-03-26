@@ -121,6 +121,7 @@ void menuSystem(std::deque<std::string> args = std::deque<std::string>()) {
 	OM.addChoice(&demos,"demo");
 	
 	SystemConfiguration SC;
+	OM.addChoice(&SC.outDir,"dir");
 	OM.addChoice(&SC.OMfieldsrc,"field");
 	OM.addChoice(&SC.OMsurfaces,"bound");
 	OM.addChoice(&SC.OMcell,"cell");

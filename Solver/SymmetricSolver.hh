@@ -15,7 +15,7 @@
 class SymmetricSolver: public InteractionSolver, public BinaryOutputObject {
 public:
 	/// Constructor
-	SymmetricSolver(): InteractionSolver(true), singular_epsilon(1e-4), the_GF(NULL) {}
+	SymmetricSolver(): InteractionSolver(true), singular_epsilon(1e-6), the_GF(NULL) {}
 	/// Destructor
 	virtual ~SymmetricSolver() { if(the_GF) delete the_GF; }
 	

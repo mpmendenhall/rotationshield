@@ -196,8 +196,8 @@ class FieldInfo:
 	"""Output fields information"""
 	def __init__(self,basepath):
 		self.basepath = basepath
-		self.BC = BCell(basepath+"/Fields/Fieldstats.txt")
-		self.GIF = GeomInfo_File(basepath+"/Fields/GeomInfo.txt")
+		self.BC = BCell(basepath+"/Fieldstats.txt")
+		self.GIF = GeomInfo_File(basepath+"/GeomInfo.txt")
 
 		# target B0, mG
 		self.B0targ = 30.

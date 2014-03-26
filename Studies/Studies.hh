@@ -17,7 +17,7 @@
 class fieldCell {
 public:
 	/// default constructor
-	fieldCell(): ll(-.2,-.2,-.2), ur(.2,.2,.2), nx(5), ny(5), nz(5), vx(5), vy(5), vz(5), saveGrid(true) {}
+	fieldCell(): ll(-.2,-.2,-.2), ur(.2,.2,.2), nx(5), ny(5), nz(5), vx(2), vy(3), vz(2), saveGrid(true) {}
 	/// cell info as Stringmap
 	Stringmap getInfo() const;
 	
@@ -47,7 +47,9 @@ public:
 	void calculate_result();
 	
 	/// measure fields, writing to given output file
-	void measureFields(const std::string& sName="Fields") const;
+	void measureFields(const std::string& xpath="") const;
+	/// write measurement info to file at basedir/xpath/GeomInfo.txt
+	void writeInfo(const std::string& xpath="") const;
 	
 	std::string basedir;			//< base directory for IO operations
 	MagRSCombiner* RSC;				//< reacting boundary condition surfaces
@@ -58,10 +60,12 @@ public:
 	CosThetaBuilder CTB;			//< cos theta field coil builder
 	
 	
+	
 	//------------------------------------
 	// menu-driven user interface elements
 	
 	InputRequester exitMenu;
+	InputRequester outDir;
 	
 	InputRequester setFCrange;
 	InputRequester setFCgrid;

@@ -114,6 +114,7 @@ void FieldAnalyzer::visualizeSurvey(vec3 ll, vec3 ur, unsigned int nX, unsigned 
 			for(n[2] = 0; n[2] < nZ; n[2]++) {
 				vec3 x = ll+vec3(n[0],n[1],n[2])*dx;
 				vec3 b = FS->fieldAt(x);
+				std::cout << "\tx = " << x << "\tb = " << b << std::endl;
 				float bmag = b.mag();
 				if(!bmag) continue;
 				b *= log(1+pow(bmag,0.25))/bmag;

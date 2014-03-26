@@ -41,8 +41,8 @@ Stringmap VecTrans::getInfo() const {
 //--------------------------------------------------------------------
 
 void mi_setGeometry(StreamInteractor* S) {
-	float r = S->popFloat();
 	float l = S->popFloat();
+	float r = S->popFloat();
 	float n = S->popInt();
 	
 	CosThetaBuilder* CT = dynamic_cast<CosThetaBuilder*>(S);

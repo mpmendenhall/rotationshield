@@ -7,56 +7,24 @@ from ShieldStudyLauncher import *
 def make_asym_shortcoil_base(nm,r,dz=-0.783,r0=0.70):
 
 	S = StudySetup(nm,r)
-	S.set_csgeom(clen = 2.5, crad = 1.0, dlen = 0.05, drad = 0.1)
 	
-	#S.shsects.append(ShieldSection(0,12,6,"nax","nrd"))
-	#S.shsects.append(ShieldSection(10000,10,20,"nrd","prd"))
-	#S.shsects.append(ShieldSection(0,12,6,"prd","pax"))
-	
-	S.shsects.append(ShieldSection(0,6,8,"nax","nrd"))
-	S.shsects.append(ShieldSection(10000,5,10,"nrd","prd"))
-	S.shsects.append(ShieldSection(0,6,8,"prd","pax"))
-	S.shsects[2].off[1][1] = r0
-		
+	clen = 2.5
+	crad = 1.0
+	S.fields.append(CoilSpec(crad, clen, 15))	# r=1, l=2.5, N=15 cos theta coil
+	S.fields[-1].dist = [-0.0096]
+
+	sr = 0.05		# shield end radius
+	endgap = 0.02	# coil-to-main-shield end offset
+	sdr = 0.1		# shield-to-coil distance
+	srad = crad + sr + sdr
+	shz = 0.5*clen + endgap
+	S.shields.append(ShieldSpec(10000, 17, [(-shz, srad),(shz, srad)], sr))
+			
 	S.measGrid = (7,11,7)
 	S.measCell = [(0.05,-0.20,-0.05+dz), (0.125,0.20,0.05+dz)]
-	S.dist = [-0.0096]
-		
-	return S
-
-def make_asym_shortcoil_wireshrough(nm,r,dz=-0.0224,r0=0.70):
-
-	S = make_asym_shortcoil_base(nm,r,dz,r0)
-	S.set_csgeom(clen = 2.5, crad = 1.0, dlen = 0.01, drad = 0.1)
-	S.cend = ["none","none"]
-	S.dist = [-0.0196]
 	
 	return S
-
-def make_closed_ends(nm,r,dz=0):
-
-	S = make_asym_shortcoil_base(nm,r,dz,0)
-	S.set_csgeom(clen = 2.5, crad = 1.0, dlen = 0.01, drad = 0.1)
-	S.cend = ["none","none"]
-	S.dist = []
-	S.shsects[0].off[1][1] = 1
-	S.shsects[2].off[0][1] = 1
 	
-	return S
-
-
-def make_asym_shortcoil_centerblock(nm,r,dz=-0.262):
-
-	S = make_asym_shortcoil_wireshrough(nm,r,dz)
-	S.cend = ["none",None]
-	
-	# inner plug
-	S.shsects[2] = ShieldSection(0,6,12,"pax","pax")
-	S.shsects[2].off[0][1] = 0.70
-	
-	S.dist = [-0.0070]
-
-	return S
 
 def make_smallholes_annular(nm,r,dz=0):
 	"""More 'realistic' endcap with small central hole and annular ring"""
@@ -75,29 +43,12 @@ def make_smallholes_annular(nm,r,dz=0):
 	
 	return S
 
-#make_setup = make_asym_shortcoil_base
-#stname = "ShortCoil"
-
-#make_setup = make_asym_shortcoil_wireshrough
-#stname = "SC_WiresTrough"
-
-#make_setup = make_asym_shortcoil_centerblock
-#stname = "SC_InnerPlug"
-
-#make_setup = make_smallholes_annular
-#stname = "SC_SmallHoles"
-
-make_setup = make_closed_ends
-stname = "SC_ClosedEnds"
+make_setup = make_asym_shortcoil_base
+stname = "ShortCoil"
 
 
-def NegApertureScan():
-	SS = StudyScan()
-	for r in unifrange(0, 0.7, 15, True):
-		S = make_setup(stname+"_NegAperture",r)
-		S.shsects[0].off[0][1] = r
-		SS.fsimlist.write(S.make_cmd())
-	SS.run()
+
+
 
 def ECtoWiresScan():
 	SS = StudyScan()
@@ -110,17 +61,26 @@ def ECtoWiresScan():
 
 def DistortionScan():
 	SS = StudyScan()
-	for r in unifrange(-0.04, 0, 7, True):
+	for (n,r) in enumerate(unifrange(-0.04, 0, 8, True)):
 		S = make_setup(stname+"_Distortion",r)
+		S.solfl = "../SCD"
 		S.dist = [r]
-		SS.fsimlist.write(S.make_cmd())
+		if not n:
+			os.system(S.make_cmd("RotationShield_Vis"))
+		else:
+			SS.fsimlist.write(S.make_cmd())
+		print S.make_cmd();
 	SS.run()
 
 def MovingCellScan():
 	SS = StudyScan()
-	for r in unifrange(-.5, 0.5, 7, True):
+	for (n,r) in enumerate(unifrange(-.5, 0.5, 8, True)):
 		S = make_setup(stname+"_MovingCell",r,dz=r)
-		SS.fsimlist.write(S.make_cmd())
+		S.solfl = "../MC"
+		if not n:
+			os.system(S.make_cmd("RotationShield_Vis"))
+		else:
+			SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
 
@@ -166,9 +126,9 @@ if __name__=="__main__":
 	if options.scan:
 		
 		#MovingCellScan()
-		#DistortionScan()
+		DistortionScan()
 		
-		ECtoWiresScan()
+		#ECtoWiresScan()
 				
 		#NegApertureScan()
 		
@@ -184,14 +144,14 @@ if __name__=="__main__":
 		#VPP.keypos = "tc"
 		#VPP.setupGraph("Cell center z [m]")
 		
-		#VPP = VarParamPlotter(outdir+"/"+stname+"_Distortion")
-		#VPP.keypos = "tr"
-		#VPP.setupGraph("Distortion parameter $a$")
+		VPP = VarParamPlotter(outdir+"/"+stname+"_Distortion")
+		VPP.keypos = "tr"
+		VPP.setupGraph("Distortion parameter $a$")
 	
 	
-		VPP = VarParamPlotter(outdir+"/"+stname+"_ECdz")
-		VPP.keypos = "tl"
-		VPP.setupGraph("Wires to endcap distance [m]")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"_ECdz")
+		#VPP.keypos = "tl"
+		#VPP.setupGraph("Wires to endcap distance [m]")
 
 		#VPP = VarParamPlotter(outdir+"/"+stname+"_NegAperture")
 		#VPP.keypos = "tc"
@@ -217,8 +177,8 @@ if __name__=="__main__":
 				FI.BC.plotFields(2,0,1,2)
 		else:
 			
-			#FI = FieldInfo(outdir+"/"+stname+"_ECdz/X_0.050000/")
-			FI = FieldInfo(outdir+"/foo/")
+			FI = FieldInfo(outdir+"/"+stname+"_ECdz/X_0.050000/")
+			#FI = FieldInfo(outdir+"/foo/")
 			
 			if 1:
 				FI.BC.plotFields(2,0,1,2) # Bz along z

@@ -108,19 +108,22 @@ SymmetricSolver* SymmetricSolver::cachedSolve(ReactiveSet& R, const std::string&
 		return foo;
 	}
 	
-	std::ifstream ifs(fname.c_str(), std::ifstream::in | std::ifstream::binary);
+	std::string ext_fname = fname + "_" + std::to_string(R.nDF()/R.nPhi) + "_" + std::to_string(R.nPhi) + ".slvdat";
+	makePath(ext_fname, true);
+	
+	std::ifstream ifs(ext_fname.c_str(), std::ifstream::in | std::ifstream::binary);
 	if(ifs.good()) {
-		std::cout << "Loading previous SymmetricSolver solution from '" << fname << "'." << std::endl;
+		std::cout << "Loading previous SymmetricSolver solution from '" << ext_fname << "'." << std::endl;
 		foo = SymmetricSolver::readFromFile(ifs);
 		ifs.close();
 	} else {
+		std::cout << "No previous solution found at '" << ext_fname << "'; Solving." << std::endl;
 		foo = new SymmetricSolver();
 		foo->solve(R);
-		std::cout << "Saving SymmetricSolver solution to '" << fname << "'." << std::endl;
-		makePath(fname, true);
-		std::ofstream ofs(fname.c_str(), std::ofstream::out | std::ofstream::binary);
+		std::cout << "Saving SymmetricSolver solution to '" << ext_fname << "'." << std::endl;
+		std::ofstream ofs(ext_fname.c_str(), std::ofstream::out | std::ofstream::binary);
 		if(!ofs.good()) {
-			std::cout << "Warning: SymmetricSolver unable to write to file '" << fname << "'." << std::endl;
+			std::cout << "Warning: SymmetricSolver unable to write to file '" << ext_fname << "'." << std::endl;
 			return foo;
 		}
 		foo->writeToFile(ofs);

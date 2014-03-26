@@ -5,79 +5,77 @@ import time
 from optparse import OptionParser
 from random import shuffle
 
-class ShieldSection:
+class ShieldSpec:
 	"""Specification for a section of a shield"""
-	def __init__(self, mu, cseg, vseg, start="nrd", end="prd"):
-		self.mu = mu
-		self.cseg = cseg
-		self.vseg = vseg
-		self.start = start
-		self.end = end
-		self.off = [[0,0], [0,0]]
-
+	def __init__(self, mu, nseg, ends, rthick, p=0):
+		self.mu = mu			# permeability
+		self.nseg = nseg		# segments
+		self.rthick = rthick	# end radius (half thickness
+		self.ends = ends		# endpoints (1 for slab, 2 for tube
+		self.p = p				# adaptive fraction
+		
 	def make_cmd(self):
 		"""command line argument for this section"""
-		cmd = "add %f %i %i %s %s"%(self.mu,self.cseg,self.vseg,self.start,self.end)
-		offset = (self.off[0][0],self.off[0][1],self.off[1][0],self.off[1][1])
-		if offset != (0,0,0,0):
-			cmd += " mod %f %f %f %f"%offset
+		cmd = ["s","t"][len(self.ends)-1]
+		for e in self.ends:
+			cmd += " %g %g"%tuple(e)
+		cmd += " %g %g %i %g"%(self.rthick,self.mu,self.nseg,self.p)
+		return cmd
+
+class CoilSpec:
+	"""Specification for cos theta coil"""
+	def __init__(self, r=0.61, l=2.5, N=15):
+		self.N = N			# half-coil n loops
+		self.r = r			# radius
+		self.l = l			# length
+		self.ends = None	# end wire style; None for default ["arc","arc"]
+		self.dist = []		# distortion parameters
+	def make_cmd(self):
+		cmd = "c geom %i %g %g"%(self.N, self.r, self.l)
+		if self.ends:
+			cmd += " ends %s %s"%tupe(self.ends)
+		for (n,a) in enumerate(self.dist):
+			cmd += " dist %i %g"%(n+1,a)
+		cmd += " x"
 		return cmd
 
 class StudySetup:
 	def __init__(self,nm,r):
 	
-		self.r = r						# parameter being varied
-	
-		self.N = 15						# number of loops in half of cos theta coil
-		self.crad = 0.61				# coil radius
-		self.clen = 2.5					# coil length
-		self.dist = []					# coil distortion parameters
-		self.cend = [None,None]			# coild endcap type
+		self.r = r			# parameter being varied
+		self.nPhi = 32		# shield phi sections
+		self.fields = []	# field sources
+		self.shields = []	# material boundaries
 		
-		self.shieldR = 0				# shield radius (nominal 0.68; 0 = no shield)
-		self.shieldL = 0				# shield length (nominal 2.7; 0 = no shield)
-		self.nPhi = 64					# shield phi sections
-		self.shsects = []				# list of shield sections
-			
 		self.measCell = [(0,-.2,-.2),(.2,.2,.2)]	# measurement range
 		self.measGrid = (7,11,11)					# measurement grid
 
 		self.name = nm					# output directory name
 		self.outfl = (nm+"/X_%f")%r		# individual output file name
+		self.solfl = "none"
 		self.logdir = "%s/%s/Logs"%(os.environ["ROTSHIELD_OUT"],nm)
 		os.system("mkdir -p "+self.logdir)
 		
-	def set_csgeom(self,clen,crad,dlen=None,drad=None):
-		"""Set coil and shield geometry, given coil length/radius and deltas for the shield"""
-		self.clen = clen
-		self.crad = crad
-		if dlen is not None and drad is not None:
-			self.shieldL = clen+2*dlen
-			self.shieldR = crad+drad
-		else:
-			self.shieldL = self.shieldR = 0
-
-	def make_cmd(self):
-		runcmd = "meas svgrd 0 run %s"%self.outfl
+	def make_cmd(self, rshield="RotationShield"):
+		cmd = "dir %s field"%(self.outfl)
+		for f in self.fields:
+			cmd += " " + f.make_cmd()
 		
-		coilcmd = "coil geom %i %f %f"%(self.N,self.clen,self.crad)
-		for (n,x) in enumerate(self.dist):
-			coilcmd += " dist %i %f"%(n+1,x)
-		for (n,s) in enumerate(["neg","pos"]):
-			if self.cend[n]:
-				coilcmd += " end %s %s"%(self.cend[n],s)
+		cmd += " x bound n %i"%(self.nPhi)
+		for s in self.shields:
+			cmd += " " + s.make_cmd()
 			
-		shieldcmd = "shield"
-		if self.shieldR and self.shieldL:
-			shieldcmd += " geom %f %f %i"%(self.shieldL,self.shieldR,self.nPhi)
-		for s in self.shsects:
-			shieldcmd += " "+s.make_cmd()
-					
-		cellcmd = "cell range %f %f %f"%self.measCell[0]
-		cellcmd += " %f %f %f"%self.measCell[1]
-		cellcmd += " grid %i %i %i"%self.measGrid
+		cmd += " x cell range"
+		for v in self.measCell:
+			for x in v:
+				cmd += " %g"%x
+		cmd += " grid"
+		for x in self.measGrid:
+			cmd += " %i"%x
+		cmd += " x solve %s meas x"%(self.solfl)
 				
-		return "cd ..; ./RotationShield %s x  %s x  %s x  %s x x > %s/L%f.txt 2>&1\n"%(cellcmd, coilcmd, shieldcmd, runcmd, self.logdir, self.r)
+		return "cd ..; ./%s %s > %s/L%f.txt 2>&1\n"%(rshield, cmd, self.logdir, self.r)
+
 
 #####
 #####
@@ -85,7 +83,7 @@ class StudySetup:
 
 class StudyScan:
 	def __init__(self):
-		self.fsimlist = open("shield_simlist.txt","w")
+		self.fsimlist = open("shield_simlist.txt","w")		
 	def run(self):
 		self.fsimlist.close()
 		os.system("cat shield_simlist.txt")
