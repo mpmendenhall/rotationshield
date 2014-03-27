@@ -68,7 +68,6 @@ public:
 	//------------------------------------
 	// menu-driven user interface elements
 	
-	InputRequester exitMenu;
 	InputRequester outDir;
 	
 	InputRequester setFCrange;
@@ -85,11 +84,14 @@ public:
 	InputRequester setPhi;
 	InputRequester addSlab;
 	InputRequester addTube;
+	InputRequester addBall;
+	InputRequester addTorus;
 	//InputRequester addSheet;
 	OptionsMenu OMsurfaces;
 	
 	InputRequester doSolve;
 	InputRequester doApply;
+	InputRequester zeroResponse;
 	InputRequester doMeas;
 	InputRequester addSingular;
 	InputRequester setSingularEpsilon;

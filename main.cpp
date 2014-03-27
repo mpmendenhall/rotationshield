@@ -92,7 +92,6 @@ void mi_clearcolor(StreamInteractor* S) {
 
 void menuSystem(std::deque<std::string> args = std::deque<std::string>()) {
 	
-	InputRequester exitMenu("Exit Menu", &menutils_Exit);
 	InputRequester ncube("Hyercube visualization test", &mi_ncube);
 	ncube.addArg("n dim","3");
 	InputRequester setClearColor("Set visualization background color", &mi_clearcolor);
@@ -128,13 +127,14 @@ void menuSystem(std::deque<std::string> args = std::deque<std::string>()) {
 	
 	OM.addChoice(&SC.doSolve,"solve");
 	OM.addChoice(&SC.doApply,"apply");
+	OM.addChoice(&SC.zeroResponse,"zero");
 	OM.addChoice(&SC.doMeas,"meas");
 #ifdef WITH_LAPACKE
 	OM.addChoice(&SC.addSingular,"svd");
 	OM.addChoice(&SC.setSingularEpsilon,"ep");
 #endif
 	
-	OM.addChoice(&exitMenu,"x");
+	OM.addChoice(&InputRequester::exitMenu,"x");
 	OM.addChoice(&selfTests,"test",SELECTOR_HIDDEN);
 	
 	std::stack<std::string> stack;

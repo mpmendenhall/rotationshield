@@ -15,6 +15,8 @@ bool StreamInteractor::menutils_CheckStackSize(unsigned int n) {
 
 //---- InputRequester
 
+InputRequester InputRequester::exitMenu("Exit Menu", &menutils_Exit);
+
 InputRequester::InputRequester(std::string d, void (*f)(StreamInteractor*), StreamInteractor* fObj):
 NamedInteractor(d), myFuncObject(fObj), myFunc(f) { }
 

@@ -256,9 +256,9 @@ public:
 	const VarMat<T>& singular_values() const { return S; }
 	
 	/// get enumerated right singular vector
-	VarVec<CT> getRightSVec(unsigned int i) { return VT.getCol(i); }
+	VarVec<CT> getRightSVec(unsigned int i) { return VT.getRow(i); }
 	/// get enumerated left singular vector
-	VarVec<CT> getLeftSVec(unsigned int i) { return U.getRow(i); }
+	VarVec<CT> getLeftSVec(unsigned int i) { return U.getCol(i); }
 	
 	/// Dump binary data to file
 	void writeToFile(std::ostream& o) const {

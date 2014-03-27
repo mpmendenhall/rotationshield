@@ -76,14 +76,16 @@ void BlockCMat_SVD::sort_singular_values() {
 }
 
 VarVec<double> BlockCMat_SVD::getRightSVec(unsigned int i) const {
+	i = sloc[i];
 	VarVec<double> v;
-	assert(i/Ms < Mc/2+1);
+	unsigned int idiag = i/Ms;
+	assert(idiag < Mc/2+1);
 #ifdef WITH_LAPACKE
-	VarVec<lapack_complex_double> sv = block_SVDs[i/Ms]->getRightSVec(i%Ms);
+	VarVec<lapack_complex_double> sv = block_SVDs[idiag]->getRightSVec(i%Ms);
 	assert(sv.size()==M);
 	for(unsigned int m=0; m<M; m++) {
 		CMatrix C(Mc);
-		C.getKData()[i/Ms] = sv[m];
+		C.getKData()[idiag] = sv[m];
 		const std::vector<double>& r = C.getRealData();
 		for(unsigned int mc=0; mc<Mc; mc++) v.push_back(r[mc]);
 	}

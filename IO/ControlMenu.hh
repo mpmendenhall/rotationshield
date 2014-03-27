@@ -71,6 +71,8 @@ public:
 	///get my name/description
 	virtual std::string getDescription();
 	
+	static InputRequester exitMenu;
+	
 protected:
 	std::vector<std::string> argNames;				//< names of arguments
 	std::vector<std::string> argDescrips;			//< extended descriptions of arguments

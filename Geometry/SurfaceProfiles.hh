@@ -17,11 +17,11 @@ public:
 	vec2 x0,x1;	//< endpoints
 };
 
-/// Arc
+/// Arc of circle
 class Arc2D: public DVFunc1<2,double> {
 public:
 	/// constructor
-	Arc2D(double rr, double th0 = -M_PI, double th1 = 0, vec2 v0 = vec2()): r(rr), v(v0), t0(th0), dt(th1-th0) { assert(dt); }
+	Arc2D(double rr, double th0 = -M_PI, double th1 = 0, vec2 v0 = vec2());
 	/// function call
 	virtual vec2 operator()(double x) const;
 	/// derivative

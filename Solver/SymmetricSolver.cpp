@@ -70,8 +70,9 @@ void SymmetricSolver::selfInteract(ReactiveSet& R) {
 
 void SymmetricSolver::print_singular_values() const {
 	if(!the_GF) return;
-	std::cout << "Most Singular values:\n";
 	const std::vector<double>& S = the_GF->singular_values();
+	std::cout << "Most Singular values out of " << S.size() << " singular vectors:\n";
+	
 	for(unsigned int i=0; i<S.size(); i++) {
 		std::cout << S[i]/S.back() << "\t";
 		if(S[i] > 0.01*S.back()) break;

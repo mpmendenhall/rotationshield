@@ -112,6 +112,13 @@ void mi_Recalc(StreamInteractor* S) {
 	SC->TotalField->visualize();
 }
 
+void mi_zeroResponse(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	if(!SC->SS || !SC->RSC) { printf("Solver not yet generated; nothing done.\n"); return; }
+	SC->RSC->setFinalState(mvec(SC->RSC->nDF()));
+	SC->TotalField->visualize();
+}
+
 void mi_meas(StreamInteractor* S) {
 	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
 	if(!SC->RSC) printf("Measuring noninteracting applied fields:\n");
@@ -124,8 +131,10 @@ void mi_meas(StreamInteractor* S) {
 void mi_addSingular(StreamInteractor* S) {
 	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
 	float c = S->popFloat();
-	int i = S->popInt();
+	unsigned int i = S->popInt();
 	if(!SC->SS || !SC->RSC) { printf("Solver not yet generated; nothing done.\n"); return; }
+	unsigned int iMax = (SC->RSC->nDF()/SC->RSC->nPhi)*(SC->RSC->nPhi/2 + 1);
+	if(i >= iMax) { printf("Maximum vector number is %i; nothing done.\n", iMax-1); return; }
 	SC->add_singular_state(i,c);
 	SC->TotalField->visualize();
 }
@@ -196,6 +205,55 @@ void mi_addSlab(StreamInteractor* S) {
 }
 
 
+void mi_addBall(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	float o = S->popFloat();
+	unsigned int ns = S->popInt();
+	float mu = S->popFloat();
+	float r = S->popFloat();
+	float z = S->popFloat();
+	
+	if(!SC->RSC) {
+		std::cout << "You need to set the radial symmetry first! No action taken.\n";
+		return;
+	}
+	
+	Arc2D* B = new Arc2D(r, -M_PI, 0, vec2(z,0));
+	DVFunc1<2,double>* FAS = SC->adaptSurface(B,o);
+	CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG, SC->RSC->nPhi, ns);
+	RS->setSurfaceResponse(SurfaceI_Response(mu));
+	SC->RSC->addSet(RS);
+	
+	SC->TotalField->visualize();
+}
+
+void mi_addTorus(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	float o = S->popFloat();
+	unsigned int ns = S->popInt();
+	float mu = S->popFloat();
+	float r2 = S->popFloat();
+	float r1 = S->popFloat();
+	float z = S->popFloat();
+	if(fabs(r2)>fabs(r1)) std::swap(r1,r2);
+	
+	if(!SC->RSC) {
+		std::cout << "You need to set the radial symmetry first! No action taken.\n";
+		return;
+	}
+	
+	Arc2D* B = new Arc2D(r2, -M_PI, M_PI, vec2(z,r1));
+	DVFunc1<2,double>* FAS = SC->adaptSurface(B,o);
+	CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG, SC->RSC->nPhi, ns);
+	RS->setSurfaceResponse(SurfaceI_Response(mu));
+	SC->RSC->addSet(RS);
+	
+	SC->TotalField->visualize();
+}
+
+
 
 
 //-------------------------------------------
@@ -208,7 +266,6 @@ RSC(new MagRSCombiner(32)),
 IncidentSource(new MixedSource()),
 TotalField(new MixedSource()),
 SS(NULL),
-exitMenu("Exit Menu", &menutils_Exit),
 outDir("Output directory", &mi_outDir, this),
 setFCrange("Set Measurement Range", &mi_setFCrange, this),
 setFCgrid("Set Measurement Gridding", &mi_setFCgrid, this),
@@ -221,10 +278,13 @@ buildCosThetaExit("Build coil and exit", &mi_buildCosThetaExit, this),
 OMfieldsrc("Field Source Options"),
 setPhi("Set rotational symmetry grid", &mi_setPhi, this),
 addSlab("Add circular slab", &mi_addSlab, this),
-addTube("Add solid tube", &mi_addTube, this),
+addTube("Add tube", &mi_addTube, this),
+addBall("Add ball", &mi_addBall, this),
+addTorus("Add torus", &mi_addTorus, this),
 OMsurfaces("Boundary conditions"),
 doSolve("Solve boundary condition interactions",&mi_Solve,this),
 doApply("(Re)apply incident field to boundaries",&mi_Recalc,this),
+zeroResponse("Zero out surface response state",&mi_zeroResponse,this),
 doMeas("Take field measurement",&mi_meas,this),
 addSingular("Add enumerated singular state", &mi_addSingular, this),
 setSingularEpsilon("Set SVD pseudo-inverse threshold", &mi_setSingularEpsilon, this) {
@@ -254,7 +314,7 @@ setSingularEpsilon("Set SVD pseudo-inverse threshold", &mi_setSingularEpsilon, t
 	OMcell.addChoice(&setFCrange,"range");
 	OMcell.addChoice(&setFCgrid,"grid");
 	OMcell.addChoice(&setSaveGrid,"svgrd");
-	OMcell.addChoice(&exitMenu,"x");
+	OMcell.addChoice(&InputRequester::exitMenu,"x");
 	
 	addLineCurrent.addArg("x0","0");
 	addLineCurrent.addArg("y0","0");
@@ -273,7 +333,7 @@ setSingularEpsilon("Set SVD pseudo-inverse threshold", &mi_setSingularEpsilon, t
 	CTB.OMcoil.addChoice(&buildCosThetaExit,"x");
 	OMfieldsrc.addChoice(&CTB.OMcoil,"c");
 	OMfieldsrc.addChoice(&clearIncident,"d");
-	OMfieldsrc.addChoice(&exitMenu,"x");
+	OMfieldsrc.addChoice(&InputRequester::exitMenu,"x");
 	
 	setPhi.addArg("nPhi", std::to_string(RSC->nPhi));
 	//
@@ -293,15 +353,30 @@ setSingularEpsilon("Set SVD pseudo-inverse threshold", &mi_setSingularEpsilon, t
 	addTube.addArg("nZ","17");
 	addTube.addArg("adapt","0");
 	//
+	addBall.addArg("z","0");
+	addBall.addArg("r","0.5");
+	addBall.addArg("mu","0");
+	addBall.addArg("nZ","11");
+	addBall.addArg("adapt","0");
+	//
+	addTorus.addArg("z","0");
+	addTorus.addArg("r_major","0.7");
+	addTorus.addArg("r_minor","0.2");
+	addTorus.addArg("mu","0");
+	addTorus.addArg("nZ","11");
+	addTorus.addArg("adapt","0");
+	//
 	OMsurfaces.addChoice(&setPhi,"n");
 	OMsurfaces.addChoice(&addSlab,"s");
 	OMsurfaces.addChoice(&addTube,"t");
-	OMsurfaces.addChoice(&exitMenu,"x");
+	OMsurfaces.addChoice(&addBall,"b");
+	OMsurfaces.addChoice(&addTorus,"l");
+	OMsurfaces.addChoice(&InputRequester::exitMenu,"x");
 	
 	doSolve.addArg("Saved solution file","none");
 	
 	addSingular.addArg("State number","0");
-	addSingular.addArg("Multiplier","10");
+	addSingular.addArg("Multiplier","50");
 	
 	setSingularEpsilon.addArg("epsilon","1e-5");
 }

@@ -1,6 +1,11 @@
 #include "SurfaceProfiles.hh"
 #include <cmath>
 
+Arc2D::Arc2D(double rr, double th0, double th1, vec2 v0): r(rr), v(v0), t0(th0), dt(th1-th0) {
+	assert(dt);
+	period = fabs(fmod(dt,2*M_PI)) < 1e-6;
+}
+
 vec2 Arc2D::operator()(double x) const {
 	double th = t0+dt*x;
 	return v + vec2(r*cos(th), r*sin(th));
