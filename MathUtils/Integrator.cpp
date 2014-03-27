@@ -9,7 +9,7 @@ bool integratingParams::verbose = false;
 //
 
 Integrator::Integrator():
-	rel_err(1e-3), abs_err(1e-4), err_count(0), myMethod(INTEG_GSL_QNG),
+	rel_err(1e-4), abs_err(1e-5), err_count(0), myMethod(INTEG_GSL_QNG),
 	gslIntegrationWS(gsl_integration_workspace_alloc(INTEG_WS_SIZE)),
 	gsl_cqd_ws(gsl_integration_cquad_workspace_alloc(INTEG_WS_SIZE/4)) {
 	gsl_set_error_handler_off();

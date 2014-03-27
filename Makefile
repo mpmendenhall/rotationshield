@@ -22,7 +22,7 @@ ifdef ROTSHIELD_MACOS
 	GL_INCLUDES = -I/sw/include/ -I$(GL_PATH)/include/
 	GL_LINKER_ARGS = $(GL_PATH)/lib/libGL.dylib /sw/lib/libglut.dylib
 else
-	GL_PATH = OS_DIR
+	GL_PATH = $(OS_DIR)
 	GL_INCLUDES = -I$(GL_PATH)/include/
 	GL_LINKER_ARGS = -L$(GL_PATH)/lib/ -lGL -lglut
 endif
@@ -60,7 +60,7 @@ endif
 
 VPATH = ./:MathUtils/:Geometry/:FieldSource/:Solver/:Builder/:Studies/:IO/
 
-LDFLAGS +=  -L. -lRotationShield $(BASE_LIB_DIRS) -lgsl -lfftw3 -lgslcblas
+LDFLAGS += $(BASE_LIB_DIRS) -lgsl -lfftw3 -lgslcblas
 
 # things to build
 obj_IO = Visr.o strutils.o ControlMenu.o QFile.o SMExcept.o PathUtils.o VisSurface.o ProgressBar.o
@@ -86,7 +86,7 @@ libRotationShield.a: $(objects)
 	ar rs libRotationShield.a $(objects)
 
 RotationShield: main.cpp libRotationShield.a
-	$(CXX) $(CPPFLAGS) main.cpp $(LDFLAGS)  -o RotationShield
+	$(CXX) $(CPPFLAGS) main.cpp -L. -lRotationShield $(LDFLAGS) -o RotationShield
 
 
 #

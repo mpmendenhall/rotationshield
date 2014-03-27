@@ -10,7 +10,7 @@ sdr = 0.1		# shield-to-coil distance
 def make_asym_shortcoil_base(nm, r, dz=-0.75, r0=0.70):
 
 	S = StudySetup(nm,r)
-	S.nPhi = 64
+	S.nPhi = 32
 	
 	clen = 2.5
 	crad = 1.0
@@ -20,17 +20,22 @@ def make_asym_shortcoil_base(nm, r, dz=-0.75, r0=0.70):
 	
 	srad = crad + sr + sdr
 	shz = 0.5*clen + endgap
-	S.shields.append(ShieldSpec(10000, 25, [(-shz, srad),(shz, srad)], sr))
+	S.shields.append(ShieldSpec(10000, 17, [(-shz, srad),(shz, srad)], sr))
 	
 	plategap = 0.04
-	S.shields.append(ShieldSpec(0, 17, [(-shz-sr-plategap, srad+sr)], sr))
-	S.shields.append(ShieldSpec(0, 17, [(shz+sr+plategap,r0), (shz+sr+plategap, srad+sr)], sr))
+	S.shields.append(ShieldSpec(0, 11, [(-shz-sr-plategap, srad+sr)], sr))
+	S.shields.append(ShieldSpec(0, 11, [(shz+sr+plategap,r0), (shz+sr+plategap, srad+sr)], sr))
 	
 	S.measGrid = (7,11,7)
 	S.measCell = [(0.05,-0.20,-0.05+dz), (0.125,0.20,0.05+dz)]
 	
 	return S
 	
+def make_bothends_closed(nm, r, dz=0):
+	"""Both ends closed superconductor"""
+	S = make_asym_shortcoil_base(nm,r,dz)
+	S.shields[-1] = ShieldSpec(0, 17, [(-S.shields[-2].ends[0][0],S.shields[-2].ends[0][1])], S.shields[-2].rthick)
+	return S
 
 def make_smallholes_annular(nm,r,dz=0):
 	"""More 'realistic' endcap with small central hole and annular ring"""
@@ -44,8 +49,11 @@ def make_smallholes_annular(nm,r,dz=0):
 #make_setup = make_asym_shortcoil_base
 #stname = "ShortCoil"
 
-make_setup = make_smallholes_annular
-stname = "SC_SmallAnnular"
+make_setup = make_bothends_closed
+stname = "ClosedCoil"
+
+#make_setup = make_smallholes_annular
+#stname = "SC_SmallAnnular"
 
 
 def DistortionScan():
@@ -63,12 +71,11 @@ def DistortionScan():
 
 def MovingCellScan():
 	SS = StudyScan()
-	for (n,r) in enumerate(unifrange(-1, 0.5, 8, True)):
+	for (n,r) in enumerate(unifrange(-1, 1, 16, True)):
 		S = make_setup(stname+"_MovingCell",r,dz=r)
-		S.sng_ep = 0.002
 		S.solfl = "../MC"
-		if n == 7:
-			os.system(S.make_cmd("RotationShield_Vis"))
+		if False: #n == 0:
+			os.system(S.make_cmd("RotationShield"))
 		else:
 			SS.fsimlist.write(S.make_cmd())
 	SS.run()
@@ -110,7 +117,7 @@ if __name__=="__main__":
 	if options.plot:
 	
 		VPP = VarParamPlotter(outdir+"/"+stname+"_MovingCell")
-		VPP.keypos = "tc"
+		VPP.keypos = "tr"
 		VPP.setupGraph("Cell center z [m]")
 		
 		#VPP = VarParamPlotter(outdir+"/"+stname+"_Distortion")
