@@ -2,7 +2,6 @@
 #include "strutils.hh"
 #include "PathUtils.hh"
 #include "FieldAdaptiveSurface.hh"
-#include "FieldAnalyzer.hh"
 #include "LineSource.hh"
 #include "UniformField.hh"
 #include "SurfaceGeometry.hh"
@@ -126,6 +125,15 @@ void mi_meas(StreamInteractor* S) {
 	SC->measureFields();
 	SC->writeInfo();
 	printf("Data collection complete.\n");
+}
+
+void mi_qSurvey(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	unsigned int i = S->popInt();
+	if(Visualizable::vis_on) {
+		SC->TotalField->visualize();
+		SC->FA.visualizeSurvey(SC->cell.ll, SC->cell.ur, i, 0, 0);
+	}
 }
 
 void mi_addSingular(StreamInteractor* S) {
@@ -264,6 +272,7 @@ basedir(getEnvSafe("ROTSHIELD_OUT","./")),
 RSC(new MagRSCombiner(32)),
 IncidentSource(new MixedSource()),
 TotalField(new MixedSource()),
+FA(TotalField),
 SS(NULL),
 outDir("Output directory", &mi_outDir, this),
 setFCrange("Set Measurement Range", &mi_setFCrange, this),
@@ -285,6 +294,7 @@ doSolve("Solve boundary condition interactions",&mi_Solve,this),
 doApply("(Re)apply incident field to boundaries",&mi_Recalc,this),
 zeroResponse("Zero out surface response state",&mi_zeroResponse,this),
 doMeas("Take field measurement",&mi_meas,this),
+qSurvey("Check field along cell diagonal",&mi_qSurvey,this),
 addSingular("Add enumerated singular state", &mi_addSingular, this),
 setSingularEpsilon("Set SVD pseudo-inverse threshold", &mi_setSingularEpsilon, this) {
 	
@@ -374,6 +384,8 @@ setSingularEpsilon("Set SVD pseudo-inverse threshold", &mi_setSingularEpsilon, t
 	
 	doSolve.addArg("Saved solution file","none");
 	
+	qSurvey.addArg("N points","6");
+	
 	addSingular.addArg("State number","0");
 	addSingular.addArg("Multiplier","50");
 	
@@ -430,8 +442,10 @@ void SystemConfiguration::measureFields(const std::string& xpath) const {
 	statsout.open((fieldspath+"/Fieldstats.txt").c_str());
 	
 	// run analyzer
-	FieldAnalyzer FA = FieldAnalyzer(TotalField);
-	FA.visualizeSurvey(cell.ll,cell.ur,cell.vx,cell.vy,cell.vz);
+	if(Visualizable::vis_on) {
+		TotalField->visualize();
+		FA.visualizeSurvey(cell.ll,cell.ur,cell.vx,cell.vy,cell.vz);
+	}
 	FA.survey(cell.ll,cell.ur,cell.nx,cell.ny,cell.nz,statsout,cell.saveGrid?fieldsout:nullout);
 	
 	// cleanup

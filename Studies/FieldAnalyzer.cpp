@@ -99,30 +99,43 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
 
 void FieldAnalyzer::visualizeSurvey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, unsigned int nZ) const {
 	
-	if(!Visualizable::vis_on) return;
-	
-	unsigned int n[3] = { nX-1, nY-1, nZ-1 };
-	vec3 dx = (ur - ll)/vec3(n[0],n[1],n[2]);
-	for(int i=0; i<3; i++) if(n[i]==0) { dx[i] = 0; ll[i] = 0.5*(ll[i]+ur[i]); }
-	
-	vsr::startRecording(); 
-	vsr::clearWindow();
-	FS->_visualize();
-	
-	for(n[0] = 0; n[0] < nX; n[0]++) {
-		for(n[1] = 0; n[1] < nY; n[1] ++) {
-			for(n[2] = 0; n[2] < nZ; n[2]++) {
-				vec3 x = ll+vec3(n[0],n[1],n[2])*dx;
-				vec3 b = FS->fieldAt(x);
-				std::cout << "\tx = " << x << "\tb = " << b << std::endl;
-				float bmag = b.mag();
-				if(!bmag) continue;
-				b *= log(1+pow(bmag,0.25))/bmag;
-				Line(x-b*0.02,x+b*0.02).visualizeDirected();
+	if(nX*nY*nZ) {
+		unsigned int n[3] = { nX-1, nY-1, nZ-1 };
+		vec3 dx = (ur - ll)/vec3(n[0],n[1],n[2]);
+		for(int i=0; i<3; i++) if(n[i]==0) { dx[i] = 0; ll[i] = 0.5*(ll[i]+ur[i]); }
+		
+		for(n[0] = 0; n[0] < nX; n[0]++) {
+			for(n[1] = 0; n[1] < nY; n[1] ++) {
+				for(n[2] = 0; n[2] < nZ; n[2]++) {
+					
+					vec3 x = ll+vec3(n[0],n[1],n[2])*dx;
+					vec3 b = FS->fieldAt(x);
+					std::cout << "\tx = " << x << "\t\tB = " << b << std::endl;
+					
+					float bmag = b.mag();
+					if(!bmag) continue;
+					b *= log(1+pow(bmag,0.25))/bmag;
+					
+					vsr::startRecording();
+					Line(x-b*0.02,x+b*0.02).visualizeDirected();
+					vsr::stopRecording();
+				}
 			}
 		}
+	} else {
+		for(float i=0; i<nX+nY+nZ; i++) {
+			double l = float(i)/(nX+nY+nZ-1);
+			vec3 x = ll * (1-l) + ur * l;
+			vec3 b = FS->fieldAt(x);
+			std::cout << "\tx = " << x << "\t\tB = " << b << std::endl;
+			
+			float bmag = b.mag();
+			if(!bmag) continue;
+			b *= log(1+pow(bmag,0.25))/bmag;
+			vsr::startRecording();
+			Line(x-b*0.02,x+b*0.02).visualizeDirected();
+			vsr::stopRecording();
+		}
 	}
-	
-	vsr::stopRecording();
 }
 

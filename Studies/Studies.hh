@@ -7,6 +7,7 @@
 #include "MixedSource.hh"
 #include "SymmetricSolver.hh"
 #include "CosThetaBuilder.hh"
+#include "FieldAnalyzer.hh"
 #include "MagRS.hh"
 #include "ControlMenu.hh"
 #include "QFile.hh"
@@ -59,6 +60,7 @@ public:
 	MagRSCombiner* RSC;				//< reacting boundary condition surfaces
 	MixedSource* IncidentSource;	//< incident field source
 	MixedSource* TotalField;		//< incident + reacting field
+	FieldAnalyzer FA;
 	fieldCell cell;					//< field measurement cell
 	SymmetricSolver* SS;			//< system solver
 	CosThetaBuilder CTB;			//< cos theta field coil builder
@@ -93,6 +95,7 @@ public:
 	InputRequester doApply;
 	InputRequester zeroResponse;
 	InputRequester doMeas;
+	InputRequester qSurvey;
 	InputRequester addSingular;
 	InputRequester setSingularEpsilon;
 };

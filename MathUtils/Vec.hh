@@ -286,10 +286,12 @@ bool Vec<N,T>::operator>=(const Vec<N,T>& rhs) const {
 /// string output representation for vectors
 template<unsigned int N, typename T>
 std::ostream& operator<<(std::ostream& o, const Vec<N,T>& v) {
-	o << "< ";
-	for(unsigned int i=0; i<N; i++)
-		o << v[i] << " ";
-	o << ">";
+	o << "<\t";
+	for(unsigned int i=0; i<N; i++) {
+		if(i) o << ",\t";
+		o << v[i];
+	}
+	o << "\t>";
 	return o;
 }
 

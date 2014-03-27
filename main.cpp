@@ -129,6 +129,7 @@ void menuSystem(std::deque<std::string> args = std::deque<std::string>()) {
 	OM.addChoice(&SC.doApply,"apply");
 	OM.addChoice(&SC.zeroResponse,"zero");
 	OM.addChoice(&SC.doMeas,"meas");
+	OM.addChoice(&SC.qSurvey,"qf");
 #ifdef WITH_LAPACKE
 	OM.addChoice(&SC.addSingular,"svd");
 	OM.addChoice(&SC.setSingularEpsilon,"ep");
