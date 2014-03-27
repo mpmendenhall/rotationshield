@@ -133,8 +133,7 @@ void mi_addSingular(StreamInteractor* S) {
 	float c = S->popFloat();
 	unsigned int i = S->popInt();
 	if(!SC->SS || !SC->RSC) { printf("Solver not yet generated; nothing done.\n"); return; }
-	unsigned int iMax = (SC->RSC->nDF()/SC->RSC->nPhi)*(SC->RSC->nPhi/2 + 1);
-	if(i >= iMax) { printf("Maximum vector number is %i; nothing done.\n", iMax-1); return; }
+	if(i >= SC->RSC->nDF()) { printf("Maximum vector number is %i; nothing done.\n", SC->RSC->nDF()-1); return; }
 	SC->add_singular_state(i,c);
 	SC->TotalField->visualize();
 }

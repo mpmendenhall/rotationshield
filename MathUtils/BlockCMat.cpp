@@ -53,8 +53,10 @@ BlockCMat_SVD::~BlockCMat_SVD() {
 
 double BlockCMat_SVD::getSV(unsigned int i) const {
 #ifdef WITH_LAPACKE
-	assert(i/Ms < Mc/2+1);
-	return block_SVDs[i/Ms]->singular_values()[i%Ms];
+	unsigned int idiag = i/Ms;
+	assert(idiag < Mc);
+	if(idiag>=Mc/2+1) idiag = Mc - idiag;
+	return block_SVDs[idiag]->singular_values()[i%Ms];
 #else
 	assert(false);
 	return 0;
@@ -67,25 +69,29 @@ void BlockCMat_SVD::sort_singular_values() {
 	sloc.getData().clear();
 	
 	// sort internal singular value "ID numbers"
-	for(unsigned int i=0; i<Ms*(Mc/2+1); i++) sloc.push_back(i);
+	for(unsigned int i=0; i<Ms*Mc; i++) sloc.push_back(i);
 	Compare_BCM_SVD_singular_values CB(this);
 	std::sort(sloc.getData().begin(), sloc.getData().end(), CB);
 	
 	// sorted list of singular values
-	for(unsigned int i=0; i<Ms*(Mc/2+1); i++) svalues.push_back(getSV(sloc[i]));
+	for(unsigned int i=0; i<Ms*Mc; i++) svalues.push_back(getSV(sloc[i]));
 }
 
 VarVec<double> BlockCMat_SVD::getRightSVec(unsigned int i) const {
 	i = sloc[i];
 	VarVec<double> v;
-	unsigned int idiag = i/Ms;
-	assert(idiag < Mc/2+1);
 #ifdef WITH_LAPACKE
+	// check whether this vector belongs to implied complementary set
+	unsigned int idiag = i/Ms;
+	assert(idiag < Mc);
+	bool iset = (idiag>Mc/2+1) || (idiag==Mc/2+1 && !(Mc%2));
+	if(iset) idiag = Mc - idiag;
+	
 	VarVec<lapack_complex_double> sv = block_SVDs[idiag]->getRightSVec(i%Ms);
 	assert(sv.size()==M);
 	for(unsigned int m=0; m<M; m++) {
 		CMatrix C(Mc);
-		C.getKData()[idiag] = sv[m];
+		C.getKData()[idiag] = sv[m] * (iset ? complex<double>(0,1) : 1);
 		const std::vector<double>& r = C.getRealData();
 		for(unsigned int mc=0; mc<Mc; mc++) v.push_back(r[mc]);
 	}
