@@ -74,9 +74,21 @@ void SymmetricSolver::print_singular_values() const {
 	const std::vector<double>& S = the_GF->singular_values();
 	for(unsigned int i=0; i<S.size(); i++) {
 		std::cout << S[i]/S.back() << "\t";
-		if(S[i] > 100*S[0] || S[i] > 0.1*S.back()) break;
+		if(S[i] > 0.01*S.back()) break;
 	}
 	std::cout << "\n\n";
+}
+
+VarVec<double> SymmetricSolver::get_singular_vector(unsigned int i) const {
+	if(the_GF) return the_GF->getRightSVec(i);
+	return VarVec<double>();
+}
+
+double SymmetricSolver::get_singular_value(unsigned int i) const {
+	if(!the_GF) return 0;
+	const std::vector<double>& S = the_GF->singular_values();
+	assert(i<S.size());
+	return S[i]/S.back();
 }
 
 void SymmetricSolver::writeToFile(std::ostream& o) const {

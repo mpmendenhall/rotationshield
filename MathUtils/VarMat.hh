@@ -51,6 +51,10 @@ public:
 	T& operator[](unsigned int i) { return vv[i]; }
 	/// const vector element access
 	const T& operator[](unsigned int i) const { return vv[i]; }
+	/// get row vector
+	VarVec<T> getRow(unsigned int i) const;
+	/// get column vector
+	VarVec<T> getCol(unsigned int i) const;
 	
 	/// unary minus (negated copy)
 	const VarMat<T> operator-() const;
@@ -240,6 +244,20 @@ const VarMat<T>& VarMat<T>::resize(unsigned int m, unsigned int n) {
 		M = m;
 	}
 	return *this;
+}
+
+template<typename T>
+VarVec<T> VarMat<T>::getRow(unsigned int r) const {
+	VarVec<T> v(nCols());
+	for(unsigned int c=0; c<nCols(); c++) v[c] = (*this)(r,c);
+	return v;
+}
+
+template<typename T>
+VarVec<T> VarMat<T>::getCol(unsigned int c) const {
+	VarVec<T> v(nRows());
+	for(unsigned int r=0; r<nRows(); r++) v[r] = (*this)(r,c);
+	return v;
 }
 
 template<typename T>

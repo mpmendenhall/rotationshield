@@ -121,6 +121,23 @@ void mi_meas(StreamInteractor* S) {
 	printf("Data collection complete.\n");
 }
 
+void mi_addSingular(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	float c = S->popFloat();
+	int i = S->popInt();
+	if(!SC->SS || !SC->RSC) { printf("Solver not yet generated; nothing done.\n"); return; }
+	SC->add_singular_state(i,c);
+	SC->TotalField->visualize();
+}
+
+void mi_setSingularEpsilon(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	float ep = S->popFloat();
+	if(!SC->SS) { printf("Solver not yet generated; nothing done.\n"); return; }
+	SC->SS->set_singular_epsilon(ep);
+	mi_Recalc(S);
+}
+
 //---------------------------------------------
 
 void mi_setPhi(StreamInteractor* S) {
@@ -208,7 +225,9 @@ addTube("Add solid tube", &mi_addTube, this),
 OMsurfaces("Boundary conditions"),
 doSolve("Solve boundary condition interactions",&mi_Solve,this),
 doApply("(Re)apply incident field to boundaries",&mi_Recalc,this),
-doMeas("Take field measurement",&mi_meas,this) {
+doMeas("Take field measurement",&mi_meas,this),
+addSingular("Add enumerated singular state", &mi_addSingular, this),
+setSingularEpsilon("Set SVD pseudo-inverse threshold", &mi_setSingularEpsilon, this) {
 	
 	IncidentSource->retain();
 	TotalField->retain();
@@ -280,6 +299,11 @@ doMeas("Take field measurement",&mi_meas,this) {
 	OMsurfaces.addChoice(&exitMenu,"x");
 	
 	doSolve.addArg("Saved solution file","none");
+	
+	addSingular.addArg("State number","0");
+	addSingular.addArg("Multiplier","10");
+	
+	setSingularEpsilon.addArg("epsilon","1e-5");
 }
 
 SystemConfiguration::~SystemConfiguration() {
@@ -347,5 +371,12 @@ void SystemConfiguration::writeInfo(const std::string& xpath) const {
 	qout.commit(basedir+"/"+xpath+"/GeomInfo.txt");
 }
 
+void SystemConfiguration::add_singular_state(unsigned int i, double c) {
+	if(!SS || !RSC) return;
+	SS->print_singular_values();
+	VarVec<double> vs = SS->get_singular_vector(i);
+	std::cout << "Adding state " << i << " with singular value " << SS->get_singular_value(i) << " and magnitude " << vs.mag() << "\n";
+	RSC->setFinalState(RSC->finalState + vs*c);
+}
 
 

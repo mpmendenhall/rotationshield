@@ -38,15 +38,24 @@ public:
 	/// Read binary data from file
 	static BlockCMat_SVD* readFromFile(std::istream& s);
 	
+	/// sub-block singular values
+	double getSV(unsigned int i) const;
+	/// get enumerated right singular vector
+	VarVec<double> getRightSVec(unsigned int i) const;
+	
 protected:
 	/// empty constructor without calculation
 	BlockCMat_SVD() {}
 
-	unsigned int M, N, Mc;
+	/// prepare sorted singular values
+	void sort_singular_values();
+	
+	unsigned int M, N, Mc, Ms;
 #ifdef WITH_LAPACKE
 	std::vector< LAPACKE_Matrix_SVD<double,lapack_complex_double>* > block_SVDs;
 #endif
 	VarVec<double> svalues;		//< sorted singular values
+	VarVec<unsigned int> sloc;	//< location of sorted singular-values in sub-matrix
 	BlockCMat* PsI;				//< pseudo-inverse
 	double PsI_epsilon;			//< threshold for singular vectors
 };

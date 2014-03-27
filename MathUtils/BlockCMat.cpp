@@ -17,7 +17,16 @@ BlockCMat makeBlockCMatRandom(unsigned int n, unsigned int mc) {
 
 //-----------------------------------
 
-BlockCMat_SVD::BlockCMat_SVD(const BlockCMat& BC): M(BC.nRows()), N(BC.nCols()), Mc(BC[0].nRows()), PsI(NULL), PsI_epsilon(0) {
+// utility class for sorting enumerated singular values
+class Compare_BCM_SVD_singular_values {
+public:
+	Compare_BCM_SVD_singular_values(const BlockCMat_SVD* b): B(b) {}
+	bool operator() (unsigned int i, unsigned int j) { return B->getSV(i) < B->getSV(j); }
+	const BlockCMat_SVD* B;
+};
+
+
+BlockCMat_SVD::BlockCMat_SVD(const BlockCMat& BC): M(BC.nRows()), N(BC.nCols()), Mc(BC[0].nRows()), Ms(std::min(M,N)), PsI(NULL), PsI_epsilon(0) {
 #ifdef WITH_LAPACKE
 	for(unsigned int i=0; i<Mc/2+1; i++) {
 		VarMat<lapack_complex_double> dblock(BC.nRows(),BC.nCols());
@@ -27,10 +36,8 @@ BlockCMat_SVD::BlockCMat_SVD(const BlockCMat& BC): M(BC.nRows()), N(BC.nCols()),
 			}
 		}
 		block_SVDs.push_back(new LAPACKE_Matrix_SVD<double,lapack_complex_double>(dblock));
-		const VarMat<double> S = block_SVDs.back()->singular_values();
-		for(unsigned int j=0; j<S.size(); j++) svalues.push_back(S[j]);
 	}
-	std::sort(svalues.getData().begin(), svalues.getData().end());
+	sort_singular_values();
 #else
 	PsI = new BlockCMat(BC);
 	PsI->invert();
@@ -42,6 +49,46 @@ BlockCMat_SVD::~BlockCMat_SVD() {
 #ifdef WITH_LAPACKE
 	for(unsigned int i=0; i<block_SVDs.size(); i++) delete(block_SVDs[i]);
 #endif
+}
+
+double BlockCMat_SVD::getSV(unsigned int i) const {
+#ifdef WITH_LAPACKE
+	assert(i/Ms < Mc/2+1);
+	return block_SVDs[i/Ms]->singular_values()[i%Ms];
+#else
+	assert(false);
+	return 0;
+#endif
+}
+
+void BlockCMat_SVD::sort_singular_values() {
+	// clear any previous sorted lists
+	svalues.getData().clear();
+	sloc.getData().clear();
+	
+	// sort internal singular value "ID numbers"
+	for(unsigned int i=0; i<Ms*(Mc/2+1); i++) sloc.push_back(i);
+	Compare_BCM_SVD_singular_values CB(this);
+	std::sort(sloc.getData().begin(), sloc.getData().end(), CB);
+	
+	// sorted list of singular values
+	for(unsigned int i=0; i<Ms*(Mc/2+1); i++) svalues.push_back(getSV(sloc[i]));
+}
+
+VarVec<double> BlockCMat_SVD::getRightSVec(unsigned int i) const {
+	VarVec<double> v;
+	assert(i/Ms < Mc/2+1);
+#ifdef WITH_LAPACKE
+	VarVec<lapack_complex_double> sv = block_SVDs[i/Ms]->getRightSVec(i%Ms);
+	assert(sv.size()==M);
+	for(unsigned int m=0; m<M; m++) {
+		CMatrix C(Mc);
+		C.getKData()[i/Ms] = sv[m];
+		const std::vector<double>& r = C.getRealData();
+		for(unsigned int mc=0; mc<Mc; mc++) v.push_back(r[mc]);
+	}
+#endif
+	return v;
 }
 
 const BlockCMat& BlockCMat_SVD::calc_pseudo_inverse(double epsilon) {
@@ -86,6 +133,7 @@ BlockCMat_SVD* BlockCMat_SVD::readFromFile(std::istream& s) {
 	s.read((char*)&foo->M,			sizeof(foo->M));
 	s.read((char*)&foo->N,			sizeof(foo->N));
 	s.read((char*)&foo->Mc,			sizeof(foo->Mc));
+	foo->Ms = std::min(foo->M,foo->N);
 #ifdef WITH_LAPACKE
 	for(unsigned int i=0; i<foo->Mc/2+1; i++)
 		foo->block_SVDs.push_back( LAPACKE_Matrix_SVD<double,lapack_complex_double>::readFromFile(s) );
@@ -98,5 +146,6 @@ BlockCMat_SVD* BlockCMat_SVD::readFromFile(std::istream& s) {
 	}
 	s.read((char*)&foo->PsI_epsilon,sizeof(foo->PsI_epsilon));
 	checkString("(/BlockCMat_SVD)",s);
+	foo->sort_singular_values();
 	return foo;
 }

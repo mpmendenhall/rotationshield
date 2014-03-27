@@ -10,7 +10,7 @@ double FieldAnalyzer::simpsonCoeff(unsigned int n, unsigned int ntot) {
 }
 
 void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, unsigned int nZ, std::ostream& statsout, std::ostream& datsout) const {
-	printf("Analyzing resultant fields...\n");
+	printf("Surveying resulting fields...\n");
 	
 	assert(nX>0 && nY>0 && nZ>0);
 	

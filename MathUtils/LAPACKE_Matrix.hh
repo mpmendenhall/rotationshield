@@ -255,6 +255,11 @@ public:
 	/// get list of singular values
 	const VarMat<T>& singular_values() const { return S; }
 	
+	/// get enumerated right singular vector
+	VarVec<CT> getRightSVec(unsigned int i) { return VT.getCol(i); }
+	/// get enumerated left singular vector
+	VarVec<CT> getLeftSVec(unsigned int i) { return U.getRow(i); }
+	
 	/// Dump binary data to file
 	void writeToFile(std::ostream& o) const {
 		writeString("(LAPACKE_Matrix_SVD_"+std::to_string(sizeof(CT))+")",o);

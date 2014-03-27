@@ -51,6 +51,10 @@ public:
 	/// write measurement info to file at basedir/xpath/GeomInfo.txt
 	void writeInfo(const std::string& xpath="") const;
 	
+	/// display singular solution
+	void add_singular_state(unsigned int i, double c);
+	
+	
 	std::string basedir;			//< base directory for IO operations
 	MagRSCombiner* RSC;				//< reacting boundary condition surfaces
 	MixedSource* IncidentSource;	//< incident field source
@@ -87,6 +91,8 @@ public:
 	InputRequester doSolve;
 	InputRequester doApply;
 	InputRequester doMeas;
+	InputRequester addSingular;
+	InputRequester setSingularEpsilon;
 };
 
 #endif

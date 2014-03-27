@@ -42,6 +42,10 @@ public:
 #endif
 	/// show singular values
 	void print_singular_values() const;
+	/// get right singular vector
+	VarVec<double> get_singular_vector(unsigned int i) const;
+	/// get singular value, normalized to largest singular value
+	double get_singular_value(unsigned int i) const;
 	
 protected:
 	

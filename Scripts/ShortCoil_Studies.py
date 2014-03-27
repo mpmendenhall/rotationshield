@@ -3,23 +3,29 @@
 from StudyPlotter import *
 from ShieldStudyLauncher import *
 
+sr = 0.05		# shield end radius
+endgap = -0.02	# coil-to-main-shield end offset
+sdr = 0.1		# shield-to-coil distance
 
-def make_asym_shortcoil_base(nm,r,dz=-0.783,r0=0.70):
+def make_asym_shortcoil_base(nm, r, dz=-0.75, r0=0.70):
 
 	S = StudySetup(nm,r)
+	S.nPhi = 64
 	
 	clen = 2.5
 	crad = 1.0
 	S.fields.append(CoilSpec(crad, clen, 15))	# r=1, l=2.5, N=15 cos theta coil
-	S.fields[-1].dist = [-0.0096]
-
-	sr = 0.05		# shield end radius
-	endgap = 0.02	# coil-to-main-shield end offset
-	sdr = 0.1		# shield-to-coil distance
+	S.fields[-1].dist = [-0.0025]
+	S.fields[-1].ends = ["none","none"]			# "endless" wires
+	
 	srad = crad + sr + sdr
 	shz = 0.5*clen + endgap
-	S.shields.append(ShieldSpec(10000, 17, [(-shz, srad),(shz, srad)], sr))
-			
+	S.shields.append(ShieldSpec(10000, 25, [(-shz, srad),(shz, srad)], sr))
+	
+	plategap = 0.04
+	S.shields.append(ShieldSpec(0, 17, [(-shz-sr-plategap, srad+sr)], sr))
+	S.shields.append(ShieldSpec(0, 17, [(shz+sr+plategap,r0), (shz+sr+plategap, srad+sr)], sr))
+	
 	S.measGrid = (7,11,7)
 	S.measCell = [(0.05,-0.20,-0.05+dz), (0.125,0.20,0.05+dz)]
 	
@@ -29,43 +35,26 @@ def make_asym_shortcoil_base(nm,r,dz=-0.783,r0=0.70):
 def make_smallholes_annular(nm,r,dz=0):
 	"""More 'realistic' endcap with small central hole and annular ring"""
 	S = make_asym_shortcoil_base(nm,r,dz,r0=0.60)
-	S.set_csgeom(clen = 2.5, crad = 1.0, dlen = 0.01, drad = 0.1)
 	
-	S.shsects.append(ShieldSection(0,6,12,"pax","pax"))
-	S.shsects[-1].off = ([0,0.52],[0,0.0635])
-	
-	S.shsects[0].off[0][1] = 0.50	# bottom end hole
-	#S.shsects[0].cseg = 24
-	#S.shsects[0].vseg = 12
-		
-	S.cend = ["none","none"]
-	S.dist = [-0.0184]
+	shz = S.shields[-1].ends[0][0]
+	S.shields.append(ShieldSpec(0, 17, [(shz,0.0635),(shz,0.52)], sr))
 	
 	return S
 
-make_setup = make_asym_shortcoil_base
-stname = "ShortCoil"
+#make_setup = make_asym_shortcoil_base
+#stname = "ShortCoil"
 
+make_setup = make_smallholes_annular
+stname = "SC_SmallAnnular"
 
-
-
-
-def ECtoWiresScan():
-	SS = StudyScan()
-	for r in unifrange(0.001, .05, 7, True):
-		S = make_setup(stname+"_ECdz",r)
-		S.set_csgeom(clen = 2.5, crad = 1.0, dlen = r, drad = 0.1)
-		#print S.make_cmd();
-		SS.fsimlist.write(S.make_cmd())
-	SS.run()
 
 def DistortionScan():
 	SS = StudyScan()
-	for (n,r) in enumerate(unifrange(-0.04, 0, 8, True)):
+	for (n,r) in enumerate(unifrange(-0.01, 0.01, 7, True)):
 		S = make_setup(stname+"_Distortion",r)
 		S.solfl = "../SCD"
-		S.dist = [r]
-		if not n:
+		S.fields[-1].dist = [r]
+		if n==7:
 			os.system(S.make_cmd("RotationShield_Vis"))
 		else:
 			SS.fsimlist.write(S.make_cmd())
@@ -74,35 +63,15 @@ def DistortionScan():
 
 def MovingCellScan():
 	SS = StudyScan()
-	for (n,r) in enumerate(unifrange(-.5, 0.5, 8, True)):
+	for (n,r) in enumerate(unifrange(-1, 0.5, 8, True)):
 		S = make_setup(stname+"_MovingCell",r,dz=r)
+		S.sng_ep = 0.002
 		S.solfl = "../MC"
-		if not n:
+		if n == 7:
 			os.system(S.make_cmd("RotationShield_Vis"))
 		else:
 			SS.fsimlist.write(S.make_cmd())
 	SS.run()
-
-
-def PosBlockScan():
-	SS = StudyScan()
-	for r in unifrange(0, 0.7, 7, True):
-		S = make_setup(stname+"_PosBlock",r)
-		#S.shsects[1].off[1][0] = S.shsects[2].off[0][0] = S.shsects[2].off[1][0] = r
-		S.shsects[3].off[0][1] = r
-		SS.fsimlist.write(S.make_cmd())
-	SS.run()
-
-def GriddingScan():
-	SS = StudyScan()
-	for r in unifrange(12, 27, 16, True):
-		S = make_setup(stname+"stname_Gridding",r)
-		#S.shsects[0].cseg = S.shsects[2].cseg = r
-		S.shsects[1].cseg = r
-		S.shsects[1].vseg = 0
-		SS.fsimlist.write(S.make_cmd())
-	SS.run()
-
 
 
 #
@@ -125,8 +94,8 @@ if __name__=="__main__":
 	
 	if options.scan:
 		
-		#MovingCellScan()
-		DistortionScan()
+		MovingCellScan()
+		#DistortionScan()
 		
 		#ECtoWiresScan()
 				
@@ -140,13 +109,13 @@ if __name__=="__main__":
 
 	if options.plot:
 	
-		#VPP = VarParamPlotter(outdir+"/"+stname+"_MovingCell")
-		#VPP.keypos = "tc"
-		#VPP.setupGraph("Cell center z [m]")
+		VPP = VarParamPlotter(outdir+"/"+stname+"_MovingCell")
+		VPP.keypos = "tc"
+		VPP.setupGraph("Cell center z [m]")
 		
-		VPP = VarParamPlotter(outdir+"/"+stname+"_Distortion")
-		VPP.keypos = "tr"
-		VPP.setupGraph("Distortion parameter $a$")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"_Distortion")
+		#VPP.keypos = "tl"
+		#VPP.setupGraph("Distortion parameter $a$")
 	
 	
 		#VPP = VarParamPlotter(outdir+"/"+stname+"_ECdz")

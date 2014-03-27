@@ -33,7 +33,7 @@ class CoilSpec:
 	def make_cmd(self):
 		cmd = "c geom %i %g %g"%(self.N, self.r, self.l)
 		if self.ends:
-			cmd += " ends %s %s"%tupe(self.ends)
+			cmd += " ends %s %s"%tuple(self.ends)
 		for (n,a) in enumerate(self.dist):
 			cmd += " dist %i %g"%(n+1,a)
 		cmd += " x"
@@ -49,6 +49,8 @@ class StudySetup:
 		
 		self.measCell = [(0,-.2,-.2),(.2,.2,.2)]	# measurement range
 		self.measGrid = (7,11,11)					# measurement grid
+
+		self.sng_ep = None
 
 		self.name = nm					# output directory name
 		self.outfl = (nm+"/X_%f")%r		# individual output file name
@@ -72,7 +74,10 @@ class StudySetup:
 		cmd += " grid"
 		for x in self.measGrid:
 			cmd += " %i"%x
-		cmd += " x solve %s meas x"%(self.solfl)
+		cmd += " x"
+		if self.sng_ep is not None:
+			cmd += " ep %g"%self.sng_ep
+		cmd += " solve %s meas x"%(self.solfl)
 				
 		return "cd ..; ./%s %s > %s/L%f.txt 2>&1\n"%(rshield, cmd, self.logdir, self.r)
 
