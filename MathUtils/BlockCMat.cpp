@@ -58,8 +58,7 @@ double BlockCMat_SVD::getSV(unsigned int i) const {
 	if(idiag>=Mc/2+1) idiag = Mc - idiag;
 	return block_SVDs[idiag]->singular_values()[i%Ms];
 #else
-	assert(false);
-	return 0;
+	return 1;
 #endif
 }
 
@@ -128,7 +127,6 @@ void BlockCMat_SVD::writeToFile(std::ostream& o) const {
 	for(unsigned int i=0; i<block_SVDs.size(); i++)
 		block_SVDs[i]->writeToFile(o);
 #endif
-	svalues.writeToFile(o);
 	o.write((char*)&PsI,			sizeof(PsI));
 	if(PsI) PsI->writeToFile(o);
 	o.write((char*)&PsI_epsilon,	sizeof(PsI_epsilon));
@@ -146,7 +144,6 @@ BlockCMat_SVD* BlockCMat_SVD::readFromFile(std::istream& s) {
 	for(unsigned int i=0; i<foo->Mc/2+1; i++)
 		foo->block_SVDs.push_back( LAPACKE_Matrix_SVD<double,lapack_complex_double>::readFromFile(s) );
 #endif
-	foo->svalues = VarVec<double>::readFromFile(s);
 	s.read((char*)&foo->PsI,		sizeof(foo->PsI));
 	if(foo->PsI) {
 		foo->PsI = new BlockCMat;

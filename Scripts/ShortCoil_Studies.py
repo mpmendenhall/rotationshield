@@ -71,7 +71,7 @@ def DistortionScan():
 
 def MovingCellScan():
 	SS = StudyScan()
-	for (n,r) in enumerate(unifrange(-1, 1, 16, True)):
+	for (n,r) in enumerate(unifrange(-1, 1, 64, True)):
 		S = make_setup(stname+"_MovingCell",r,dz=r)
 		S.solfl = "../MC"
 		if False: #n == 0:

@@ -33,13 +33,20 @@ class cell_geom(KVMap):
 			self.dat = m.dat
 			self.ll = self.getFirstV("ll")
 			self.ur = self.getFirstV("ur")
+			self.c = [0.5*(self.ll[i]+self.ur[i]) for i in range(3)]
 			self.loadFloats(["nx","ny","nz"])
+	def make_centered(self):
+		"""Convert to symmetric centered coordinates"""
+		self.ll = [self.ll[i] - self.c[i] for i in range(3)]
+		self.ur = [self.ur[i] - self.c[i] for i in range(3)]
+		self.c = [0,0,0]
 
 class GeomInfo_File(QFile):
 	"""Geometry info file"""
 	def __init__(self,fname):
 		QFile.__init__(self,fname)
 		self.cell = cell_geom(self.getFirst("cell"))
+		self.cell.make_centered()
 
 def Vol3Avg(P,ll,ur):
 	"Volume average of a polynomial"

@@ -13,13 +13,17 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
 	printf("Surveying resulting fields...\n");
 	
 	assert(nX>0 && nY>0 && nZ>0);
+	vec3 xcenter = (ll+ur)*0.5;	// center of cell, around to produce polynomial fit
 	
 	unsigned int n[3] = { nX-1, nY-1, nZ-1 };
 	vec3 dx = (ur - ll)/vec3(n[0],n[1],n[2]);
-	for(int i=0; i<3; i++) if(n[i]==0) { dx[i] = 0; ll[i] = 0.5*(ll[i]+ur[i]); }
-	vec3 b, x, bsZ, bsYZ, bsXYZ, bssZ, bssYZ, bssXYZ;
-	double avgBx0 = 0;
-	double avgBx1 = 0;
+	for(int i=0; i<3; i++)
+		if(n[i]==0) {
+			dx[i] = 0;
+			ll[i] = 0.5*(ll[i]+ur[i]);
+	}
+	
+	
 	
 	// set up results tables
 	gsl_matrix* coords = gsl_matrix_alloc(nX*nY*nZ,3);
@@ -29,29 +33,36 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
 	ProgressBar pb(nX*nY);
 	
 	// scan over survey points
-	bsXYZ = vec3(); bssXYZ = vec3();
-	int c=0;
+	vec3 bsXYZ(0,0,0);
+	vec3 bssXYZ(0,0,0);
+	double avgBx0 = 0;
+	double avgBx1 = 0;
+	int c=0; // incrementing coordinate index
 	for(n[0] = 0; n[0] < nX; n[0]++) {
-		bsYZ = vec3(); bssYZ = vec3();
+	
+		vec3 bsYZ(0,0,0);
+		vec3 bssYZ(0,0,0);
 		for(n[1] = 0; n[1] < nY; n[1] ++) {
 			
 			pb.update(n[0]*nY+n[1]);
 			
-			bsZ = vec3(); bssZ = vec3();
+			vec3 bsZ(0,0,0);
+			vec3 bssZ(0,0,0);
 			for(n[2] = 0; n[2] < nZ; n[2]++)
 			{
-				x = ll + dx * vec3(n[0],n[1],n[2]);
-				b = FS->fieldAt(x);
+				vec3 x = ll + dx * vec3(n[0],n[1],n[2]);
+				vec3 b = FS->fieldAt(x);
 				for(int i=0; i<3; i++) gsl_vector_set(bfield[i],c,b[i]);
 				
 				bsZ += b*simpsonCoeff(n[2],nZ);
 				bssZ += b*b*simpsonCoeff(n[2],nZ);
 				
-				for(int i=0; i<3; i++) datsout << std::setw(16) << x[i] << " ";
-				for(int i=0; i<3; i++) datsout << std::setw(20) << std::setprecision(12) << gsl_vector_get(bfield[i],c) << " ";
+				for(int i=0; i<3; i++) datsout << std::setw(10) << std::setprecision(6) << x[i] << " ";
+				datsout << "\t";
+				for(int i=0; i<3; i++) datsout << std::setw(16) << std::setprecision(8) << gsl_vector_get(bfield[i],c) << " ";
 				datsout << std::endl;
 				
-				for(int i=0; i<3; i++) gsl_matrix_set(coords,c,i,x[i]);
+				for(int i=0; i<3; i++) gsl_matrix_set(coords, c, i, x[i] - xcenter[i]);
 				
 				c++;
 			}
@@ -83,9 +94,10 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
 	for(int i=0; i<3; i++) {
 		resids = polynomialFit(coords, bfield[i], p);
 		gsl_vector_free(bfield[i]);
-		statsout << "#" << polOrder << "th order polynomial (" << p.terms.size() << " terms) fit to B" << axisnames[i] << " centered at < 0 0 0 >, rms residual = " << resids << std::endl;
+		statsout << "#" << polOrder << "th order polynomial (" << p.terms.size() << " terms) fit to B" << axisnames[i]
+			<< " centered at " << xcenter << ", rms residual = " << resids << std::endl;
 		Polynomial<3,double> p2 = p;
-		p2.prune(1e-9*bRMS);
+		p2.prune(1e-12*bRMS);
 		p2.tableForm(statsout);
 		//statsout << "#4th order Polynomial for B" << axisnames[i] << " recentered at " << (ll+ur)*0.5 << std::endl;
 		//p2 = p.recentered((ll+ur)*0.5);
