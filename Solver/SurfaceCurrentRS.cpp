@@ -1,3 +1,23 @@
+/* 
+ * SurfaceCurrentRS.cpp, part of the RotationShield program
+ * Copyright (c) 2007-2014 Michael P. Mendenhall
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
+
 #include "SurfaceCurrentRS.hh"
 #include "ProgressBar.hh"
 #include "VisSurface.hh"
@@ -32,7 +52,7 @@ SurfaceCurrentRS::SurfaceCurrentRS(SurfaceGeometry* SG, unsigned int nph, unsign
 			G[i]->bc[0] = IB_CYCLIC;
 	
 	// split up surface phi integrals by default
-	dflt_integrator_ndivs_y = nPhi>8? nPhi/8 : 1;
+	dflt_integrator_ndivs_y = nPhi>4? nPhi/4 : 1;
 	// use adaptive integration by default
 	myIntegrator.setMethod(INTEG_GSL_QAG);
 }
@@ -235,8 +255,9 @@ struct AverageFieldIntegParams {
 	Matrix<2,3,double> rmat2;		//< 2-component response matrix to local field
 };
 
-mvec FieldResponsedA2(vec2 l, void* params) {
+mvec FieldResponsedA2(mvec v, void* params) {
 	AverageFieldIntegParams* p = (AverageFieldIntegParams*)params;
+	vec2 l(v[0],v[1]);
 	vec2 r = p->rmat2 * p->S->mySurface->rotToLocal(l) * p->f->fieldAt((*p->S->mySurface)(l));
 	return mvec(r) * p->S->mySurface->dA(l);
 }
@@ -274,7 +295,7 @@ void SurfaceCurrentRS::calculateIncident(const FieldSource& f) {
 				vec2 ll(double(zn)/double(nZ), double(pn)/double(nPhi));
 				vec2 ur(double(zn+1)/double(nZ), double(pn+1)/double(nPhi));
 				
-				mvec r = myIntegrator.integrate2D(&FieldResponsedA2, ll, ur, &AFIP);
+				mvec r = myIntegratorND.integrate(&FieldResponsedA2, 2, ll, ur, &AFIP);
 					
 				double A = mySurface->area(ll,ur);
 				for(unsigned int i = 0; i < r.size(); i++)

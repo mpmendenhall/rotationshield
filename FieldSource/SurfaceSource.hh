@@ -12,7 +12,7 @@ class SurfaceSource: public FieldSource {
 public:
 	/// constructor
 	SurfaceSource(SurfaceGeometry* SG = NULL, const std::string& nm = "SurfaceSource"):
-		FieldSource(nm), mySurface(SG), dflt_integrator_ndivs_x(1), dflt_integrator_ndivs_y(1), vis_n1(200), vis_n2(200), polar_integral_center(NULL), polar_r0(0) {}
+		FieldSource(nm), mySurface(SG), dflt_integrator_ndivs_x(8), dflt_integrator_ndivs_y(8), vis_n1(200), vis_n2(200), polar_integral_center(NULL), polar_r0(0) {}
 
 	/// destructor
 	virtual ~SurfaceSource() {}
@@ -52,11 +52,12 @@ public:
 protected:
 
 	mutable Integrator2D myIntegrator;	//< surface field integrator
+	IntegratorND myIntegratorND;		//< surface field integrator using cubature
 	vec2* polar_integral_center;		//< optional center point for switching to polar mode
 	double polar_r0;					//< starting radius for polar integrals
 	
 	/// convenience mechanism for integrations split over may divisions, limited to surface [0,1]->[0,1] // TODO the problem??
-	mvec subdividedIntegral(mvec (*f)(vec2, void*), void* fparams, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const;
+	mvec subdividedIntegral(mvec (*f)(vec2, void*), unsigned int fdim, void* fparams, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const;
 };
 
 

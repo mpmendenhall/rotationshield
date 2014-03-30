@@ -1,3 +1,23 @@
+/* 
+ * FieldAnalyzer.cpp, part of the RotationShield program
+ * Copyright (c) 2007-2014 Michael P. Mendenhall
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
+
 #include "FieldAnalyzer.hh"
 #include "ProgressBar.hh"
 
@@ -74,7 +94,6 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
 		bsXYZ += bsYZ*simpsonCoeff(n[0],nX);
 		bssXYZ += bssYZ*simpsonCoeff(n[0],nX);
 	}
-	printf("\n");
 	
 	
 	// summary data and field fit
@@ -88,7 +107,7 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
 	char axisnames[] = "xyz";
 	
 	unsigned int polOrder = 0;
-	for(unsigned int i=1; i<=6; i++)
+	for(unsigned int i=1; i<=4; i++)	// TODO variable max polynomial order
 		if(nX>i && nY>i && nZ>i) polOrder = i;
 	Polynomial<3,double> p = Polynomial<3,double>::lowerTriangleTerms(polOrder);
 	for(int i=0; i<3; i++) {
@@ -99,10 +118,6 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
 		Polynomial<3,double> p2 = p;
 		p2.prune(1e-12*bRMS);
 		p2.tableForm(statsout);
-		//statsout << "#4th order Polynomial for B" << axisnames[i] << " recentered at " << (ll+ur)*0.5 << std::endl;
-		//p2 = p.recentered((ll+ur)*0.5);
-		//p2.prune(1e-9);
-		//p2.tableForm(statsout);
 	}
 	gsl_matrix_free(coords);
 	

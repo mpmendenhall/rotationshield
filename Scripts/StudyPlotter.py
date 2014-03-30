@@ -29,14 +29,19 @@ def rainbowDict(keys):
 class cell_geom(KVMap):
 	"""Data cell geometry"""
 	def __init__(self,m=None):
+		self.ll = self.ur = self.c = None
 		if m:
 			self.dat = m.dat
 			self.ll = self.getFirstV("ll")
 			self.ur = self.getFirstV("ur")
-			self.c = [0.5*(self.ll[i]+self.ur[i]) for i in range(3)]
+			if self.ll and self.ur:
+				self.c = [0.5*(self.ll[i]+self.ur[i]) for i in range(3)]
 			self.loadFloats(["nx","ny","nz"])
+
 	def make_centered(self):
 		"""Convert to symmetric centered coordinates"""
+		if not self.c:
+			return
 		self.ll = [self.ll[i] - self.c[i] for i in range(3)]
 		self.ur = [self.ur[i] - self.c[i] for i in range(3)]
 		self.c = [0,0,0]
@@ -206,6 +211,9 @@ class FieldInfo:
 		self.BC = BCell(basepath+"/Fieldstats.txt")
 		self.GIF = GeomInfo_File(basepath+"/GeomInfo.txt")
 
+		if not self.GIF.cell.c:
+			return
+
 		# target B0, mG
 		self.B0targ = 30.
 		
@@ -228,15 +236,21 @@ class VarParamPlotter:
 		
 		self.outdir = outdir
 		self.datlist = [ (float(f[len(basename):].split("_")[1]), FieldInfo(outdir+"/"+f)) for f in os.listdir(outdir) if f[:len(basename)+1]==basename+"_"]
-	
-	def setupGraph(self,varname):
+		self.datlist = [ d for d in self.datlist if d[1].GIF.cell.c ]	# filter out incomplete data points
+		
+	def setupGraph(self, varname, logx=False, xrange=(None,None)):
 		
 		print "Setting up graph for",varname
 		
+		xaxis = graph.axis.lin(title=varname, min=xrange[0], max=xrange[1])
+		if logx:
+			xaxis = graph.axis.log(title=varname, min=xrange[0], max=xrange[1])
+			
 		self.g = graph.graphxy(width=24,height=16,
-			x=graph.axis.lin(title=varname),
+			x=xaxis,
 			y=graph.axis.lin(title="Cell Average Gradients [$\\mu$G/cm]", min=self.yrange[0], max=self.yrange[1]),
 			y2=graph.axis.lin(title="Dephasing rate $1/T_2$ [mHz]", min=0),
+			#y2=graph.axis.log(title="Dephasing rate $1/T_2$ [mHz]"),
 			key = graph.key.key(pos=self.keypos,columns=2))
 		self.g.texrunner.set(lfs='foils17pt')
 		
@@ -248,7 +262,7 @@ class VarParamPlotter:
 		
 		self.g.plot(graph.data.function("y(x)=0",title=None),[graph.style.line(lineattrs=[style.linestyle.dotted,style.linewidth.Thick])])
 		
-	def makePlot(self,cname="",csty=[],cell=None,PGlist=[]):
+	def makePlot(self,cname="",csty=[],cell=None,PGlist=[],xtrans=(lambda x: x)):
 			
 			assert self.g is not None
 	
@@ -270,12 +284,12 @@ class VarParamPlotter:
 				dBxdz = derivs[0][2]*1000
 				
 				print r,"B0 =",FI.Bavg,"\tBgrad =",GradScaled,"\tRMS =",rms
-				gdat.append([r,]+GradScaled+[rms,dBxdz])
+				gdat.append([xtrans(r),]+GradScaled+[rms,dBxdz])
 				
 				# unscale milligauss to Gauss; calculate T2
 				for a in range(3):
 					FI.BC.B[a] *= 1e-3
-				gdat_T2.append([r,]+[1000*abs(T2i(FI.BC,PG)) for PG in PGlist])
+				gdat_T2.append([xtrans(r),]+[1000*abs(T2i(FI.BC,PG)) for PG in PGlist])
 				
 			gdat.sort()
 			gdat_T2.sort()

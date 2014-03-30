@@ -35,13 +35,13 @@ double SurfaceGeometry::dA(const vec2& l) const {
 	return snorm(l,false).mag();
 }
 
-double integration_dA(vec2 l, void* params) {
+double integration_dA(mvec l, void* params) {
 	SurfaceGeometry* S = (SurfaceGeometry*)params;
-	return S->dA(l);
+	return S->dA(vec2(l[0],l[1]));
 }
 
 double SurfaceGeometry::area(const vec2& ll, const vec2& ur) {
-	return myIntegrator.integrate2D(&integration_dA, ll, ur, this);
+	return myIntegratorND.integrate(&integration_dA, ll, ur, this);
 }
 
 void SurfaceGeometry::cache_sincos(double theta, double& s, double& c) const {

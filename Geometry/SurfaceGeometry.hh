@@ -39,7 +39,8 @@ public:
 	
 protected:
 
-	Integrator2D myIntegrator;	//< integrator for internal calculations
+	Integrator myIntegrator;		//< integrator for internal calculations
+	IntegratorND myIntegratorND;	//< multidimensional integrator for internal calculations
 	
 	// cache trig functions, since repeated calls will likely be for same values
 	void cache_sincos(double theta, double& s, double& c) const;

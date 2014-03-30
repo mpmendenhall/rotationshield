@@ -19,7 +19,17 @@ mvec SSdA(vec2 l, void* params) {
 	return mvec(B);
 }
 
-mvec SurfaceSource::subdividedIntegral(mvec (*f)(vec2, void*), void* fparams, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
+struct f2_to_fN_params {
+	mvec (*f2)(vec2, void*);
+	void* fparams;
+};
+
+mvec f2_to_fN(mvec v, void* pp) {
+	f2_to_fN_params* p = (f2_to_fN_params*)pp;
+	return (*p->f2)(vec2(v[0],v[1]), p->fparams);
+}
+
+mvec SurfaceSource::subdividedIntegral(mvec (*f)(vec2, void*), unsigned int fdim, void* fparams, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
 	
 	assert(mySurface);
 	
@@ -34,13 +44,17 @@ mvec SurfaceSource::subdividedIntegral(mvec (*f)(vec2, void*), void* fparams, ve
 			vec2 lll = ll + ur*vec2(nx,ny);
 			mvec mi;
 			if(polar_integral_center) mi = myIntegrator.polarIntegrate2D(f, lll, lll+ur, *polar_integral_center, fparams, -666, polar_r0);
-			else mi = myIntegrator.integrate2D(f, lll, lll+ur, fparams);
+			else {
+				f2_to_fN_params p;
+				p.f2 = f;
+				p.fparams = fparams;
+				mi = myIntegratorND.integrate(&f2_to_fN, fdim, mvec(lll), mvec(lll+ur), &p);
+			}
  			if(!nx && !ny) m = mi;
 			else m += mi;
 		}
 	}
 	return m;
-
 }
 
 vec3 SurfaceSource::fieldAt(const vec3& v, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
@@ -51,7 +65,7 @@ vec3 SurfaceSource::fieldAt(const vec3& v, vec2 ll, vec2 ur, unsigned int ndx, u
 	p.M2 = NULL;
 	p.M3 = NULL;
 	
-	mvec B = subdividedIntegral(&SSdA, &p, ll, ur, ndx, ndy);
+	mvec B = subdividedIntegral(&SSdA, 3, &p, ll, ur, ndx, ndy);
 	assert(B.size()==3);
 	return vec3(B[0],B[1],B[2]);
 
@@ -65,7 +79,7 @@ vec2 SurfaceSource::fieldAtWithTransform2(const vec3& v, const Matrix<2,3,double
 	p.M2 = &M;
 	p.M3 = NULL;
 	
-	mvec MB = subdividedIntegral(&SSdA, &p, ll, ur, ndx, ndy);
+	mvec MB = subdividedIntegral(&SSdA, 2, &p, ll, ur, ndx, ndy);
 	assert(MB.size()==2);
 	return vec2(MB[0],MB[1]);
 }
@@ -78,7 +92,7 @@ vec3 SurfaceSource::fieldAtWithTransform3(const vec3& v, const Matrix<3,3,double
 	p.M2 = NULL;
 	p.M3 = &M;
 	
-	mvec MB = subdividedIntegral(&SSdA, &p, ll, ur, ndx, ndy);
+	mvec MB = subdividedIntegral(&SSdA, 3, &p, ll, ur, ndx, ndy);
 	assert(MB.size()==3);
 	return vec3(MB[0],MB[1],MB[2]);
 }

@@ -1,3 +1,30 @@
+/* 
+ * Integrator.cpp, part of the RotationShield program
+ * Copyright (c) 2007-2014 Michael P. Mendenhall
+ *
+ * this code includes wrappers for integrators from the Gnu Scientific Library,
+ * https://www.gnu.org/software/gsl/
+ * and wrappers for multi-dimensional integration routines in
+ * "cubature," (c) 2005-2013 Steven G. Johnson,
+ * http://ab-initio.mit.edu/cubature/
+ * re-distributed with in this project under GPL v2 or later;
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
+
 #include "Integrator.hh"
 #include <cassert>
 #include "Angles.hh"
@@ -9,9 +36,9 @@ bool integratingParams::verbose = false;
 //
 
 Integrator::Integrator():
-	rel_err(1e-4), abs_err(1e-5), err_count(0), myMethod(INTEG_GSL_QNG),
-	gslIntegrationWS(gsl_integration_workspace_alloc(INTEG_WS_SIZE)),
-	gsl_cqd_ws(gsl_integration_cquad_workspace_alloc(INTEG_WS_SIZE/4)) {
+rel_err(1e-4), abs_err(1e-5), err_count(0), myMethod(INTEG_GSL_QNG),
+gslIntegrationWS(gsl_integration_workspace_alloc(INTEG_WS_SIZE)),
+gsl_cqd_ws(gsl_integration_cquad_workspace_alloc(INTEG_WS_SIZE/4)) {
 	gsl_set_error_handler_off();
 }
 
@@ -50,12 +77,12 @@ double Integrator::integrate(double (*f)(double, void*), double a, double b, voi
 }
 
 double Integrator::_integrate(gsl_function* F, double a, double b) {
-
+	
 	double r=0;
 	double e;
 	int er = 0;
 	size_t neval;
-		
+	
 	if(myMethod == INTEG_GSL_QNG) {
 		er = gsl_integration_qng(F, a, b, abs_err, rel_err, &r, &e, &neval);
 		if(er) {
@@ -100,7 +127,7 @@ double generalIntegratingFunction(double x, void* params) {
 		}
 		return 0;
 	}
-		
+	
 	mvec v = p->f(x,p->fparams);
 	if(v.size() > p->n_dim) p->n_dim = v.size();
 	p->m[x] = v;
@@ -109,18 +136,18 @@ double generalIntegratingFunction(double x, void* params) {
 }
 
 /*
-double generalIntegratingFunctionNoCache(double x, void* params) {
-	// non-cacheing version always re-evaluates function components
-	integratingParams* p = (integratingParams*)params;
-	mvec v = p->f(x,p->fparams);
-	p->n_dim = v.size();
-	assert(p->axis < p->n_dim);
-	return v[p->axis];
-}
-*/
+ double generalIntegratingFunctionNoCache(double x, void* params) {
+ // non-cacheing version always re-evaluates function components
+ integratingParams* p = (integratingParams*)params;
+ mvec v = p->f(x,p->fparams);
+ p->n_dim = v.size();
+ assert(p->axis < p->n_dim);
+ return v[p->axis];
+ }
+ */
 
 mvec Integrator::integrate(mvec (*f)(double,void*), double a, double b, void* params) {
-
+	
 	integratingParams p;
 	p.fparams = params;
 	p.f = f;
@@ -142,7 +169,7 @@ mvec Integrator::_integrate_v(integratingParams& p, double (*integf)(double,void
 	gsl_function F;
 	F.function = integf;
 	F.params = &p;
-		
+	
 	mvec v;
 	p.axis = 0;
 	do {
@@ -202,7 +229,7 @@ double xslice_integral(double x, void* params) {
 }
 
 double Integrator2D::integrate2D(double (*f)(vec2,void*), vec2 ll, vec2 ur, void* params) {
-		
+	
 	integratingParams_2D p;
 	p.yIntegrator = &yIntegrator;
 	p.f2 = f;
@@ -238,14 +265,14 @@ mvec xslice_v(double y, void* params) {
 
 
 double xslice_v_integral(double x, void* params) {
-
+	
 	integratingParams_V2D* p = (integratingParams_V2D*)params;
 	std::map<double,mvec>::iterator it = p->m.find(x);
 	if(it != p->m.end()) {
 		if(p->axis < it->second.size()) return (it->second)[p->axis];
 		return 0;
 	}
-
+	
 	integratingParams_V2D p2;
 	p2.f2 = p->f2;
 	p2.fparams = p->fparams;
@@ -309,7 +336,7 @@ angular_interval clip_interval(double l, double r) {
 
 // determine angular clipping
 std::vector<angular_interval> rectangle_clip(vec2 c, vec2 ll, vec2 ur, double r) {
-
+	
  	Angular_Interval_Set AIS;
 	AIS.add_interval(0,2*M_PI);
 	
@@ -322,7 +349,7 @@ std::vector<angular_interval> rectangle_clip(vec2 c, vec2 ll, vec2 ur, double r)
 		AIS.subtract_interval(a1);
 		AIS.subtract_interval(a2);
 	}
-			
+	
 	return  AIS.get_intervals();
 }
 
@@ -339,7 +366,7 @@ double polar_slice_v_integral(double x, void* params) {
 	}
 	
 	//std::cout << "Polar slice at r = " << x << std::endl;
-
+	
 	integratingParams_V2D_P p2;
 	p2.f2 = p->f2;
 	p2.fparams = p->fparams;
@@ -374,7 +401,7 @@ double r_max(vec2 ll, vec2 ur, vec2 c) {
 }
 
 mvec Integrator2D::polarIntegrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, vec2 c, void* params, double r1, double r0) {
-
+	
 	if(r1==-666) r1 = r_max(ll, ur, c); // auto-range
 	
 	integratingParams_V2D_P p;
@@ -387,4 +414,70 @@ mvec Integrator2D::polarIntegrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, vec
 	
 	return _integrate_v(p, &polar_slice_v_integral, r0, r1);
 }
+
+
+
+
+//
+//
+//
+
+struct ND_Integrating_Params {
+	double (*f1)(mvec, void*);
+	mvec (*fN)(mvec, void*);
+	void* fparams;
+};
+
+// function wrapper for cubature
+int cubature_f(unsigned ndim, const double *x, void *fdata, unsigned fdim, double *fval) {
+	ND_Integrating_Params* p = (ND_Integrating_Params*)fdata;
+	mvec vx(x, x+ndim);
+	if(p->fN) {
+		mvec vy = (*p->fN)(vx, p->fparams);
+		for(unsigned int i=0; i<fdim; i++) fval[i] = vy[i];
+	} else if(p->f1) {
+		assert(fdim == 1);
+		fval[0] = (*p->f1)(vx, p->fparams);
+	} else return -1;
+    return 0;
+}
+
+IntegratorND::IntegratorND(): rel_err(1e-4), abs_err(1e-5) {}
+
+double IntegratorND::integrate(double (*f)(mvec,void*), mvec ll, mvec ur, void* params) const {
+	ND_Integrating_Params p;
+	p.fN = NULL;
+	p.f1 = f;
+	p.fparams = params;
+	
+	assert(ll.size() == ur.size());
+	
+	double val;
+	double err;
+	int i = hcubature(1, &cubature_f, &p,
+					  ll.size(), &ll[0], &ur[0],
+					  0, abs_err, rel_err, ERROR_L2,
+					  &val, &err);
+	if(i) printf("(*Integration Warning: cubature error %i*)\n",i);
+	return val;
+}
+
+mvec IntegratorND::integrate(mvec (*f)(mvec,void*), unsigned int fdim, mvec ll, mvec ur, void* params) const {
+	ND_Integrating_Params p;
+	p.fN = f;
+	p.f1 = NULL;
+	p.fparams = params;
+	
+	assert(ll.size() == ur.size());
+	
+	mvec val(fdim);
+	mvec err(fdim);
+	int i = hcubature(fdim, &cubature_f, &p,
+					  ll.size(), &ll[0], &ur[0],
+					  0, abs_err, rel_err, ERROR_L2,
+					  &val[0], &err[0]);
+	if(i) printf("(*Integration Warning: cubature error %i*)\n",i);
+	return val;
+}
+
 

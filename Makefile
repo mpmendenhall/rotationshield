@@ -1,12 +1,27 @@
 #####################################################################
 #
-#  Name:         Makefile
-#  Created by:   Michael Mendenhall
+# Makefile, part of the RotationShield program
+# Copyright (c) 2007-2014 Michael P. Mendenhall
 #
-#  Contents:     Makefile for RotationShield
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
 #
-#####################################################################
-# export ROTSHIELD_VIS=1; make clean; make -j8; mv RotationShield RotationShieldVis; export ROTSHIELD_VIS=; make clean; make -j8
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+######################################################################
+
+# export ROTSHIELD_VIS=1; make clean; make -j8; mv RotationShield RotationShield_Vis; export ROTSHIELD_VIS=; make clean; make -j8
+
+
 
 #############
 # Some things you may need to change:
@@ -28,7 +43,7 @@ else
 endif
 
 # compiler command to use
-CC = cc
+CC = gcc
 CXX = g++
 
 # include directories for GSL, FFTW, etc.
@@ -39,18 +54,20 @@ BASE_LIB_DIRS  = -L$(OS_DIR)/lib
 # optmization
 GCC_OPTIMIZATION_LEVEL = 3
 
-CPPFLAGS = -g -std=c++0x $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -pedantic -Wall -Wextra \
-	-I. -IMathUtils -IGeometry -IFieldSource -ISolver -IBuilder -IStudies -IIO $(BASE_INCLUDE_DIRS)
+CFLAGS = -g $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -pedantic -Wall -Wextra -Icubature-1.0 $(BASE_INCLUDE_DIRS)
+
+CXXFLAGS = -g -std=c++0x $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -pedantic -Wall -Wextra \
+	-I. -IMathUtils -IGeometry -IFieldSource -ISolver -IBuilder -IStudies -IIO -Icubature-1.0 $(BASE_INCLUDE_DIRS)
 
 ifdef ROTSHIELD_LAPACKE
 	# BLAS and LAPACK(E) libraries for matrix manipulation; also, need gfortran for LAPACK linking
 	LDFLAGS += -llapacke -llapack -lblas -lgfortran
 	BASE_LIB_DIRS += -L$(OS_DIR)/lib/lapack/ -L$(OS_DIR)/lib/gcc4.8/lib/
-	CPPFLAGS += -DWITH_LAPACKE
+	CXXFLAGS += -DWITH_LAPACKE
 endif
 
 ifdef ROTSHIELD_VIS
-	CPPFLAGS += -DWITH_OPENGL $(GL_INCLUDES) 
+	CXXFLAGS += -DWITH_OPENGL $(GL_INCLUDES) 
 	LDFLAGS += $(GL_LINKER_ARGS) -lpthread
 endif
 
@@ -58,14 +75,15 @@ endif
 # Everything below here "should" work without modification
 #############
 
-VPATH = ./:MathUtils/:Geometry/:FieldSource/:Solver/:Builder/:Studies/:IO/
+VPATH = ./:MathUtils/:Geometry/:FieldSource/:Solver/:Builder/:Studies/:IO/:cubature-1.0
 
 LDFLAGS += $(BASE_LIB_DIRS) -lgsl -lfftw3 -lgslcblas
 
 # things to build
 obj_IO = Visr.o strutils.o ControlMenu.o QFile.o SMExcept.o PathUtils.o VisSurface.o ProgressBar.o
 
-obj_MathUtils = Geometry.o Integrator.o CMatrix.o LAPACKE_Matrix.o BlockCMat.o RefCounter.o linmin.o InterpolationHelper.o BicubicGrid.o
+obj_MathUtils = Geometry.o Integrator.o CMatrix.o LAPACKE_Matrix.o BlockCMat.o RefCounter.o \
+	linmin.o InterpolationHelper.o BicubicGrid.o hcubature.o
 
 obj_Geometry = Angles.o SurfaceGeometry.o SurfaceProfiles.o
 
@@ -86,7 +104,7 @@ libRotationShield.a: $(objects)
 	ar rs libRotationShield.a $(objects)
 
 RotationShield: main.cpp libRotationShield.a
-	$(CXX) $(CPPFLAGS) main.cpp -L. -lRotationShield $(LDFLAGS) -o RotationShield
+	$(CXX) $(CXXFLAGS) main.cpp -L. -lRotationShield $(LDFLAGS) -o RotationShield
 
 
 #

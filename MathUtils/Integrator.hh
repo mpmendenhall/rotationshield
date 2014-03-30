@@ -7,6 +7,33 @@
 /// each point are cached so that they can be used by all
 /// three component integrals.
 
+/* 
+ * Integrator.hh, part of the RotationShield program
+ * Copyright (c) 2007-2014 Michael P. Mendenhall
+ *
+ * this code includes wrappers for integrators from the Gnu Scientific Library,
+ * https://www.gnu.org/software/gsl/
+ * and wrappers for multi-dimensional integration routines in
+ * "cubature," (c) 2005-2013 Steven G. Johnson,
+ * http://ab-initio.mit.edu/cubature/
+ * re-distributed with in this project under GPL v2 or later;
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
+
 #ifndef INTEGRATOR_HH
 /// Make sure the file is only loaded once
 #define INTEGRATOR_HH 1
@@ -14,6 +41,7 @@
 #include "gsl/gsl_integration.h"
 #include "gsl/gsl_errno.h"
 #include "Typedefs.hh"
+#include "cubature.h"
 #include <map>
 #include <string>
 #include <set>
@@ -150,6 +178,19 @@ protected:
 	Integrator yIntegrator; //< integrator for second dimension
 };
 
+/// Multi-dimensional integrator, wrapper for "cubature" code
+class IntegratorND {
+public:
+	/// Constructor
+	IntegratorND();
+	/// integrate scalar-valued function
+	double integrate(double (*f)(mvec,void*), mvec ll, mvec ur, void* params = NULL) const;
+	/// integrate vector-valued function
+	mvec integrate(mvec (*f)(mvec,void*), unsigned int fdim, mvec ll, mvec ur, void* params = NULL) const;
+	
+	double rel_err;					//< relative error target, OR
+	double abs_err;					//< absolute error target
+};
 
 
 #endif
