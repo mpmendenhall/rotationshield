@@ -482,4 +482,59 @@ mvec IntegratorND::integrate(mvec (*f)(mvec,void*), unsigned int fdim, mvec ll, 
 	return val;
 }
 
+struct ND_Polar_Integrating_Params {
+	mvec (*f)(vec2, void*);
+	void* fparams;
+	vec2 x0;
+	vec2 ll;
+	vec2 ur;
+	unsigned int nrot;
+};
+
+int cubature_polar_f(unsigned ndim, const double *x, void *fdata, unsigned fdim, double *fval) {
+	ND_Polar_Integrating_Params* p = (ND_Polar_Integrating_Params*)fdata;
+	assert(ndim==2);
+	mvec vy(fdim);
+	for(unsigned int i=0; i<p->nrot; i++) {
+		vec2 px = p->x0 + vec2(x[0]*cos(x[1]+2*i*M_PI/p->nrot), x[0]*sin(x[1]+2*i*M_PI/p->nrot));
+		if(!(p->ll[0] <= px[0] && px[0] <= p->ur[0] && p->ll[1] <= px[1] && px[1] <= p->ur[1])) continue;
+		vy += (*p->f)(px, p->fparams) * x[0];
+	}
+	for(unsigned int i=0; i<fdim; i++) fval[i] = vy[i];
+    return 0;
+}
+
+mvec IntegratorND::integratePolar(mvec (*f)(vec2, void*), unsigned int fdim, vec2 x0, vec2 ll, vec2 ur, void* params, double r1, double r0) const {
+	
+	int negmul = 1;
+	for(unsigned int i=0; i<2; i++) {
+		if(ur[i]<ll[i]) {
+			negmul *= -1;
+			std::swap(ur[i],ll[i]);
+		}
+	}
+	if(r1==-666) r1 = r_max(ll, ur, x0);
+	
+	ND_Polar_Integrating_Params p;
+	p.f = f;
+	p.x0 = x0;
+	p.ll = ll;
+	p.ur = ur;
+	p.fparams = params;
+	p.nrot = 4;
+	
+	mvec val(fdim);
+	mvec err(fdim);
+	vec2 p_ll(r0, 0);
+	vec2 p_ur(r1, 2.*M_PI/p.nrot);
+	int i = hcubature(fdim, &cubature_polar_f, &p,
+					  2, &p_ll[0], &p_ur[0],
+					  0, abs_err, rel_err, ERROR_L2,
+					  &val[0], &err[0]);
+	if(i) printf("(*Integration Warning: cubature error %i*)\n",i);
+	val *= negmul;
+	return val;
+}
+
+
 

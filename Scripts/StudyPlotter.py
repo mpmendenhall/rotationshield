@@ -238,19 +238,22 @@ class VarParamPlotter:
 		self.datlist = [ (float(f[len(basename):].split("_")[1]), FieldInfo(outdir+"/"+f)) for f in os.listdir(outdir) if f[:len(basename)+1]==basename+"_"]
 		self.datlist = [ d for d in self.datlist if d[1].GIF.cell.c ]	# filter out incomplete data points
 		
-	def setupGraph(self, varname, logx=False, xrange=(None,None)):
+	def setupGraph(self, varname, logx=False, logy2=False, xrange=(None,None)):
 		
 		print "Setting up graph for",varname
 		
 		xaxis = graph.axis.lin(title=varname, min=xrange[0], max=xrange[1])
 		if logx:
 			xaxis = graph.axis.log(title=varname, min=xrange[0], max=xrange[1])
-			
+		
+		y2axis = graph.axis.lin(title="Dephasing rate $1/T_2$ [mHz]", min=0)
+		if logy2:
+			y2axis = graph.axis.log(title="Dephasing rate $1/T_2$ [mHz]")
+				
 		self.g = graph.graphxy(width=24,height=16,
 			x=xaxis,
 			y=graph.axis.lin(title="Cell Average Gradients [$\\mu$G/cm]", min=self.yrange[0], max=self.yrange[1]),
-			y2=graph.axis.lin(title="Dephasing rate $1/T_2$ [mHz]", min=0),
-			#y2=graph.axis.log(title="Dephasing rate $1/T_2$ [mHz]"),
+			y2=y2axis,
 			key = graph.key.key(pos=self.keypos,columns=2))
 		self.g.texrunner.set(lfs='foils17pt')
 		

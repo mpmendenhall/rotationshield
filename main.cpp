@@ -75,6 +75,7 @@ void hypercube_rotator() {
 
 /// run self-tests
 void mi_runtests(StreamInteractor*) {
+	integrator_tests();
 	printf("Simple shield self-test...\n");
 	reference_simpleshield();
 }

@@ -186,6 +186,9 @@ public:
 	double integrate(double (*f)(mvec,void*), mvec ll, mvec ur, void* params = NULL) const;
 	/// integrate vector-valued function
 	mvec integrate(mvec (*f)(mvec,void*), unsigned int fdim, mvec ll, mvec ur, void* params = NULL) const;
+	/// perform 2D integral in polar form, with internal sum of opposite angles
+	mvec integratePolar(mvec (*f)(vec2, void*), unsigned int fdim, vec2 x0, vec2 ll, vec2 ur, void* params = NULL, double r1 = -666, double r0 = 0) const;
+	
 	
 	double rel_err;		//< relative error target, OR
 	double abs_err;		//< absolute error target

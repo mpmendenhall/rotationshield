@@ -178,6 +178,7 @@ mvec f_integ2_test_1(vec2 xy, void*) {
 bool integrator_tests() {
 	Integrator2D I2;
 	I2.setMethod(INTEG_GSL_QAG);
+	IntegratorND IN;
 	
 	bool pass = true;
 		
@@ -191,7 +192,8 @@ bool integrator_tests() {
 	pass &= compareResults(v1[1], 1843.50936);
 	pass &= compareResults(v1[2], 405.15552);
 	
-	v1 = I2.polarIntegrate2D(&f_integ2_test_1, vec2(-0.3,-6), vec2(4.6, 7.2), vec2(2,1));
+	//v1 = I2.polarIntegrate2D(&f_integ2_test_1, vec2(-0.3,-6), vec2(4.6, 7.2), vec2(2,1));
+	v1 = IN.integratePolar(&f_integ2_test_1, 3, vec2(2,1), vec2(-0.3,-6), vec2(4.6, 7.2));
 	pass &= compareResults(v1[0], 1390.8356);
 	pass &= compareResults(v1[1], 1843.50936);
 	pass &= compareResults(v1[2], 405.15552);

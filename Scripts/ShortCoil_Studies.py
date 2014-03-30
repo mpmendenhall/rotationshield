@@ -82,7 +82,7 @@ def MovingCellScan():
 
 def GriddingScan():
 	SS = StudyScan()
-	for r in range(0,8):
+	for r in range(0,31)[::-1]:
 		S = make_setup(stname+"_Gridding", r, gridt=11+2*r, gride=7+r)
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
@@ -120,8 +120,8 @@ if __name__=="__main__":
 		#MovingCellScan()
 		#DistortionScan()
 		
-		#GriddingScan()
-		PhiGriddingScan()
+		GriddingScan()
+		#PhiGriddingScan()
 
 	outdir = os.environ["ROTSHIELD_OUT"]
 
@@ -142,17 +142,17 @@ if __name__=="__main__":
 		#VPP.keypos = "tl"
 		#VPP.setupGraph("Wires to endcap distance [m]")
 
-		#VPP = VarParamPlotter(outdir+"/"+stname+"_Gridding")
-		#VPP.keypos = "tr"
-		#VPP.setupGraph("longitudinal grid divisions $N_Z$ ($N_\\phi = 32$)")
-		
-		VPP = VarParamPlotter(outdir+"/"+stname+"_PhiGridding")
+		VPP = VarParamPlotter(outdir+"/"+stname+"_Gridding")
 		VPP.keypos = "tr"
-		VPP.setupGraph("radial grid divisions $N_\\phi$ ($N_Z = 61$)", logx=True, xrange=(7,150))
+		VPP.setupGraph("longitudinal grid divisions $N_Z$ ($N_\\phi = 32$)", logy2=True)
+		
+		#VPP = VarParamPlotter(outdir+"/"+stname+"_PhiGridding")
+		#VPP.keypos = "tr"
+		#VPP.setupGraph("radial grid divisions $N_\\phi$ ($N_Z = 61$)", logx=True, xrange=(7,150))
 		
 
 		if VPP is not None:
-			VPP.makePlot(PGlist=[PG_n(),PG_3He()])
+			VPP.makePlot(PGlist=[PG_n(),PG_3He()], xtrans=(lambda x: 25+4*x))
 			VPP.outputPlot()
 			
 
