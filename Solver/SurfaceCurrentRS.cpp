@@ -123,16 +123,13 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 		delta_z = (delta_z + 2*nZ)%nZ;
 		if(delta_z >= int(nZ)/2) delta_z -= nZ;
 	}
-
+	
+	bool self_intersection = (BField_Protocol::BFP->caller == this && delta_z == 0 && delta_phi == 0);
+	
 	// How to slice up integration range
 	std::vector<int> integ_domains;
-	if(BField_Protocol::BFP->caller == this && abs(delta_z) <= 2 && abs(delta_phi) <= 2 ) {
-		const int idomains_1[] = {-2,2};
-		integ_domains.insert(integ_domains.end(), idomains_1, idomains_1+2);
-	} else {
-		const int idomains_9[] = {-2,-1,1,2};
-		integ_domains.insert(integ_domains.end(), idomains_9, idomains_9+4);
-	}
+	const int idomains_9[] = {-2,-1,1,2};
+	integ_domains.insert(integ_domains.end(), idomains_9, idomains_9+4);
 	
 	polar_r0 = 0;
 	unsigned int nerrx = myIntegrator.reset_errcount();
@@ -149,17 +146,11 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 			// skip past-edges domains; note, we are allowed to wrap around in phi
 			if(!mySurface->isClosed(0) && (nz1 < 0 || nz0 >= (int)nZ)) continue;
 			
-			
-			// set integration method depending on whether there will be edge singularities (target point inside integration range)
-			bool self_intersection = ( BField_Protocol::BFP->caller == this
-										&& ((nz0 <= i_nz && i_nz <= nz1) || (mySurface->isClosed(0) && (i_nz - nz0 + nZ)%nZ <= (nz1 - nz0 + nZ)%nZ ) )
-										&& ( (i_nphi - np0 + nPhi)%nPhi <= (np1 - np0 + nPhi)%nPhi ) );
-			
-			self_intersection = integ_domains.size() == 2;
-			if(self_intersection) {
+			bool atcenter = integ_domains[dmz] <= 0 && 0 <= integ_domains[dmz+1] && integ_domains[dmp] <= 0 && 0 <= integ_domains[dmp+1];
+			if(self_intersection && atcenter) {
 				myIntegrator.setMethod(INTEG_GSL_CQUAD);
 				polar_integral_center = &ixn_center;
-				if(np0 > i_nphi) { np0 -= nPhi; np1 -= nPhi; }			// adjust phi definition to align with polar center
+				if(np0 > i_nphi) { np0 -= nPhi; np1 -= nPhi; }						// adjust phi definition to align with polar center
 				if(mySurface->isClosed(0) && nz0 > i_nz) { nz0 -= nZ; nz1 -= nZ; }	// adjust z definition to align with polar center
 			}
 			
@@ -170,11 +161,11 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 				if(ur[0]>1) ur[0]=1;
 			}
 			
-			if(!self_intersection) {
+			if(!(self_intersection && atcenter)) {
 				// select integration method depending on near/far difference
 				double mn,mx;
 				mySurface->proximity(BField_Protocol::BFP->x, ll, ur, mn, mx);
-				if(mx > 2*mn) myIntegrator.setMethod(INTEG_GSL_CQUAD);
+				if(mx > 4*mn) myIntegrator.setMethod(INTEG_GSL_CQUAD);
 				else myIntegrator.setMethod(INTEG_GSL_QAG);
 			}
 						

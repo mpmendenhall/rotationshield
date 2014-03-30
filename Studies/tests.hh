@@ -37,7 +37,7 @@ bool integrator_tests();
 bool reference_simpleshield_cached();
 
 /// superconducting ball in uniform field
-void superball_test();
+void superball_test(unsigned int ngrid = 32);
 /// endless costheta between SC caps
 void mirror_test();
 /// thick ferromagnetic tube

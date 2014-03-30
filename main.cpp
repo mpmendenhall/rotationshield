@@ -79,18 +79,14 @@ void mi_runtests(StreamInteractor*) {
 	reference_simpleshield();
 }
 
-/// run demonstration routines
-void mi_demos(StreamInteractor* S) {
-	std::string s = S->popString();
-	if(s=="sc")
-		superball_test();
-	if(s=="mr")
-		mirror_test();
-	if(s=="tb")
-		tube_test();
-	if(s=="ft")
-		flux_trap_test();
+void mi_demo_sphere(StreamInteractor* S) {
+	int nGrid = S->popInt();
+	if(nGrid < 4 || nGrid > 256) { printf("Are you kidding?\n"); return; }
+	superball_test(nGrid);
 }
+void mi_demo_mirror(StreamInteractor*) { mirror_test(); }
+void mi_demo_tube(StreamInteractor*) { tube_test(); }
+void mi_demo_ring(StreamInteractor*) { flux_trap_test(); }
 
 /// hypercube visualization test
 void mi_ncube(StreamInteractor* S) {
@@ -123,23 +119,28 @@ void menuSystem(std::deque<std::string> args = std::deque<std::string>()) {
 	
 	InputRequester selfTests("Self test to reproduce known results", &mi_runtests);
 	
-	NameSelector selectDemo("Demonstration");
-	selectDemo.addChoice("superconducting sphere","sc");
-	selectDemo.addChoice("superconductor-mirrored cos theta coil","mr");
-	selectDemo.addChoice("cos-theta coil in ferromagnetic tube","tb");
-#ifdef WITH_LAPACKE
-	selectDemo.addChoice("trapped-flux state of superconducting ring","ft");
-#endif
-	InputRequester demos("Demonstration calculations", &mi_demos);
-	demos.addArg(&selectDemo);
+	OptionsMenu selectDemo("Demonstration");
+	InputRequester demo_sphere("superconducting sphere",&mi_demo_sphere);
+	demo_sphere.addArg("gridding","16");
+	InputRequester demo_tube("cos-theta coil in ferromagnetic tube",&mi_demo_tube);
+	InputRequester demo_ring("trapped-flux state of superconducting ring",&mi_demo_ring);
+	InputRequester demo_mirror("superconductor-mirrored cos theta coil",&mi_demo_mirror);
 	
+	selectDemo.addChoice(&demo_sphere,"sc");
+	selectDemo.addChoice(&demo_mirror,"mr");
+	selectDemo.addChoice(&demo_tube,"tb");
+#ifdef WITH_LAPACKE
+	selectDemo.addChoice(&demo_ring,"ft");
+#endif
+	selectDemo.addChoice(&InputRequester::exitMenu,"x");
+
 	
 	OptionsMenu OM("Rotation Shield Main Menu");
 #ifdef WITH_OPENGL
 	OM.addChoice(&ncube,"ncube",SELECTOR_HIDDEN);
 	OM.addChoice(&setClearColor,"cc",SELECTOR_HIDDEN);
 #endif
-	OM.addChoice(&demos,"demo");
+	OM.addChoice(&selectDemo,"demo");
 	
 	SystemConfiguration SC;
 	OM.addChoice(&SC.outDir,"dir");

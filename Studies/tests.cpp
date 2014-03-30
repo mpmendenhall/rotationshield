@@ -278,7 +278,7 @@ void vis_test_sequence(ReactiveSet* RS, MixedSource* MxS, vec3 vs = vec3(0.5,-0.
 }
 
 
-void superball_test() {
+void superball_test(unsigned int ngrid) {
 	
 	std::cout << "Expelling external B=(1,1,1) field from a superconducting sphere.\n";
 	
@@ -288,7 +288,7 @@ void superball_test() {
 		
 	Arc2D* B = new Arc2D(-1.0);
 	CylSurfaceGeometry* SG = new CylSurfaceGeometry(B);
-	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG,16,15);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG,ngrid,ngrid);
 	RS->setSurfaceResponse(SurfaceI_Response(0));
 	
 	vis_test_sequence(RS,MxS);
@@ -343,10 +343,10 @@ void tube_test() {
 	FieldAdaptiveSurface* FAS = new FieldAdaptiveSurface(*RT);
 	FAS->optimizeSpacing(fe, 0.6);
 	
-	unsigned int nPhi = 16;
+	unsigned int nPhi = 32;
 	
 	CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
-	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG,nPhi, 17);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG,nPhi, 25);
 	RS->setSurfaceResponse(SurfaceI_Response(10000));
 	vis_test_sequence(RS, MxS, vec3(0.1,0,0.5), vec3(0.1,0,0));
 }

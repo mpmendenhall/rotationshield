@@ -41,7 +41,6 @@
 #include "gsl/gsl_integration.h"
 #include "gsl/gsl_errno.h"
 #include "Typedefs.hh"
-#include "cubature.h"
 #include <map>
 #include <string>
 #include <set>
@@ -135,7 +134,7 @@ protected:
 	gsl_integration_cquad_workspace * gsl_cqd_ws;	//< needed by
 };
 
-/// 2-dimensional vector integrator
+/// 2-dimensional vector integrator; main use is polar integration around singularity (otherwise, use IntegratorND below)
 class Integrator2D: public Integrator {
 public:
 	/// Constructor
@@ -188,8 +187,8 @@ public:
 	/// integrate vector-valued function
 	mvec integrate(mvec (*f)(mvec,void*), unsigned int fdim, mvec ll, mvec ur, void* params = NULL) const;
 	
-	double rel_err;					//< relative error target, OR
-	double abs_err;					//< absolute error target
+	double rel_err;		//< relative error target, OR
+	double abs_err;		//< absolute error target
 };
 
 

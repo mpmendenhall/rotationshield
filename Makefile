@@ -83,7 +83,7 @@ LDFLAGS += $(BASE_LIB_DIRS) -lgsl -lfftw3 -lgslcblas
 obj_IO = Visr.o strutils.o ControlMenu.o QFile.o SMExcept.o PathUtils.o VisSurface.o ProgressBar.o
 
 obj_MathUtils = Geometry.o Integrator.o CMatrix.o LAPACKE_Matrix.o BlockCMat.o RefCounter.o \
-	linmin.o InterpolationHelper.o BicubicGrid.o hcubature.o
+	linmin.o InterpolationHelper.o BicubicGrid.o hcubature.o pcubature.o
 
 obj_Geometry = Angles.o SurfaceGeometry.o SurfaceProfiles.o
 

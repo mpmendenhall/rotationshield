@@ -28,6 +28,7 @@
 #include "Integrator.hh"
 #include <cassert>
 #include "Angles.hh"
+#include "cubature.h"
 
 bool integratingParams::verbose = false;
 
@@ -429,16 +430,17 @@ struct ND_Integrating_Params {
 };
 
 // function wrapper for cubature
-int cubature_f(unsigned ndim, const double *x, void *fdata, unsigned fdim, double *fval) {
+int cubature_fN(unsigned ndim, const double *x, void *fdata, unsigned fdim, double *fval) {
 	ND_Integrating_Params* p = (ND_Integrating_Params*)fdata;
-	mvec vx(x, x+ndim);
-	if(p->fN) {
-		mvec vy = (*p->fN)(vx, p->fparams);
-		for(unsigned int i=0; i<fdim; i++) fval[i] = vy[i];
-	} else if(p->f1) {
-		assert(fdim == 1);
-		fval[0] = (*p->f1)(vx, p->fparams);
-	} else return -1;
+	mvec vy = (*p->fN)(mvec(x, x+ndim), p->fparams);
+	for(unsigned int i=0; i<fdim; i++) fval[i] = vy[i];
+    return 0;
+}
+
+// function wrapper for cubature
+int cubature_f1(unsigned ndim, const double *x, void *fdata, unsigned, double *fval) {
+	ND_Integrating_Params* p = (ND_Integrating_Params*)fdata;
+	fval[0] = (*p->f1)(mvec(x,x+ndim), p->fparams);
     return 0;
 }
 
@@ -454,7 +456,7 @@ double IntegratorND::integrate(double (*f)(mvec,void*), mvec ll, mvec ur, void* 
 	
 	double val;
 	double err;
-	int i = hcubature(1, &cubature_f, &p,
+	int i = hcubature(1, &cubature_f1, &p,
 					  ll.size(), &ll[0], &ur[0],
 					  0, abs_err, rel_err, ERROR_L2,
 					  &val, &err);
@@ -472,7 +474,7 @@ mvec IntegratorND::integrate(mvec (*f)(mvec,void*), unsigned int fdim, mvec ll, 
 	
 	mvec val(fdim);
 	mvec err(fdim);
-	int i = hcubature(fdim, &cubature_f, &p,
+	int i = hcubature(fdim, &cubature_fN, &p,
 					  ll.size(), &ll[0], &ur[0],
 					  0, abs_err, rel_err, ERROR_L2,
 					  &val[0], &err[0]);
