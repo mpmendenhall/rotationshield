@@ -31,8 +31,6 @@ public:
 	/// constructor
 	MagRSCombiner(unsigned int nphi): ReactiveSetCombiner(nphi) {}
 	
-	/// add a ReactiveSet
-	virtual void addSet(ReactiveSet* R);
 	/// Magnetic field at a specified point
 	virtual vec3 fieldAt(const vec3& v) const;
 	/// visualization reoutine

@@ -38,8 +38,12 @@ public:
 	/// Destructor
 	virtual ~FieldSource() {}
 	
+	// Subclass me!
+	//=====================================
 	/// Magnetic field at a specified point
 	virtual vec3 fieldAt(const vec3& v) const = 0;
+	//=====================================
+	
 	/// Magnetic field at a point, with interaction matrix (optionally subclass for improved numerics)
 	virtual vec2 fieldAtWithTransform2(const vec3& v, const Matrix<2,3,double>& M2) const { return M2*fieldAt(v); }
 	/// Magnetic field at a point, with interaction matrix (optionally subclass for improved numerics)

@@ -139,9 +139,9 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 		if(BField_Protocol::BFP->M2) {
 			BField_Protocol::BFP->M2B = fieldAtWithTransform2(BField_Protocol::BFP->x, *BField_Protocol::BFP->M2);
 		} else if(BField_Protocol::BFP->M3) {
-			BField_Protocol::BFP->B += fieldAtWithTransform3(BField_Protocol::BFP->x, *BField_Protocol::BFP->M3);
+			BField_Protocol::BFP->B = fieldAtWithTransform3(BField_Protocol::BFP->x, *BField_Protocol::BFP->M3);
 		} else {
-			BField_Protocol::BFP->B += fieldAt(BField_Protocol::BFP->x);
+			BField_Protocol::BFP->B = fieldAt(BField_Protocol::BFP->x);
 		}
 		return true;
 	}

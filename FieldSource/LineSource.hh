@@ -33,7 +33,7 @@ public:
 	~LineSource() {}
 	
 	/// Field at a specified point
-	vec3 fieldAt(const vec3& v) const;
+	virtual vec3 fieldAt(const vec3& v) const;
 	/// Averages the field from a LineSource over a given Line, with special cases for parallel and perpendicular lines
 	virtual vec3 fieldOverLine(Line l) const;
 	

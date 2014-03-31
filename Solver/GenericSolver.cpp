@@ -19,6 +19,8 @@
  */
 
 #include "GenericSolver.hh"
+#include "ProgressBar.hh"
+
 #include "gsl/gsl_vector.h"
 #include "gsl/gsl_permutation.h"
 #include "gsl/gsl_linalg.h"
@@ -46,6 +48,9 @@ void GenericSolver::solve(ReactiveSet& R) {
 }
 
 void GenericSolver::buildInteractionMatrix(ReactiveSet& R) {
+	if(verbose) printf("Building interaction matrix for %i DF...\n", R.nDF());
+	ProgressBar pb = ProgressBar(R.nDF(),1,verbose);
+	
 	the_GF = gsl_matrix_alloc(R.nDF(),R.nDF());
 	R.startInteractionScan();
 	for(unsigned int DF=0; DF<R.nDF(); DF++) {
@@ -56,6 +61,7 @@ void GenericSolver::buildInteractionMatrix(ReactiveSet& R) {
 			for(unsigned int i=0; i<v.size(); i++)
 				gsl_matrix_set(the_GF, i*R.nPhi+phi, DF, (i*R.nPhi+phi==DF) ? 1-v[i] : -v[i]);
 		}
+		pb.update(DF);
 	}
 	R.setInteractionDF(R.nDF(),0);
 }

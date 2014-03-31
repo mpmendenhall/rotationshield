@@ -45,4 +45,8 @@ void tube_test();
 /// calculate trapped-flux state of superconducting loop
 void flux_trap_test();
 
+/// superconductor with holes
+void hole_perturbation_test();
+
+
 #endif

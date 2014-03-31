@@ -34,14 +34,6 @@
 #include "Studies.hh"
 #include "ncube.hh"
 
-/// Return a random number, uniformly distributed over interval [a,b]
-/**	\param a lower bound of interval
- \param b upper bound of interval
- \return a random number in the interval [a,b] */
-double randunif(double a, double b) { 
-	return a + (b-a)*double(rand())/double(RAND_MAX);
-}
-
 template<unsigned int N>
 void hypercube_rotator() {
 	NRotator<N> NR;
@@ -75,6 +67,8 @@ void hypercube_rotator() {
 
 /// run self-tests
 void mi_runtests(StreamInteractor*) {
+	hole_perturbation_test();
+	return;
 	printf("Simple shield self-test...\n");
 	reference_simpleshield();
 }

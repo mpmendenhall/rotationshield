@@ -31,6 +31,12 @@
 #include <algorithm>
 #include <exception>
 
+/// Return a random number, uniformly distributed over interval [a,b]
+/**	\param a lower bound of interval
+ \param b upper bound of interval
+ \return a random number in the interval [a,b] */
+inline double randunif(double a, double b) { return a + (b-a)*double(rand())/double(RAND_MAX); }
+
 class DimensionMismatchError: public std::exception {
 	virtual const char* what() const throw() {
 		return "Dimension mismatch error!";
@@ -173,7 +179,7 @@ public:
 	/// Make the nth element of the vector =1, all others =0
 	VarVec<T>& basis(int n) { zero(); data[n] += 1.0; return *this; }
 	/// Fill the vector with random numbers in [0,1]
-	VarVec<T>& random() { zero(); for(unsigned int i=0; i<size(); i++) data[i] += (double)rand()/(double)RAND_MAX; return *this; }
+	VarVec<T>& random() { zero(); for(unsigned int i=0; i<size(); i++) data[i] += randunif(0,1); return *this; }
 	/// Fill the vector with ascending sequence \f$ r_0, r_0+1, r_0+2, \cdots \f$
 	VarVec<T>& ramp(T r0) { for(unsigned int i=0; i<size(); i++) data[i] = r0 + i; return *this; }
 

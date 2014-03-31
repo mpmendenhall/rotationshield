@@ -164,7 +164,7 @@ public:
 	/// get DF for given phi reacting to state R
 	virtual mvec getReactionTo(ReactiveSet* R, unsigned int phi = 0);
 	/// respond to interaction protocol; return whether protocol recognized
-	virtual bool queryInteraction(void* ip) { return mySets[ixn_set]->queryInteraction(ip); }
+	virtual bool queryInteraction(void* ip) { assert(ixn_set < mySets.size()); return mySets[ixn_set]->queryInteraction(ip); }
 	/// set single degree of freedom to produce interactions from, clearing previous DF
 	virtual void setInteractionDF(unsigned int DF, double v);
 	//=====================================

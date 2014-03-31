@@ -113,6 +113,8 @@ void ReactiveSetCombiner::setInteractionDF(unsigned int DF, double v) {
 	if(DF >= nDF()) {
 		for(std::vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++)
 			(*it)->setInteractionDF((*it)->nDF(),0);
+	} else {
+		ixn_set = df_set[DF];
 	}
 }
 

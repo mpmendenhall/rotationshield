@@ -34,6 +34,8 @@
 #include "UniformField.hh"
 #include "SurfaceProfiles.hh"
 #include "PathUtils.hh"
+#include "GenericSolver.hh"
+#include "HoleDipolePerturbation.hh"
 
 bool compareResults(double a, double b, const char* label) {
 	bool pass = true;
@@ -399,3 +401,19 @@ void flux_trap_test() {
 	}
 }
 
+void hole_perturbation_test() {
+
+	Arc2D* B = new Arc2D(-0.7);
+	CylSurfaceGeometry* SG = new CylSurfaceGeometry(B);
+	
+	MagRSCombiner Holes(1);
+	for(unsigned int i=0; i<10; i++)
+		Holes.addSet(new HoleDipolePerturbation(*SG, vec2(randunif(0,1),randunif(0,1)), 0.1));
+	
+	Holes.visualize();
+	
+		
+	GenericSolver GS;
+	GS.solve(Holes);
+	vsr::pause();
+}
