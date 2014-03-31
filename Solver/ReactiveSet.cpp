@@ -109,13 +109,22 @@ void ReactiveSetCombiner::addSet(ReactiveSet* R) {
 }
 
 void ReactiveSetCombiner::setInteractionDF(unsigned int DF, double v) {
-	ReactiveSet::setInteractionDF(DF,v);
 	if(DF >= nDF()) {
 		for(std::vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++)
 			(*it)->setInteractionDF((*it)->nDF(),0);
 	} else {
+		if(ixn_df < nDF()) {
+			finalState[ixn_df] = 0;
+			ixn_set = df_set[ixn_df];
+			mySets[ixn_set]->setInteractionDF(ixn_df-set_cum_df[ixn_set],0);
+		}
+		
+		finalState[DF] = v;
 		ixn_set = df_set[DF];
+		mySets[ixn_set]->setInteractionDF(DF-set_cum_df[ixn_set],v);
 	}
+	
+	ixn_df = DF;
 }
 
 void ReactiveSetCombiner::_setDF(unsigned int DF, double v) {
