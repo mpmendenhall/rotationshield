@@ -423,6 +423,8 @@ mvec Integrator2D::polarIntegrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, vec
 //
 //
 
+IntegratorND::IntegratorND(): rel_err(1e-5), abs_err(1e-6) {}
+
 struct ND_Integrating_Params {
 	double (*f1)(mvec, void*);
 	mvec (*fN)(mvec, void*);
@@ -443,8 +445,6 @@ int cubature_f1(unsigned ndim, const double *x, void *fdata, unsigned, double *f
 	fval[0] = (*p->f1)(mvec(x,x+ndim), p->fparams);
     return 0;
 }
-
-IntegratorND::IntegratorND(): rel_err(1e-4), abs_err(1e-5) {}
 
 double IntegratorND::integrate(double (*f)(mvec,void*), mvec ll, mvec ur, void* params) const {
 	ND_Integrating_Params p;
