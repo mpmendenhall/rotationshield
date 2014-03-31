@@ -48,7 +48,7 @@ public:
 
 
 /// Continuous surface current responding to magnetic field
-class SurfaceCurrentRS: public MagF_Responder, public SurfaceCurrentSource, public InterpolatingRS2D {
+class SurfaceCurrentRS: public SurfaceCurrentSource, public InterpolatingRS2D {
 public:
 	/// constructor
 	SurfaceCurrentRS(SurfaceGeometry* SG, unsigned int nph, unsigned int nz, const std::string& nm = "SurfaceCurrentRS");
@@ -60,9 +60,6 @@ public:
 	/// respond to interaction protocol; return whether protocol recognized
 	virtual bool queryInteraction(void* ip);
 	//=====================================
-	
-	/// calculate response to incident field
-	virtual void calculateIncident(const FieldSource& f);
 	
 	/// set surface response at all points
 	void setSurfaceResponse(SurfaceI_Response r);
@@ -82,7 +79,7 @@ public:
 	
 	/// set up current loop response around given ring of z elements
 	void set_current_loop(unsigned int z, double i=1.0, bool phidir = true);
-	
+		
 protected:
 	
 	/// one surface element's reaction

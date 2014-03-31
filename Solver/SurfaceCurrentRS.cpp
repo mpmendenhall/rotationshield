@@ -36,7 +36,8 @@ vec2 surfaceJ(vec2 v, void* p) {
 	return ((SurfaceCurrentRS*)p)->eval_J(v);
 }
 
-SurfaceCurrentRS::SurfaceCurrentRS(SurfaceGeometry* SG, unsigned int nph, unsigned int nz, const std::string& nm): SurfaceCurrentSource(SG,nm), InterpolatingRS2D(nph) {
+SurfaceCurrentRS::SurfaceCurrentRS(SurfaceGeometry* SG, unsigned int nph, unsigned int nz, const std::string& nm):
+SurfaceCurrentSource(SG,nm), InterpolatingRS2D(nph) {
 	
 	assert(mySurface);
 	assert(nPhi == 1 || mySurface->isClosed(1));
@@ -81,19 +82,49 @@ mvec SurfaceCurrentRS::getReactionTo(ReactiveSet* R, unsigned int phi) {
 	return v;
 }
 
-mvec SurfaceCurrentRS::subelReaction(ReactiveSet* R) {
-	vec2 sc = surf_coords(ixn_el);
-	BField_Protocol::BFP->x = (*mySurface)(sc);
-	Matrix<2,3,double> RM2 = sdefs[ixn_el].rmat2 * mySurface->rotToLocal(sc);
+/// parameters for averaging field over a region
+struct AverageFieldIntegParams {
+	ReactiveSet* RS;			//< field source
+	const SurfaceCurrentRS* S;	//< this surface being integrated over
+	Matrix<2,3,double> rmat2;	//< 2-component response matrix to local field
+};
+
+/// field response integration function via protocol
+mvec fieldResponse_IntegF(mvec v, void* params) {
+	AverageFieldIntegParams* p = (AverageFieldIntegParams*)params;
+	vec2 l(v[0],v[1]);
+	BField_Protocol::BFP->x = (*p->S->mySurface)(l);
+	Matrix<2,3,double> RM2 = p->rmat2 * p->S->mySurface->rotToLocal(l);
 	BField_Protocol::BFP->M2 = &RM2;
-	BField_Protocol::BFP->M3 = NULL;
-	BField_Protocol::BFP->caller = this;
-	if(!R->queryInteraction(BField_Protocol::BFP)) { assert(false); return mvec(); }
-	
-	if(nDFi==2)
+	if(!p->RS->queryInteraction(BField_Protocol::BFP)) { assert(false); return mvec(2); }
+	return mvec(BField_Protocol::BFP->M2B * p->S->mySurface->dA(l));
+}
+
+mvec SurfaceCurrentRS::subelReaction(ReactiveSet* R) {
+	if(R->interactionMode()) {
+		vec2 sc = surf_coords(ixn_el);
+		BField_Protocol::BFP->x = (*mySurface)(sc);
+		Matrix<2,3,double> RM2 = sdefs[ixn_el].rmat2 * mySurface->rotToLocal(sc);
+		BField_Protocol::BFP->M2 = &RM2;
+		BField_Protocol::BFP->M3 = NULL;
+		BField_Protocol::BFP->caller = this;
+		if(!R->queryInteraction(BField_Protocol::BFP)) { assert(false); return mvec(); }
 		return mvec(BField_Protocol::BFP->M2B);
-	else
-		return mvec(BField_Protocol::BFP->B);
+	} else {
+		BField_Protocol::BFP->M3 = NULL;
+		BField_Protocol::BFP->caller = this;
+		
+		AverageFieldIntegParams AFIP;
+		AFIP.RS = R;
+		AFIP.S = this;
+		AFIP.rmat2 = sdefs[ixn_el].rmat2;
+		
+		vec2 ll,ur;
+		element_surface_range(ixn_el, ll, ur);
+		mvec r = myIntegratorND.integrate(&fieldResponse_IntegF, 2, ll, ur, &AFIP);
+		double A = mySurface->area(ll,ur);
+		return r/A;
+	}
 }
 	
 bool SurfaceCurrentRS::queryInteraction(void* ip) {
@@ -102,6 +133,18 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 	
 	BField_Protocol::BFP->B = vec3(0,0,0);
 	BField_Protocol::BFP->M2B = vec2(0,0);
+	
+	// case for all DF set; respond with magnetic field
+	if(ixn_df >= nDF()) {
+		if(BField_Protocol::BFP->M2) {
+			BField_Protocol::BFP->M2B = fieldAtWithTransform2(BField_Protocol::BFP->x, *BField_Protocol::BFP->M2);
+		} else if(BField_Protocol::BFP->M3) {
+			BField_Protocol::BFP->B += fieldAtWithTransform3(BField_Protocol::BFP->x, *BField_Protocol::BFP->M3);
+		} else {
+			BField_Protocol::BFP->B += fieldAt(BField_Protocol::BFP->x);
+		}
+		return true;
+	}
 	
 	// z and phi numbers of active and responding element
 	unsigned int el = ixn_df % (nZ*nPhi);	//< active element
@@ -191,18 +234,11 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 			polar_integral_center = NULL;
 		}
 	}
-	
-	if(self_ixn && ixn_df >= 2*nZ*nPhi) BField_Protocol::BFP->B[2] = 0; //< previously calibrated dipole self-interaction
-	
+		
 	myIntegrator.setMethod(INTEG_GSL_QAG); //< reset default method
 	
 	return true;
 }
-
-
-//
-// Response to incident magnetic fields
-//
 
 void SurfaceCurrentRS::setSurfaceResponse(SurfaceI_Response r) {
 	sdefs.resize(nZ*nPhi);
@@ -240,62 +276,3 @@ void SurfaceCurrentRS::vis_i_vectors(double s, double mx) const {
 	}
 }
 
-struct AverageFieldIntegParams {
-	const FieldSource* f;			//< field source
-	const SurfaceCurrentRS* S;		//< this surface being integrated over
-	Matrix<2,3,double> rmat2;		//< 2-component response matrix to local field
-};
-
-mvec FieldResponsedA2(mvec v, void* params) {
-	AverageFieldIntegParams* p = (AverageFieldIntegParams*)params;
-	vec2 l(v[0],v[1]);
-	vec2 r = p->rmat2 * p->S->mySurface->rotToLocal(l) * p->f->fieldAt((*p->S->mySurface)(l));
-	return mvec(r) * p->S->mySurface->dA(l);
-}
-
-void SurfaceCurrentRS::calculateIncident(const FieldSource& f) {
-	assert(sdefs.size() == nZ*nPhi);
-	assert(mySurface);
-	
-	incidentState = mvec(nDF());
-	
-	myIntegrator.setMethod(INTEG_GSL_QAG);
-	
-	printf("Calculating incident field over %i elements...\n",nZ*nPhi);
-	ProgressBar pb = ProgressBar(nZ, 1, true);
-		
-	for(unsigned int zn = 0; zn < nZ; zn++) {
-		pb.update(zn);
-		for(unsigned int pn = 0; pn < nPhi; pn++) {
-			
-			unsigned int el = zn*nPhi + pn;
-	
-			AverageFieldIntegParams AFIP;
-			AFIP.f = &f;
-			AFIP.S = this;
-			AFIP.rmat2 = sdefs[el].rmat2;
-			
-			if(false) {
-				// value at center:
-				vec2 l = surf_coords(el);
-				vec2 r = sdefs[el].rmat2 * mySurface->rotToLocal(l) * f.fieldAt((*mySurface)(l));
-				incidentState[el] = r[0];
-				incidentState[el+nZ*nPhi] = r[1];
-			} else {
-				// averaged over local region
-				vec2 ll(double(zn)/double(nZ), double(pn)/double(nPhi));
-				vec2 ur(double(zn+1)/double(nZ), double(pn+1)/double(nPhi));
-				
-				mvec r = myIntegratorND.integrate(&FieldResponsedA2, 2, ll, ur, &AFIP);
-					
-				double A = mySurface->area(ll,ur);
-				for(unsigned int i = 0; i < r.size(); i++)
-					incidentState[el+nZ*nPhi*i] = r[i]/A;
-			}
-			
-		}
-		
-	}
-			
-	_setDFv(incidentState);
-}

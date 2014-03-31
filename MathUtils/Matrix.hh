@@ -44,6 +44,8 @@ public:
 
 	/// generate a random-filled matrix
 	static Matrix<M,N,T> random();
+	/// generate identity matrix
+	static Matrix<M,N,T> identity();
 	
 	/// const element access
 	const T& operator()(unsigned int m, unsigned int n) const { assert(m<M && n<N); return vv[m+n*M]; }
@@ -110,6 +112,13 @@ Matrix<M,N,T> Matrix<M,N,T>::random() {
 	return foo; 
 }
 
+template<unsigned int M, unsigned int N, typename T>
+Matrix<M,N,T> Matrix<M,N,T>::identity() {
+	Matrix<M,N,T> foo; 
+	for(unsigned int i=0; i < std::min(M,N); i++)
+		foo(i,i) = 1;
+	return foo;
+}
 
 template<unsigned int M, unsigned int N, typename T>
 Matrix<N,M,T> Matrix<M,N,T>::transposed() const {

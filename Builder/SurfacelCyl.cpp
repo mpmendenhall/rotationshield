@@ -75,7 +75,7 @@ mvec SurfacelSet::subelReaction(unsigned int el, ReactiveSet* R) {
 		if(surfacels[el] == Surfacel_Protocol::SP->e) return mvec(surfacels[el]->nDF()); // zero self-interaction
 		return surfacels[el]->interactionWith(Surfacel_Protocol::SP->e);
 	}
-	assert(false);	// you probably want things interacting!
+	assert(false);	// you probably want things interacting! TODO: make work with external field sources!
 	return mvec(surfacels[el]->nDF());
 }
 

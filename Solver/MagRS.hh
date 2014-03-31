@@ -23,35 +23,45 @@
 
 #include "ReactiveSet.hh"
 #include "FieldSource.hh"
-
-/// virtual base class responding to incident magnetic fields
-class MagF_Responder {
-public:
-	/// constructor
-	MagF_Responder() {}
-	/// destructor
-	virtual ~MagF_Responder() {}
-	
-	//==================================
-	/// calculate response to incident field
-	virtual void calculateIncident(const FieldSource& f) = 0;
-	//==================================
-};
+#include "MixedSource.hh"
 
 /// Collections of magnetic-field-responding ReactiveSets
-class MagRSCombiner: public ReactiveSetCombiner, public MagF_Responder, public FieldSource {
+class MagRSCombiner: public ReactiveSetCombiner, public FieldSource {
 public:
 	/// constructor
 	MagRSCombiner(unsigned int nphi): ReactiveSetCombiner(nphi) {}
 	
 	/// add a ReactiveSet
 	virtual void addSet(ReactiveSet* R);
-	/// calculate response to incident field
-	virtual void calculateIncident(const FieldSource& f);
 	/// Magnetic field at a specified point
 	virtual vec3 fieldAt(const vec3& v) const;
 	/// visualization reoutine
 	virtual void _visualize() const;
+};
+
+/// Applied magnetic field source
+class MagExtField: public ReactiveSet, public MixedSource {
+public:
+	/// constructor
+	MagExtField(): ReactiveSet(0), MixedSource() {}
+
+	//=====================================
+	/// total number of degrees of freedom
+	virtual unsigned int nDF() const { return 0; }
+	/// get DF for given phi reacting to state R
+	virtual mvec getReactionTo(ReactiveSet*, unsigned int = 0) { return mvec(); }
+	/// respond to interaction protocol; return whether protocol recognized
+	virtual bool queryInteraction(void* ip);
+	//=====================================
+	
+protected:
+
+	//=====================================
+	/// called when a DF is set
+	virtual void _setDF(unsigned int, double) { }
+	/// optional routine for setting entire state vector at once
+	virtual void _setDFv(const mvec&) { }
+	//=====================================
 };
 
 /// Magnetic field interaction protocol class singleton

@@ -56,6 +56,8 @@ public:
 	vec3 origin;
 };
 
+
+
 /// cylindrically symmetric surface geometry
 class CylSurfaceGeometry: public SurfaceGeometry {
 public:
@@ -85,5 +87,27 @@ protected:
 	vec2 cache_profile(double l) const;
 };
 
+
+/// Geometry with translation and matrix transformation
+class TransformedGeometry: public SurfaceGeometry {
+public:
+	/// constructor
+	TransformedGeometry(SurfaceGeometry* G): transf_M(Matrix<3,3,double>::identity()), baseGeom(G) {}
+	
+	/// evaluate function
+	virtual vec3 operator()(const vec2& x) const { return transf_M * (*baseGeom)(x) + transl_v; }
+	
+	/// partial derivative along axis i
+	virtual vec3 deriv(const vec2& x, unsigned int i) const { return transf_M * baseGeom->deriv(x,i); }
+	
+	/// differential area dA / dl1 dl2
+	//virtual double dA(const vec2& l) const;
+	
+	vec3 transl_v;					//< translation vector
+	Matrix<3,3,double> transf_M;	//< transformation matrix
+	
+protected:
+	SurfaceGeometry* baseGeom;
+};
 
 #endif

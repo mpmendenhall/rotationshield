@@ -290,7 +290,7 @@ void mi_addTorus(StreamInteractor* S) {
 SystemConfiguration::SystemConfiguration():
 basedir(getEnvSafe("ROTSHIELD_OUT","./")),
 RSC(new MagRSCombiner(32)),
-IncidentSource(new MixedSource()),
+IncidentSource(new MagExtField()),
 TotalField(new MixedSource()),
 FA(TotalField),
 SS(NULL),
@@ -436,7 +436,7 @@ void SystemConfiguration::solve(const std::string& cfile) {
 void SystemConfiguration::calculate_result() {
 	assert(SS); if(!SS) return;
 	assert(RSC); if(!RSC) return;
-	RSC->calculateIncident(*IncidentSource);
+	RSC->incidentState = RSC->getFullReactionTo(IncidentSource);
 	SS->calculateResult(*RSC);
 }
 

@@ -39,7 +39,7 @@ public:
 };
 
 /// collection of individual surface elements
-class SurfacelSet: public ReactiveUnitSet, public FieldSource, public MagF_Responder {
+class SurfacelSet: public ReactiveUnitSet, public FieldSource {
 public:
 	/// constructor
 	SurfacelSet(unsigned int nph): ReactiveUnitSet(nph), FieldSource(), verbose(true) { }

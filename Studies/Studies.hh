@@ -78,7 +78,7 @@ public:
 	
 	std::string basedir;			//< base directory for IO operations
 	MagRSCombiner* RSC;				//< reacting boundary condition surfaces
-	MixedSource* IncidentSource;	//< incident field source
+	MagExtField* IncidentSource;	//< incident field source
 	MixedSource* TotalField;		//< incident + reacting field
 	FieldAnalyzer FA;
 	fieldCell cell;					//< field measurement cell

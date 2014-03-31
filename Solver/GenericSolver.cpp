@@ -57,11 +57,10 @@ void GenericSolver::buildInteractionMatrix(ReactiveSet& R) {
 				gsl_matrix_set(the_GF, i*R.nPhi+phi, DF, (i*R.nPhi+phi==DF) ? 1-v[i] : -v[i]);
 		}
 	}
+	R.setInteractionDF(R.nDF(),0);
 }
 
 void GenericSolver::calculateResult(ReactiveSet& R) {
-	R.prepareIncident();
-	
 	assert(the_GF);
 	gsl_vector* inc = gsl_vector_alloc(R.nDF());
 	gsl_vector* fin = gsl_vector_alloc(R.nDF());

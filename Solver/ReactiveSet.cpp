@@ -19,6 +19,7 @@
  */
 
 #include "ReactiveSet.hh"
+#include "ProgressBar.hh"
 #include <iostream>
 
 void ReactiveSet::setDF(unsigned int DF, double v) {
@@ -29,14 +30,14 @@ void ReactiveSet::setDF(unsigned int DF, double v) {
 }
 
 void ReactiveSet::setInteractionDF(unsigned int DF, double v) {
-
-	//std::cout << this << " Setting Interaction DF " << DF << " of " << nDF() << " to " << v << std::endl;
-
-	assert(DF < finalState.size() && ixn_df < finalState.size());
-	finalState[ixn_df] = 0;
-	finalState[DF] = v;
-	_setDF(ixn_df,0);
-	_setDF(DF,v);
+	if(DF < nDF()) {
+		if(ixn_df < nDF()) {
+			finalState[ixn_df] = 0;
+			_setDF(ixn_df,0);
+		}
+		finalState[DF] = v;
+		_setDF(DF,v);
+	}
 	ixn_df = DF;
 }
 
@@ -46,6 +47,19 @@ void ReactiveSet::_setDFv(const mvec& v) {
 		_setDF(DF,v[DF]);
 }
 
+mvec ReactiveSet::getFullReactionTo(ReactiveSet* R) {
+	printf("Calculating reaction of %i = %i x %i elements...\n", nDF(), nDF()/nPhi, nPhi);
+	ProgressBar pb = ProgressBar(nPhi, 1, true);
+	
+	mvec v(nDF());
+	for(unsigned int p=0; p<nPhi; p++) {
+		mvec vp = getReactionTo(R,p);
+		for(unsigned int i=0; i<vp.size(); i++)
+			v[i*nPhi+p] = vp[i];
+		pb.update(p);
+	}
+	return v;
+}
 
 //-----------------------------------------
 
@@ -95,20 +109,11 @@ void ReactiveSetCombiner::addSet(ReactiveSet* R) {
 }
 
 void ReactiveSetCombiner::setInteractionDF(unsigned int DF, double v) {
-
-	//std::cout << "RSC Setting Interaction DF " << DF << " of " << nDF() << " to " << v << std::endl;
-
-	assert(DF < finalState.size() && ixn_df < finalState.size());
-	finalState[ixn_df] = 0;
-	finalState[DF] = v;
-	
-	ixn_set = df_set[ixn_df];
-	mySets[ixn_set]->setInteractionDF(ixn_df-set_cum_df[ixn_set],0);
-	
-	ixn_set = df_set[DF];
-	mySets[ixn_set]->setInteractionDF(DF-set_cum_df[ixn_set],v);
-	
-	ixn_df = DF;
+	ReactiveSet::setInteractionDF(DF,v);
+	if(DF >= nDF()) {
+		for(std::vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++)
+			(*it)->setInteractionDF((*it)->nDF(),0);
+	}
 }
 
 void ReactiveSetCombiner::_setDF(unsigned int DF, double v) {
@@ -137,11 +142,3 @@ mvec ReactiveSetCombiner::getReactionTo(ReactiveSet* R, unsigned int phi) {
 	return v;
 }
 
-void ReactiveSetCombiner::prepareIncident() {
-	if(incidentState.size() != nDF())
-		incidentState = mvec(nDF());
-	for(unsigned int i=0; i<mySets.size(); i++) {
-		mySets[i]->prepareIncident();
-		incidentState.load_subvec(mySets[i]->incidentState, set_cum_df[i]);
-	}
-}

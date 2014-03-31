@@ -43,7 +43,7 @@ class StudySetup:
 	def __init__(self,nm,r):
 	
 		self.r = r			# parameter being varied
-		self.nPhi = 32		# shield phi sections
+		self.nPhi = 64		# shield phi sections
 		self.fields = []	# field sources
 		self.shields = []	# material boundaries
 		

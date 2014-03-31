@@ -56,7 +56,7 @@ bool reference_simpleshield() {
 	vec3 yscan(0,0.06,0);
 	vec3 zscan(0,0,0.25);
 	
-	MixedSource* MxS = new MixedSource();
+	MagExtField* MxS = new MagExtField();
 	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 3.92);
 	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_LINE;
 	b.buildCoil(*MxS);
@@ -84,7 +84,7 @@ bool reference_simpleshield() {
 	SB->makeOptCyl(10, 2, .6223, -3.9624/2, 3.9624/2, new PlaneSource(Plane(),10000.0), &fe);
 	
 	// non-interacting field reaction
-	SB->calculateIncident(*MxS);
+	SB->incidentState = SB->getFullReactionTo(MxS);
 	b0 = SB->fieldAt(origin)[0];
 	pass &= compareResults(b0,6.83758710057794e-01,"origin - noninteracting shield only");
 	pass &= compareResults(SB->fieldAt(xscan)[0]-b0,1.11572338749721e-03,"+x");
@@ -130,7 +130,7 @@ bool reference_simpleshield_cached() {
 	vec3 yscan(0,0.06,0);
 	vec3 zscan(0,0,0.25);
 	
-	MixedSource* MxS = new MixedSource();
+	MagExtField* MxS = new MagExtField();
 	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 3.92);
 	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_LINE;
 	b.buildCoil(*MxS);
@@ -143,7 +143,7 @@ bool reference_simpleshield_cached() {
 	SurfacelCyl* SB = new SurfacelCyl(32);
 	SB->retain();
 	SB->makeOptCyl(10, 2, .6223, -3.9624/2, 3.9624/2, new PlaneSource(Plane(),10000.0), &fe);
-	SB->calculateIncident(*MxS);
+	SB->incidentState = SB->getFullReactionTo(MxS);
 	
 	SymmetricSolver* SS = SymmetricSolver::cachedSolve(*SB,getEnvSafe("ROTSHIELD_OUT",".")+"/ref_simpleshield_sol.dat");
 	SS->calculateResult(*SB);
@@ -256,12 +256,13 @@ void qsurvey(FieldSource* S, vec3 v1 = vec3(0.5,-0.5,0.5), vec3 v0 = vec3(0,0,0)
 }
 
 
-void vis_test_sequence(ReactiveSet* RS, MixedSource* MxS, vec3 vs = vec3(0.5,-0.5,0.5), vec3 vs0 = vec3(0,0,0)) {
+void vis_test_sequence(ReactiveSet* RS, MagExtField* MxS, vec3 vs = vec3(0.5,-0.5,0.5), vec3 vs0 = vec3(0,0,0)) {
 	
 	std::cout << "B applied: " << std::endl;
 	qsurvey(MxS,vs,vs0);
 	
-	dynamic_cast<MagF_Responder*>(RS)->calculateIncident(*MxS);
+	RS->incidentState = RS->getFullReactionTo(MxS);
+	RS->setFinalState(RS->incidentState);
 	MxS->addsource(dynamic_cast<FieldSource*>(RS));
 	MxS->visualize();
 	std::cout << "B non-interacting: " << std::endl;
@@ -284,7 +285,7 @@ void superball_test(unsigned int ngrid) {
 	
 	std::cout << "Expelling external B=(1,1,1) field from a superconducting sphere.\n";
 	
-	MixedSource* MxS = new MixedSource();
+	MagExtField* MxS = new MagExtField();
 	UniformField* BU = new UniformField(vec3(1,1,1));
 	MxS->addsource(BU);
 		
@@ -301,7 +302,7 @@ void mirror_test() {
 	
 	std::cout << "Mirroring cos theta coil current between superconducting plates for improved uniformity.\n";
 	
-	MixedSource* MxS = new MixedSource();
+	MagExtField* MxS = new MagExtField();
 	CosThetaBuilder b = CosThetaBuilder(5, 0.5, 1.0);
 	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_NONE;
 	b.buildCoil(*MxS);
@@ -332,7 +333,7 @@ void tube_test() {
 
 	std::cout << "Cos theta coil in a ferromagnetic shield.\n";
 	
-	MixedSource* MxS = new MixedSource();
+	MagExtField* MxS = new MagExtField();
 	CosThetaBuilder b = CosThetaBuilder(5, 0.55, 2);
 	b.myCap[0] = b.myCap[1] = CosThetaBuilder::CAP_LINE;
 	b.buildCoil(*MxS);

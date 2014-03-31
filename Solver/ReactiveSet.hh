@@ -28,6 +28,9 @@
 #include <vector>
 #include <cassert>
 
+/// see InteractionSolver.hh
+class InteractionSolver;
+
 /// base class for a set of degrees of freedom
 class ReactiveSet {
 public:
@@ -45,8 +48,6 @@ public:
 	virtual mvec getReactionTo(ReactiveSet* R, unsigned int phi = 0) = 0;
 	/// respond to interaction protocol; return whether protocol recognized
 	virtual bool queryInteraction(void*) { return false; }
-	/// prepare incident state vector
-	virtual void prepareIncident() { if(incidentState.size() != nDF()) incidentState = mvec(nDF()); }
 	//=====================================
 	
 	/// clear states; start with only 1 active DF
@@ -59,6 +60,11 @@ public:
 	virtual void setZeroState() { setFinalState(mvec(nDF())); }
 	/// set final state
 	virtual void setFinalState(const mvec& v) { assert(v.size()==nDF()); finalState = v; _setDFv(v); }
+	/// get full reaction on all elements
+	virtual mvec getFullReactionTo(ReactiveSet* R);
+	/// check whether currently set up for interaction scan
+	bool interactionMode() const { return ixn_df < nDF(); }
+	
 	
 	const unsigned int nPhi;	//< internal periodic symmetry
 	mvec incidentState; 		//< non-interacting initial state vector
@@ -159,8 +165,6 @@ public:
 	virtual mvec getReactionTo(ReactiveSet* R, unsigned int phi = 0);
 	/// respond to interaction protocol; return whether protocol recognized
 	virtual bool queryInteraction(void* ip) { return mySets[ixn_set]->queryInteraction(ip); }
-	/// prepare incident state vector
-	virtual void prepareIncident();
 	/// set single degree of freedom to produce interactions from, clearing previous DF
 	virtual void setInteractionDF(unsigned int DF, double v);
 	//=====================================

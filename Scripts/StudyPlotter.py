@@ -238,7 +238,7 @@ class VarParamPlotter:
 		self.datlist = [ (float(f[len(basename):].split("_")[1]), FieldInfo(outdir+"/"+f)) for f in os.listdir(outdir) if f[:len(basename)+1]==basename+"_"]
 		self.datlist = [ d for d in self.datlist if d[1].GIF.cell.c ]	# filter out incomplete data points
 		
-	def setupGraph(self, varname, logx=False, logy2=False, xrange=(None,None)):
+	def setupGraph(self, varname, logx=False, logy2=False, xrange=(None,None), xtrans=(lambda x:x)):
 		
 		print "Setting up graph for",varname
 		
@@ -249,7 +249,9 @@ class VarParamPlotter:
 		y2axis = graph.axis.lin(title="Dephasing rate $1/T_2$ [mHz]", min=0)
 		if logy2:
 			y2axis = graph.axis.log(title="Dephasing rate $1/T_2$ [mHz]")
-				
+		
+		self.xtrans = xtrans
+		
 		self.g = graph.graphxy(width=24,height=16,
 			x=xaxis,
 			y=graph.axis.lin(title="Cell Average Gradients [$\\mu$G/cm]", min=self.yrange[0], max=self.yrange[1]),
@@ -265,7 +267,7 @@ class VarParamPlotter:
 		
 		self.g.plot(graph.data.function("y(x)=0",title=None),[graph.style.line(lineattrs=[style.linestyle.dotted,style.linewidth.Thick])])
 		
-	def makePlot(self,cname="",csty=[],cell=None,PGlist=[],xtrans=(lambda x: x)):
+	def makePlot(self,cname="",csty=[],cell=None,PGlist=[]):
 			
 			assert self.g is not None
 	
@@ -287,12 +289,12 @@ class VarParamPlotter:
 				dBxdz = derivs[0][2]*1000
 				
 				print r,"B0 =",FI.Bavg,"\tBgrad =",GradScaled,"\tRMS =",rms
-				gdat.append([xtrans(r),]+GradScaled+[rms,dBxdz])
+				gdat.append([self.xtrans(r),]+GradScaled+[rms,dBxdz])
 				
 				# unscale milligauss to Gauss; calculate T2
 				for a in range(3):
 					FI.BC.B[a] *= 1e-3
-				gdat_T2.append([xtrans(r),]+[1000*abs(T2i(FI.BC,PG)) for PG in PGlist])
+				gdat_T2.append([self.xtrans(r),]+[1000*abs(T2i(FI.BC,PG)) for PG in PGlist])
 				
 			gdat.sort()
 			gdat_T2.sort()

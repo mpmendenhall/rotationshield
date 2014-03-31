@@ -26,13 +26,6 @@ void MagRSCombiner::addSet(ReactiveSet* R) {
 	ReactiveSetCombiner::addSet(R);
 }
 
-void MagRSCombiner::calculateIncident(const FieldSource& f) {
-	for(std::vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++) {
-		MagF_Responder* MR = dynamic_cast<MagF_Responder*>(*it);
-		MR->calculateIncident(f);
-	}
-}
-
 vec3 MagRSCombiner::fieldAt(const vec3& v) const {
 	vec3 B;
 	for(std::vector<ReactiveSet*>::const_iterator it = mySets.begin(); it != mySets.end(); it++) {
@@ -47,4 +40,20 @@ void MagRSCombiner::_visualize() const {
 		FieldSource* FS = dynamic_cast<FieldSource*>(*it);
 		FS->_visualize();
 	}
+}
+
+//-----------------------------------------------------
+
+bool MagExtField::queryInteraction(void* ip) {
+
+	if(ip != BField_Protocol::BFP) return false;
+
+	if(BField_Protocol::BFP->M2) {
+		BField_Protocol::BFP->M2B = fieldAtWithTransform2(BField_Protocol::BFP->x, *BField_Protocol::BFP->M2);
+	} else if(BField_Protocol::BFP->M3) {
+		BField_Protocol::BFP->B += fieldAtWithTransform3(BField_Protocol::BFP->x, *BField_Protocol::BFP->M3);
+	} else {
+		BField_Protocol::BFP->B += fieldAt(BField_Protocol::BFP->x);
+	}
+	return true;
 }

@@ -71,11 +71,11 @@ void SymmetricSolver::buildInteractionMatrix(ReactiveSet& R) {
 			the_ixn(i, DF/R.nPhi)[DF%R.nPhi] = v[i];
 		pb.update(DF);
 	}
+	R.setInteractionDF(R.nDF(),0);
 }
 
 void SymmetricSolver::calculateResult(ReactiveSet& R) {
 	if(verbose) printf("Calculating resulting surface current..."); fflush(stdout);
-	R.prepareIncident();
 	R.finalState = R.incidentState;
 	circulantMul(the_GF->calc_pseudo_inverse(singular_epsilon), R.finalState, R.nPhi);
 	R.setFinalState(R.finalState);
