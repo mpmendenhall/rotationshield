@@ -482,8 +482,10 @@ void SystemConfiguration::writeInfo(const std::string& xpath) const {
 void SystemConfiguration::add_singular_state(unsigned int i, double c) {
 	if(!SS || !RSC) return;
 	SS->print_singular_values();
+	VarVec<double> vi = SS->get_singular_values();
+	assert(i<vi.size());
 	VarVec<double> vs = SS->get_singular_vector(i);
-	std::cout << "Adding state " << i << " with singular value " << SS->get_singular_value(i) << " and magnitude " << vs.mag() << "\n";
+	std::cout << "Adding state " << i << " with singular value " << vi[i]/vi[0] << " and magnitude " << vs.mag() << "\n";
 	RSC->setFinalState(RSC->finalState + vs*c);
 }
 

@@ -90,7 +90,8 @@ obj_Geometry = Angles.o SurfaceGeometry.o SurfaceProfiles.o
 obj_FieldSource = FieldSource.o MixedSource.o InfiniteLineSource.o LineSource.o InfinitePlaneSource.o \
 	SurfaceSource.o SurfaceCurrentSource.o PlanarElement.o PlaneSource.o DipoleSource.o FieldEstimator2D.o
 
-obj_Solver = ReactiveSet.o InterpolatingRS.o MagRS.o SurfaceCurrentRS.o HoleDipolePerturbation.o GenericSolver.o SymmetricSolver.o
+obj_Solver = ReactiveSet.o InterpolatingRS.o MagRS.o SurfaceCurrentRS.o HoleDipolePerturbation.o \
+	InteractionSolver.o GenericSolver.o SymmetricSolver.o
 
 obj_Builder = CosThetaBuilder.o SurfacelCyl.o FieldAdaptiveSurface.o
 

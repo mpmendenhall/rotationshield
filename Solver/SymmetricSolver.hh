@@ -35,7 +35,7 @@
 class SymmetricSolver: public InteractionSolver, public BinaryOutputObject {
 public:
 	/// Constructor
-	SymmetricSolver(): InteractionSolver(true), singular_epsilon(1e-8), the_GF(NULL) {}
+	SymmetricSolver(): InteractionSolver(true), the_GF(NULL) {}
 	/// Destructor
 	virtual ~SymmetricSolver() { if(the_GF) delete the_GF; }
 	
@@ -54,18 +54,11 @@ public:
 	static SymmetricSolver* cachedSolve(ReactiveSet& R, const std::string& fname);
 
 #ifdef WITH_LAPACKE
-	/// set singular values threshold
-	void set_singular_epsilon(double e) { singular_epsilon = e; }
-#else
-	/// set singular values threshold
-	void set_singular_epsilon(double) { assert(false); }
-#endif
-	/// show singular values
-	void print_singular_values() const;
+	/// get un-normalized vector of singular values
+	virtual mvec get_singular_values() const;
 	/// get right singular vector
-	VarVec<double> get_singular_vector(unsigned int i) const;
-	/// get singular value, normalized to largest singular value
-	double get_singular_value(unsigned int i) const;
+	virtual mvec get_singular_vector(unsigned int i) const;
+#endif
 	
 protected:
 	
@@ -78,7 +71,6 @@ protected:
 	static double checkInversion(const BlockCMat& M, const BlockCMat& MI, unsigned int nPhi);
 	
 	BlockCMat the_ixn;			//< The interaction matrix R between degrees of freedom
-	double singular_epsilon;	//< singular value threshold
 	BlockCMat_SVD* the_GF;		//< the Green's Function for the system, (I-R)^-1
 };
 

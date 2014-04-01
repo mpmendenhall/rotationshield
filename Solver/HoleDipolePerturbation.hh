@@ -18,6 +18,9 @@
  *
  */
 
+#ifndef HOLEDIPOLEPERTURBATION_HH
+#define HOLEDIPOLEPERTURBATION_HH 1
+
 #include "DipoleSource.hh"
 #include "ReactiveSet.hh"
 #include "SurfaceGeometry.hh"
@@ -54,3 +57,5 @@ protected:
 	const SurfaceGeometry& mySurface;	//< surface to which this is "attached"
 	vec2 surfacePos;					//< position on surface
 };
+
+#endif

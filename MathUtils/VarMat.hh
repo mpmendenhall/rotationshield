@@ -220,7 +220,7 @@ const VarVec<V> VarMat<T>::lMultiply(const VarVec<U>& v) const {
 	for(unsigned int r=0; r<M; r++) {
 		a.push_back((*this)(r,0)*v[0]);
 		for(unsigned int c=1; c<N; c++)
-			a.getData().back() += (*this)(r,c)*v[c];
+			a.back() += (*this)(r,c)*v[c];
 	}
 	return a;
 }
@@ -235,7 +235,7 @@ const VarVec<V> VarMat<T>::rMultiply(const VarVec<U>& v) const {
 	for(unsigned int c=0; c<N; c++) {
 		a.push_back(v[0] * (*this)(0,c));
 		for(unsigned int r=1; r<M; r++)
-			a.getData().back() += v[r] * (*this)(r,c);
+			a.back() += v[r] * (*this)(r,c);
 	}
 	return a;
 }

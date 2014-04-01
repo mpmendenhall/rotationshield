@@ -30,7 +30,7 @@
 class InteractionSolver {
 public:
 	/// Constructor
-	InteractionSolver(bool vbs = true): verbose(vbs) {}
+	InteractionSolver(bool vbs = true): verbose(vbs), singular_epsilon(1e-8) {}
 	/// Destructor
 	virtual ~InteractionSolver() {}
 
@@ -39,7 +39,20 @@ public:
 	/// Apply solution to ReactiveSet system initial state
 	virtual void calculateResult(ReactiveSet& R) = 0;
 	
+	/// set singular values threshold
+	virtual void set_singular_epsilon(double e) { singular_epsilon = e; }
+	/// get un-normalized vector of singular values
+	virtual mvec get_singular_values() const { return mvec(); }
+	/// show singular values
+	virtual void print_singular_values() const;
+	/// get right singular vector
+	virtual mvec get_singular_vector(unsigned int) const { return mvec(); }
+		
 	bool verbose;	//< whether to display solver progress
+
+protected:
+
+	double singular_epsilon;	//< singular value threshold
 };
 
 #endif

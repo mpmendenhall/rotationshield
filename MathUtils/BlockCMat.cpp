@@ -41,7 +41,7 @@ BlockCMat makeBlockCMatRandom(unsigned int n, unsigned int mc) {
 class Compare_BCM_SVD_singular_values {
 public:
 	Compare_BCM_SVD_singular_values(const BlockCMat_SVD* b): B(b) {}
-	bool operator() (unsigned int i, unsigned int j) { return B->getSV(i) < B->getSV(j); }
+	bool operator() (unsigned int i, unsigned int j) { return B->getSV(j) < B->getSV(i); }
 	const BlockCMat_SVD* B;
 };
 
@@ -126,7 +126,7 @@ const BlockCMat& BlockCMat_SVD::calc_pseudo_inverse(double epsilon) {
 	
 	PsI = new BlockCMat(M, N, Mc);
 	for(unsigned int i=0; i<Mc/2+1; i++) {
-		const VarMat<lapack_complex_double>& bPsI = block_SVDs[i]->calc_pseudo_inverse(epsilon*svalues.getData().back());
+		const VarMat<lapack_complex_double>& bPsI = block_SVDs[i]->calc_pseudo_inverse(epsilon*svalues[0]);
 		for(unsigned int r=0; r<M; r++) {
 			for(unsigned int c=0; c<N; c++) {
 				(*PsI)(r,c).getKData()[i] = bPsI(r,c);

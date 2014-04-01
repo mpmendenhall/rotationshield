@@ -64,6 +64,10 @@ public:
 	T& operator[](unsigned int i) { assert(i<data.size()); return data[i]; }
 	/// immutable element access operator
 	const T& operator[](unsigned int i) const { assert(i<data.size()); return data[i]; }
+	/// immutable access to back
+	const T& back() const { assert(data.size()); return data.back(); }
+	/// mutable access to back
+	T& back() { assert(data.size()); return data.back(); }
 	/// immutable access to the whole data vector
 	const std::vector<T>& getData() const { return data; }
 	/// mutable access to the whole data vector
