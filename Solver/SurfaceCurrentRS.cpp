@@ -37,7 +37,7 @@ vec2 surfaceJ(vec2 v, void* p) {
 }
 
 SurfaceCurrentRS::SurfaceCurrentRS(SurfaceGeometry* SG, unsigned int nph, unsigned int nz, const std::string& nm):
-SurfaceCurrentSource(SG,nm), InterpolatingRS2D(nph) {
+SurfaceCurrentSource(SG,nm), InterpolatingRS2D(nph), point_ixn(true) {
 	
 	assert(mySurface);
 	assert(nPhi == 1 || mySurface->isClosed(1));
@@ -101,7 +101,7 @@ mvec fieldResponse_IntegF(mvec v, void* params) {
 }
 
 mvec SurfaceCurrentRS::subelReaction(ReactiveSet* R) {
-	if(R->interactionMode()) {
+	if(R->interactionMode() || point_ixn) {
 		vec2 sc = surf_coords(ixn_el);
 		BField_Protocol::BFP->x = (*mySurface)(sc);
 		Matrix<2,3,double> RM2 = sdefs[ixn_el].rmat2 * mySurface->rotToLocal(sc);

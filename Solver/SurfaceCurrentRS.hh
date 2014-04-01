@@ -79,7 +79,9 @@ public:
 	
 	/// set up current loop response around given ring of z elements
 	void set_current_loop(unsigned int z, double i=1.0, bool phidir = true);
-		
+	
+	bool point_ixn;	//< whether to use fields at point, or averaged over range
+				
 protected:
 	
 	/// one surface element's reaction

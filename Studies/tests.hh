@@ -48,5 +48,7 @@ void flux_trap_test();
 /// superconductor with holes
 void hole_perturbation_test();
 
+/// iterate two-object system (pair of superconducting tori)
+void two_torus_equilibration();
 
 #endif

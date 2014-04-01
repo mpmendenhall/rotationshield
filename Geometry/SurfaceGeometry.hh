@@ -101,7 +101,10 @@ public:
 	virtual vec3 deriv(const vec2& x, unsigned int i) const { return transf_M * baseGeom->deriv(x,i); }
 	
 	/// differential area dA / dl1 dl2
-	//virtual double dA(const vec2& l) const;
+	virtual double dA(const vec2& l) const { return baseGeom->dA(l); } // TODO do this right
+	
+	/// whether surface is closed/periodic along particular axis
+	virtual bool isClosed(unsigned int a) const { return baseGeom->isClosed(a); }
 	
 	vec3 transl_v;					//< translation vector
 	Matrix<3,3,double> transf_M;	//< transformation matrix

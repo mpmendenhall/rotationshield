@@ -46,6 +46,8 @@ public:
 	static Matrix<M,N,T> random();
 	/// generate identity matrix
 	static Matrix<M,N,T> identity();
+	/// generate rotation between two axes
+	static Matrix<M,N,T> rotation(unsigned int a1, unsigned int a2, T th);
 	
 	/// const element access
 	const T& operator()(unsigned int m, unsigned int n) const { assert(m<M && n<N); return vv[m+n*M]; }
@@ -117,6 +119,16 @@ Matrix<M,N,T> Matrix<M,N,T>::identity() {
 	Matrix<M,N,T> foo; 
 	for(unsigned int i=0; i < std::min(M,N); i++)
 		foo(i,i) = 1;
+	return foo;
+}
+
+template<unsigned int M, unsigned int N, typename T>
+Matrix<M,N,T> Matrix<M,N,T>::rotation(unsigned int a1, unsigned int a2, T th) {
+	assert(a1 < std::min(M,N) && a2 < std::min(M,N) && a1 != a2);
+	Matrix<M,N,T> foo = Matrix<M,N,T>::identity();
+	foo(a1,a1) = foo(a2,a2) = cos(th);
+	foo(a2,a1) = sin(th);
+	foo(a1,a2) = -foo(a2,a1);
 	return foo;
 }
 

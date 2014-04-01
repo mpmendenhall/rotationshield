@@ -27,6 +27,7 @@
 #include "Typedefs.hh"
 #include <vector>
 #include <cassert>
+#include <climits>
 
 /// see InteractionSolver.hh
 class InteractionSolver;
@@ -35,7 +36,7 @@ class InteractionSolver;
 class ReactiveSet {
 public:
 	/// constructor
-	ReactiveSet(unsigned int nph=1): nPhi(nph), ixn_df(0) { }
+	ReactiveSet(unsigned int nph=1): nPhi(nph), ixn_df(INT_MAX) { }
 	/// destructor
 	virtual ~ReactiveSet() {}
 	

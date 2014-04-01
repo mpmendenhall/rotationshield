@@ -35,7 +35,10 @@
 #include "SurfaceProfiles.hh"
 #include "PathUtils.hh"
 #include "GenericSolver.hh"
+#include "DipoleSource.hh"
 #include "HoleDipolePerturbation.hh"
+#include "LineSource.hh"
+#include "MultiQuilibrator.hh"
 
 bool compareResults(double a, double b, const char* label) {
 	bool pass = true;
@@ -317,7 +320,6 @@ void mirror_test() {
 	for(int z=-1; z<=1; z+=2) {
 		double w = 0.1;
 		RoundedSlab* RSL = new RoundedSlab((0.51+0.5*w)*z, 0.7, w);
-		//Line2D* L2D = (z>0)? new Line2D(vec2(0.51, 0.7), vec2(0.51, 0)) : new Line2D(vec2(-0.51, 0), vec2(-0.51, 0.7));
 		FieldAdaptiveSurface* FAS = new FieldAdaptiveSurface(*RSL);
 		FAS->optimizeSpacing(fe, 0.6);
 		
@@ -417,3 +419,49 @@ void hole_perturbation_test() {
 	GS.solve(Holes);
 	vsr::pause();
 }
+
+void two_torus_equilibration() {
+
+	Arc2D* B = new Arc2D(0.2, -M_PI, M_PI, vec2(0,0.6));
+	CylSurfaceGeometry* SG = new CylSurfaceGeometry(B);
+	TransformedGeometry* TG1 = new TransformedGeometry(SG);
+	TransformedGeometry* TG2 = new TransformedGeometry(SG);
+	
+	SurfaceCurrentRS* RS1 = new SurfaceCurrentRS(TG1, 16, 16);
+	RS1->setSurfaceResponse(SurfaceI_Response(0));
+	SurfaceCurrentRS* RS2 = new SurfaceCurrentRS(TG2, 16, 16);
+	RS2->setSurfaceResponse(SurfaceI_Response(0));
+	
+	SymmetricSolver SS;
+	SS.solve(*RS1);
+	SS.set_singular_epsilon(1e-5);
+	
+	TG1->transl_v = vec3(0,0.3,0);
+	TG2->transl_v = vec3(0,-0.3,0);
+	TG1->transf_M = Matrix<3,3,double>::rotation(0,2,0.14*M_PI);
+	TG2->transf_M = Matrix<3,3,double>::rotation(0,2,-0.14*M_PI);
+	MixedSource MxS;
+	MxS.addsource(RS1);
+	MxS.addsource(RS2);
+	
+	MagExtField* MxI = new MagExtField();
+	UniformField* BU = new UniformField(vec3(.1,.1,.3));
+	MxI->addsource(BU);
+	
+	RS1->incidentState = RS1->getFullReactionTo(MxI);
+	SS.calculateResult(*RS1);
+	RS2->incidentState = RS2->getFullReactionTo(MxI);
+	SS.calculateResult(*RS2);
+	
+	MultiQuilibrator MQ;
+	MQ.addSet(RS1,&SS);
+	MQ.addSet(RS2,&SS);
+	
+	for(unsigned int i=0; i<100; i++) {
+		MxS.visualize();
+		vsr::pause();
+		MQ.step();
+	}
+	
+}
+

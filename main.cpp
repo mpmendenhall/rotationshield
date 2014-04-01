@@ -67,6 +67,8 @@ void hypercube_rotator() {
 
 /// run self-tests
 void mi_runtests(StreamInteractor*) {
+	two_torus_equilibration();
+	return;
 	hole_perturbation_test();
 	return;
 	printf("Simple shield self-test...\n");
