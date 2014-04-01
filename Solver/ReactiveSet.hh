@@ -131,7 +131,7 @@ protected:
 	unsigned int ixn_el_df;	//< sub-element's DF currently set for interaction study
 	
 	// groups
-	unsigned int n_subels() const { return group_DF.size()*nPhi; }
+	unsigned int n_subels() const { return (unsigned int)group_DF.size()*nPhi; }
 	std::vector<unsigned int> group_DF;		//< number of DF for elements in this group
 	std::vector<unsigned int> group_start;	//< starting index for each group of nPhi sub-elements
 	
@@ -152,26 +152,28 @@ protected:
 class ReactiveSetCombiner: public ReactiveSet {
 public:
 	/// constructor
-	ReactiveSetCombiner(unsigned int nph=1): ReactiveSet(nph), ownSets(false) { set_cum_df.push_back(0); }
+	ReactiveSetCombiner(unsigned int nph=1): ReactiveSet(nph), ownSets(false) { }
 	/// destructor
 	virtual ~ReactiveSetCombiner();
 	/// append a new ReactiveSet
 	virtual void addSet(ReactiveSet* R);
 	
-	
 	//=====================================
 	/// total number of degrees of freedom
-	virtual unsigned int nDF() const { return set_cum_df.back(); }
+	virtual unsigned int nDF() const { return (unsigned int)df_set.size(); }
 	/// get DF for given phi reacting to state R
 	virtual mvec getReactionTo(ReactiveSet* R, unsigned int phi = 0);
 	/// respond to interaction protocol; return whether protocol recognized
 	virtual bool queryInteraction(void* ip) { assert(ixn_set < mySets.size()); return mySets[ixn_set]->queryInteraction(ip); }
 	/// set single degree of freedom to produce interactions from, clearing previous DF
 	virtual void setInteractionDF(unsigned int DF, double v);
-	//=====================================
-	
 	/// reset interaction term counter
 	virtual void startInteractionScan();
+	//=====================================
+	
+	/// load finalState DF from separately-processed components
+	virtual void load_component_DF();
+	
 	bool ownSets;	//< whether this object is responsible for deleting its member sets
 	
 protected:
@@ -179,14 +181,12 @@ protected:
 	//=====================================
 	/// called when a DF is set
 	virtual void _setDF(unsigned int DF, double v);
-	/// optional routine for setting entire state vector at once
-	virtual void _setDFv(const mvec& v);
 	//=====================================
 	
 	unsigned int ixn_set;					//< set currently responsible for interacting
 	std::vector<ReactiveSet*> mySets;		//< sub-units this class combined
-	std::vector<unsigned int> set_cum_df;	//< cumulative DF of each subset
 	std::vector<unsigned int> df_set;		//< which set each DF belongs to
+	std::vector<unsigned int> df_set_df;	//< which DF of its subset each DF corresponds to
 };
 
 #endif

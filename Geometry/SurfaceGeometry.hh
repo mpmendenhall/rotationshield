@@ -9,7 +9,10 @@
 class SurfaceGeometry: public DVFunc<2,3,double> {
 public:
 	/// constructor
-	SurfaceGeometry() { myIntegrator.setMethod(INTEG_GSL_QAG); }
+	SurfaceGeometry(): dflt_integrator_ndivs_x(8), dflt_integrator_ndivs_y(8), polar_integral_center(NULL), polar_r0(0) {
+		myIntegrator.setMethod(INTEG_GSL_QAG);
+		myIntegrator2D.setMethod(INTEG_GSL_QAG);
+	}
 	/// destructor
 	virtual ~SurfaceGeometry() {}
 
@@ -26,7 +29,7 @@ public:
 	virtual double dA(const vec2& l) const;
 	
 	/// surface area corresponding to l range ll to ur
-	virtual double area(const vec2& ll, const vec2& ur);
+	virtual double area(const vec2& ll, const vec2& ur) const;
 	
 	/// calculate rotation to surface local coordinates v_local = M*v
 	Matrix<3,3,double> rotToLocal(const vec2& x) const;
@@ -37,10 +40,19 @@ public:
 	/// whether surface is closed/periodic along particular axis
 	virtual bool isClosed(unsigned int) const { return false; }
 	
-protected:
+	unsigned int dflt_integrator_ndivs_x;	//< default number of sections to partition x integral in
+	unsigned int dflt_integrator_ndivs_y;	//< default number of sections to partition y integral in
+	vec2* polar_integral_center;			//< optional center point for switching to polar mode
+	double polar_r0;						//< starting radius for polar integrals
+	
+	/// convenience mechanism for surface integrals
+	mvec subdividedIntegral(mvec (*f)(vec2, void*), unsigned int fdim, void* fparams, vec2 ll, vec2 ur, unsigned int ndx=0, unsigned int ndy=0) const;
 
-	Integrator myIntegrator;		//< integrator for internal calculations
-	IntegratorND myIntegratorND;	//< multidimensional integrator for internal calculations
+	mutable Integrator myIntegrator;		//< integrator for internal calculations
+	IntegratorND myIntegratorND;			//< multidimensional integrator for internal calculations
+	mutable Integrator2D myIntegrator2D;	//< surface field integrator, for polar-form CQUAD integrations
+
+protected:
 	
 	// cache trig functions, since repeated calls will likely be for same values
 	void cache_sincos(double theta, double& s, double& c) const;
@@ -74,7 +86,7 @@ public:
 	virtual double dA(const vec2& l) const;
 	
 	/// surface area corresponding to l range ll to ur
-	virtual double area(const vec2& ll, const vec2& ur);
+	virtual double area(const vec2& ll, const vec2& ur) const;
 	
 	// geometry-defining functions
 	DVFunc1<2,double>* zr_profile;	//< z,r (l) profile

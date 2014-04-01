@@ -12,7 +12,7 @@ class SurfaceSource: public FieldSource {
 public:
 	/// constructor
 	SurfaceSource(SurfaceGeometry* SG = NULL, const std::string& nm = "SurfaceSource"):
-		FieldSource(nm), mySurface(SG), dflt_integrator_ndivs_x(8), dflt_integrator_ndivs_y(8), vis_n1(200), vis_n2(200), polar_integral_center(NULL), polar_r0(0) {}
+		FieldSource(nm), mySurface(SG), vis_n1(200), vis_n2(200) {}
 
 	/// destructor
 	virtual ~SurfaceSource() {}
@@ -33,7 +33,7 @@ public:
 	virtual vec2 fieldAtWithTransform2(const vec3& v, const Matrix<2,3,double>& M) const { return fieldAtWithTransform2(v,M,vec2(0,0),vec2(1,1)); }
 	/// Magnetic field at a point, with interaction matrix
 	virtual vec3 fieldAtWithTransform3(const vec3& v, const Matrix<3,3,double>& M) const { return fieldAtWithTransform3(v,M,vec2(0,0),vec2(1,1)); }
-		
+				
 	/// Display field contributions over grid to given point
 	void displayContribGrid(const vec3& v, unsigned int nx = 7, unsigned int ny = 7) const;
 	/// draw a curve on the surface
@@ -41,23 +41,10 @@ public:
 	/// draw lines around a rectangular region
 	virtual void visualize_region(vec2 ll, vec2 ur) const;
 	
-	
 	SurfaceGeometry* mySurface;	//< surface on which source is defined
 
-	unsigned int dflt_integrator_ndivs_x;	//< default number of sections to partition x integral in
-	unsigned int dflt_integrator_ndivs_y;	//< default number of sections to partition y integral in
 	unsigned int vis_n1;		//< visualization gridding, z
 	unsigned int vis_n2;		//< visualization gridding, phi
-	
-protected:
-
-	mutable Integrator2D myIntegrator;	//< surface field integrator
-	IntegratorND myIntegratorND;		//< surface field integrator using cubature
-	vec2* polar_integral_center;		//< optional center point for switching to polar mode
-	double polar_r0;					//< starting radius for polar integrals
-	
-	/// convenience mechanism for integrations split over may divisions, limited to surface [0,1]->[0,1] // TODO the problem??
-	mvec subdividedIntegral(mvec (*f)(vec2, void*), unsigned int fdim, void* fparams, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const;
 };
 
 

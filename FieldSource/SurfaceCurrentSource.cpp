@@ -112,8 +112,7 @@ mvec J_dA(vec2 l, void* params) {
 
 vec3 SurfaceCurrentSource::netCurrent(vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
 	assert(mySurface);
-	myIntegrator.setMethod(INTEG_GSL_QAG);
-	mvec J = subdividedIntegral(&J_dA, 3, (void*)this, ll, ur, ndx, ndy);
+	mvec J = mySurface->subdividedIntegral(&J_dA, 3, (void*)this, ll, ur, ndx, ndy);
 	return vec3(J[0],J[1],J[2]);
 }
 

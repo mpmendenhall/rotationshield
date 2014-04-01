@@ -67,8 +67,6 @@ void hypercube_rotator() {
 
 /// run self-tests
 void mi_runtests(StreamInteractor*) {
-	two_torus_equilibration();
-	return;
 	hole_perturbation_test();
 	return;
 	printf("Simple shield self-test...\n");
@@ -83,6 +81,7 @@ void mi_demo_sphere(StreamInteractor* S) {
 void mi_demo_mirror(StreamInteractor*) { mirror_test(); }
 void mi_demo_tube(StreamInteractor*) { tube_test(); }
 void mi_demo_ring(StreamInteractor*) { flux_trap_test(); }
+void mi_demo_tori(StreamInteractor*) { two_torus_equilibration(); }
 
 /// hypercube visualization test
 void mi_ncube(StreamInteractor* S) {
@@ -121,12 +120,14 @@ void menuSystem(std::deque<std::string> args = std::deque<std::string>()) {
 	InputRequester demo_tube("cos-theta coil in ferromagnetic tube",&mi_demo_tube);
 	InputRequester demo_ring("trapped-flux state of superconducting ring",&mi_demo_ring);
 	InputRequester demo_mirror("superconductor-mirrored cos theta coil",&mi_demo_mirror);
+	InputRequester demo_tori("interlinked superconducting rings",&mi_demo_tori);
 	
 	selectDemo.addChoice(&demo_sphere,"sc");
 	selectDemo.addChoice(&demo_mirror,"mr");
 	selectDemo.addChoice(&demo_tube,"tb");
 #ifdef WITH_LAPACKE
 	selectDemo.addChoice(&demo_ring,"ft");
+	selectDemo.addChoice(&demo_tori,"ir");
 #endif
 	selectDemo.addChoice(&InputRequester::exitMenu,"x");
 

@@ -192,16 +192,12 @@ void mi_addTube(StreamInteractor* S) {
 	float sr = S->popFloat();
 	float sz = S->popFloat();
 	
-	if(!SC->RSC) {
-		std::cout << "You need to set the radial symmetry first! No action taken.\n";
-		return;
-	}
-	
 	RoundedTube* RT = new RoundedTube(vec2(sz,sr), vec2(ez,er), r);
 	DVFunc1<2,double>* FAS = SC->adaptSurface(RT,o);
 	CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
 	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG, SC->RSC->nPhi, ns);
 	RS->setSurfaceResponse(SurfaceI_Response(mu));
+	RS->point_ixn = false;
 	SC->RSC->addSet(RS);
 	
 	SC->TotalField->visualize();
@@ -216,16 +212,12 @@ void mi_addSlab(StreamInteractor* S) {
 	float r = S->popFloat();
 	float z = S->popFloat();
 	
-	if(!SC->RSC) {
-		std::cout << "You need to set the radial symmetry first! No action taken.\n";
-		return;
-	}
-	
 	RoundedSlab* SB = new RoundedSlab(z,r,2*er);
 	DVFunc1<2,double>* FAS = SC->adaptSurface(SB,o);
 	CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
 	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG, SC->RSC->nPhi, ns);
 	RS->setSurfaceResponse(SurfaceI_Response(mu));
+	RS->point_ixn = false;
 	SC->RSC->addSet(RS);
 	
 	SC->TotalField->visualize();
@@ -240,16 +232,12 @@ void mi_addBall(StreamInteractor* S) {
 	float r = S->popFloat();
 	float z = S->popFloat();
 	
-	if(!SC->RSC) {
-		std::cout << "You need to set the radial symmetry first! No action taken.\n";
-		return;
-	}
-	
 	Arc2D* B = new Arc2D(r, -M_PI, 0, vec2(z,0));
 	DVFunc1<2,double>* FAS = SC->adaptSurface(B,o);
 	CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
 	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG, SC->RSC->nPhi, ns);
 	RS->setSurfaceResponse(SurfaceI_Response(mu));
+	RS->point_ixn = false;
 	SC->RSC->addSet(RS);
 	
 	SC->TotalField->visualize();
@@ -265,16 +253,12 @@ void mi_addTorus(StreamInteractor* S) {
 	float z = S->popFloat();
 	if(fabs(r2)>fabs(r1)) std::swap(r1,r2);
 	
-	if(!SC->RSC) {
-		std::cout << "You need to set the radial symmetry first! No action taken.\n";
-		return;
-	}
-	
 	Arc2D* B = new Arc2D(r2, -M_PI, M_PI, vec2(z,r1));
 	DVFunc1<2,double>* FAS = SC->adaptSurface(B,o);
 	CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
 	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG, SC->RSC->nPhi, ns);
 	RS->setSurfaceResponse(SurfaceI_Response(mu));
+	RS->point_ixn = false;
 	SC->RSC->addSet(RS);
 	
 	SC->TotalField->visualize();

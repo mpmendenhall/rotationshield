@@ -53,9 +53,7 @@ SurfaceCurrentSource(SG,nm), InterpolatingRS2D(nph), point_ixn(true) {
 			G[i]->bc[0] = IB_CYCLIC;
 	
 	// split up surface phi integrals by default
-	dflt_integrator_ndivs_y = nPhi>4? nPhi/4 : 1;
-	// use adaptive integration by default
-	myIntegrator.setMethod(INTEG_GSL_QAG);
+	mySurface->dflt_integrator_ndivs_y = nPhi>4? nPhi/4 : 1;
 }
 
 
@@ -121,7 +119,7 @@ mvec SurfaceCurrentRS::subelReaction(ReactiveSet* R) {
 		
 		vec2 ll,ur;
 		element_surface_range(ixn_el, ll, ur);
-		mvec r = myIntegratorND.integrate(&fieldResponse_IntegF, 2, ll, ur, &AFIP);
+		mvec r = mySurface->myIntegratorND.integrate(&fieldResponse_IntegF, 2, ll, ur, &AFIP);
 		double A = mySurface->area(ll,ur);
 		return r/A;
 	}
@@ -174,9 +172,9 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 	const int idomains_9[] = {-2,-1,1,2};
 	integ_domains.insert(integ_domains.end(), idomains_9, idomains_9+4);
 	
-	polar_r0 = 0;
-	unsigned int nerrx = myIntegrator.reset_errcount();
-	unsigned int nerry = myIntegrator.reset_y_errcount();
+	mySurface->polar_r0 = 0;
+	unsigned int nerrx = mySurface->myIntegrator2D.reset_errcount();
+	unsigned int nerry = mySurface->myIntegrator2D.reset_y_errcount();
 	
 	// integrate over each region
 	for(unsigned int dmz = 0; dmz < integ_domains.size()-1; dmz++) {
@@ -191,8 +189,8 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 			
 			bool atcenter = integ_domains[dmz] <= 0 && 0 <= integ_domains[dmz+1] && integ_domains[dmp] <= 0 && 0 <= integ_domains[dmp+1];
 			if(self_intersection && atcenter) {
-				myIntegrator.setMethod(INTEG_GSL_CQUAD);
-				polar_integral_center = &ixn_center;
+				mySurface->myIntegrator2D.setMethod(INTEG_GSL_CQUAD);
+				mySurface->polar_integral_center = &ixn_center;
 				if(np0 > i_nphi) { np0 -= nPhi; np1 -= nPhi; }						// adjust phi definition to align with polar center
 				if(mySurface->isClosed(0) && nz0 > i_nz) { nz0 -= nZ; nz1 -= nZ; }	// adjust z definition to align with polar center
 			}
@@ -208,8 +206,8 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 				// select integration method depending on near/far difference
 				double mn,mx;
 				mySurface->proximity(BField_Protocol::BFP->x, ll, ur, mn, mx);
-				if(mx > 4*mn) myIntegrator.setMethod(INTEG_GSL_CQUAD);
-				else myIntegrator.setMethod(INTEG_GSL_QAG);
+				if(mx > 4*mn) mySurface->myIntegrator2D.setMethod(INTEG_GSL_CQUAD);
+				else mySurface->myIntegrator2D.setMethod(INTEG_GSL_QAG);
 			}
 						
 			if(BField_Protocol::BFP->M2) {
@@ -220,22 +218,22 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 				BField_Protocol::BFP->B += fieldAt(BField_Protocol::BFP->x, ll, ur, 1, 1);
 			}
 				
-			nerrx = myIntegrator.reset_errcount();
-			nerry = myIntegrator.reset_y_errcount();
+			nerrx = mySurface->myIntegrator2D.reset_errcount();
+			nerry = mySurface->myIntegrator2D.reset_y_errcount();
 			if(nerrx || nerry) {
 				std::cout << "range:" << ll << ur << " active el:" << el << " " << ixn_center
-					<< " P" << bool(polar_integral_center) << " method " << myIntegrator.getMethod()
+					<< " P" << bool(mySurface->polar_integral_center) << " method " << mySurface->myIntegrator2D.getMethod()
 					<< " from " << (*mySurface)(surf_coords(ixn_df)) << " to " << BField_Protocol::BFP->x
 					<< " asking:" << BField_Protocol::BFP->caller << " responding:" << this
 					<< " errs (" << nerrx << "," << nerry
 					<< ") z: " << nz0 << "/" << i_nz << "/" << nz1 << " phi: " << np0 << "/" << i_nphi << "/" << np1 << std::endl;
 			}
 			
-			polar_integral_center = NULL;
+			mySurface->polar_integral_center = NULL;
 		}
 	}
 		
-	myIntegrator.setMethod(INTEG_GSL_QAG); //< reset default method
+	mySurface->myIntegrator2D.setMethod(INTEG_GSL_QAG); //< reset default method
 	
 	return true;
 }

@@ -40,6 +40,9 @@
 #include "LineSource.hh"
 #include "MultiQuilibrator.hh"
 
+#include <ctime>
+
+
 bool compareResults(double a, double b, const char* label) {
 	bool pass = true;
 	if(label) printf("%s:\n",label);
@@ -422,46 +425,104 @@ void hole_perturbation_test() {
 
 void two_torus_equilibration() {
 
+	// set up interlinking torus geometry
 	Arc2D* B = new Arc2D(0.2, -M_PI, M_PI, vec2(0,0.6));
 	CylSurfaceGeometry* SG = new CylSurfaceGeometry(B);
 	TransformedGeometry* TG1 = new TransformedGeometry(SG);
 	TransformedGeometry* TG2 = new TransformedGeometry(SG);
-	
-	SurfaceCurrentRS* RS1 = new SurfaceCurrentRS(TG1, 16, 16);
-	RS1->setSurfaceResponse(SurfaceI_Response(0));
-	SurfaceCurrentRS* RS2 = new SurfaceCurrentRS(TG2, 16, 16);
-	RS2->setSurfaceResponse(SurfaceI_Response(0));
-	
-	SymmetricSolver SS;
-	SS.solve(*RS1);
-	SS.set_singular_epsilon(1e-5);
-	
 	TG1->transl_v = vec3(0,0.3,0);
 	TG2->transl_v = vec3(0,-0.3,0);
 	TG1->transf_M = Matrix<3,3,double>::rotation(0,2,0.14*M_PI);
 	TG2->transf_M = Matrix<3,3,double>::rotation(0,2,-0.14*M_PI);
-	MixedSource MxS;
-	MxS.addsource(RS1);
-	MxS.addsource(RS2);
 	
+	// create ReactiveSets with different number of DF
+	SurfaceCurrentRS* RS1 = new SurfaceCurrentRS(TG1, 16, 8);
+	RS1->setSurfaceResponse(SurfaceI_Response(0));
+	SurfaceCurrentRS* RS2 = new SurfaceCurrentRS(TG2, 8, 7);
+	RS2->setSurfaceResponse(SurfaceI_Response(0));
+	// combine them into one unit
+	MagRSCombiner* MRC = new MagRSCombiner(1);
+	MRC->addSet(RS1);
+	MRC->addSet(RS2);
+	MRC->visualize();
+	
+	// external incident field source
 	MagExtField* MxI = new MagExtField();
 	UniformField* BU = new UniformField(vec3(.1,.1,.3));
 	MxI->addsource(BU);
+	// combined external and surface fields
+	MixedSource* Ftot = new MixedSource();
+	Ftot->addsource(MxI);
+	Ftot->addsource(MRC);
 	
+	// set incident state
+	MRC->incidentState = MRC->getFullReactionTo(MxI); // TODO make this propagate down
 	RS1->incidentState = RS1->getFullReactionTo(MxI);
-	SS.calculateResult(*RS1);
 	RS2->incidentState = RS2->getFullReactionTo(MxI);
-	SS.calculateResult(*RS2);
+	std::cout << "Initial field RMS inside 1: " << MxI->field_RMS_near(*RS1->mySurface,-0.1) << "\n";
+	std::cout << "Initial field RMS inside 2: " << MxI->field_RMS_near(*RS2->mySurface,-0.1) << "\n";
 	
+	// start timer
+	time_t start_time, end_time;
+	start_time = std::time(NULL);
+	
+	// solve each individually
+	SymmetricSolver SS1;
+	SS1.solve(*RS1);
+	SS1.set_singular_epsilon(1e-4);
+	//
+	SymmetricSolver SS2;
+	SS2.solve(*RS2);
+	SS2.set_singular_epsilon(1e-4);
+	
+	SS1.calculateResult(*RS1);
+	SS2.calculateResult(*RS2);
+	MRC->load_component_DF();
+	//
+	MRC->visualize();
+	//std::cout << "Non-interacting field RMS inside 1: " << Ftot->field_RMS_near(*RS1->mySurface,-0.1) << "\n";
+	//std::cout << "Non-interacting field RMS inside 2: " << Ftot->field_RMS_near(*RS2->mySurface,-0.1) << "\n";
+	
+	// iterate to stability
 	MultiQuilibrator MQ;
-	MQ.addSet(RS1,&SS);
-	MQ.addSet(RS2,&SS);
+	MQ.addSet(RS1,&SS1);
+	MQ.addSet(RS2,&SS2);
+	while(MQ.step() > 1e-4)
+		MRC->visualize();
 	
-	for(unsigned int i=0; i<100; i++) {
-		MxS.visualize();
-		vsr::pause();
-		MQ.step();
-	}
+	// end timer
+	end_time = std::time(NULL);
 	
+	std::cout << "Interacting field RMS inside 1: " << Ftot->field_RMS_near(*RS1->mySurface,-0.1) << "\n";
+	std::cout << "Interacting field RMS inside 2: " << Ftot->field_RMS_near(*RS2->mySurface,-0.1) << "\n";
+	
+	std::cout << "\nIterative method calculation complete in " << difftime(end_time,start_time) << " seconds.\n";
+	std::cout << "Calculating brute-force solution...\n\n";
+	
+	MRC->load_component_DF();
+	mvec final_iterative = MRC->finalState;
+	
+	////////////////
+	// Direct brute-force calculation
+	
+	// start timer
+	start_time = std::time(NULL);
+	
+	// solve
+	GenericSolver GS;
+	GS.solve(*MRC);
+	GS.set_singular_epsilon(2e-3);
+	GS.calculateResult(*MRC);
+	
+	// end timer
+	end_time = std::time(NULL);
+	
+	std::cout << "Interacting field RMS inside 1: " << Ftot->field_RMS_near(*RS1->mySurface,-0.1) << "\n";
+	std::cout << "Interacting field RMS inside 2: " << Ftot->field_RMS_near(*RS2->mySurface,-0.1) << "\n";
+	std::cout << "\nBrute-force calculation complete in " << difftime(end_time,start_time) << " seconds.\n";
+	std::cout << "Final state difference = " << (final_iterative - MRC->finalState).mag()/MRC->finalState.mag() << "%\n";
+	
+	vsr::pause();
+	MRC->visualize();
 }
 

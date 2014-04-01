@@ -25,6 +25,7 @@
 #define FIELDSOURCE_HH 1
 
 #include "Geometry.hh"
+#include "SurfaceGeometry.hh"
 #include "Typedefs.hh"
 #include "RefCounter.hh"
 #include "Integrator.hh"
@@ -56,6 +57,11 @@ public:
 	virtual vec3 net_current() const { return vec3(); }
 	/// Print info to stdout
 	virtual void display() const { printf("[FieldSource]\n"); }
+	
+	/// field averaged at or near surface
+	virtual vec3 field_near(const SurfaceGeometry& S, double dh = 0, vec2 ll = vec2(0,0), vec2 ur = vec2(1,1)) const;
+	/// RMS (component-wise) field strength averaged at or near surface
+	virtual vec3 field_RMS_near(const SurfaceGeometry& S, double dh = 0, vec2 ll = vec2(0,0), vec2 ur = vec2(1,1)) const;
 		
 private:
 	static Integrator lineIntegrator; //< Integrator for averaging over lines

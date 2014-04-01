@@ -40,8 +40,8 @@ double integration_dA(mvec l, void* params) {
 	return S->dA(vec2(l[0],l[1]));
 }
 
-double SurfaceGeometry::area(const vec2& ll, const vec2& ur) {
-	return myIntegratorND.integrate(&integration_dA, ll, ur, this);
+double SurfaceGeometry::area(const vec2& ll, const vec2& ur) const {
+	return myIntegratorND.integrate(&integration_dA, ll, ur, (void*)this);
 }
 
 void SurfaceGeometry::cache_sincos(double theta, double& s, double& c) const {
@@ -70,6 +70,45 @@ void SurfaceGeometry::proximity(vec3 p, vec2 ll, vec2 ur, double& mn, double& mx
 	
 	mn = sqrt(*std::max_element(r,r+nx*ny));
 	mx = sqrt(*std::min_element(r,r+nx*ny));
+}
+
+struct f2_to_fN_params {
+	mvec (*f2)(vec2, void*);
+	void* fparams;
+};
+
+mvec f2_to_fN(mvec v, void* pp) {
+	f2_to_fN_params* p = (f2_to_fN_params*)pp;
+	return (*p->f2)(vec2(v[0],v[1]), p->fparams);
+}
+
+mvec SurfaceGeometry::subdividedIntegral(mvec (*f)(vec2, void*), unsigned int fdim, void* fparams, vec2 ll, vec2 ur, unsigned int ndx, unsigned int ndy) const {
+	
+	ndx = ndx?ndx:dflt_integrator_ndivs_x;
+	ndy = ndy?ndx:dflt_integrator_ndivs_y;
+	for(unsigned int i=0; i<2; i++)
+		ur[i] = (ur[i]-ll[i])/(i?ndy:ndx);
+
+	mvec m;
+	for(unsigned int nx=0; nx<ndx; nx++) {
+		for(unsigned int ny=0; ny<ndy; ny++) {
+			vec2 lll = ll + ur*vec2(nx,ny);
+			mvec mi;
+			if(polar_integral_center) {
+				mi = myIntegratorND.integratePolar(f, fdim, *polar_integral_center, lll, lll+ur, fparams, -666, polar_r0);
+			} else if(myIntegrator2D.getMethod() == INTEG_GSL_CQUAD) {
+				mi = myIntegrator2D.integrate2D(f, lll, lll+ur, fparams);
+			} else {
+				f2_to_fN_params p;
+				p.f2 = f;
+				p.fparams = fparams;
+				mi = myIntegratorND.integrate(&f2_to_fN, fdim, mvec(lll), mvec(lll+ur), &p);
+			}
+ 			if(!nx && !ny) m = mi;
+			else m += mi;
+		}
+	}
+	return m;
 }
 
 //--------------------------------------
@@ -121,8 +160,8 @@ double integration_cyl_dA(double x, void* params) {
 	return S->dA(vec2(x,0));
 }
 
-double CylSurfaceGeometry::area(const vec2& ll, const vec2& ur) {
-	return myIntegrator.integrate(&integration_cyl_dA, ll[0], ur[0], this)*(ur[1]-ll[1]);
+double CylSurfaceGeometry::area(const vec2& ll, const vec2& ur) const {
+	return myIntegrator.integrate(&integration_cyl_dA, ll[0], ur[0], (void*)this)*(ur[1]-ll[1]);
 }
 
 //--------------------------------------------

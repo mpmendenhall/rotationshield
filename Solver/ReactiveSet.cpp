@@ -89,7 +89,28 @@ void ReactiveUnitSet::add_DF_group(unsigned int N) {
 	group_start.push_back(group_start.back()+nPhi*N);
 }
 
-//----------------------------------------------
+// Sub-DF ordering example:
+//----------------------
+//	6	3	2	1	nPhi
+// ___ ___ ___ ___
+//	a1	a	a  _a_
+//	b1	c  _d_ _b_
+//	c1 _e_	b  _c_
+//	d1	b  _e_ _d_
+//	e1	d	c  _e_
+// _f1 _f_ _f_ _f_
+// ___ ___ ___ ___
+//	a2	a	a  _a_
+//	b2	c  _d_ _b_
+//	c2 _e_	b  _c_
+//	d2	b  _e_ _d_
+//	e2	d	c  _e_
+// _f2 _f_ _f_ _f_
+//
+// getReactionTo(R, phi):
+// 6: [a1,a2], ... [f1,f2]
+// 3: [a1,b1,a2,b2], ... [e1,f1,e2,f2]
+
 
 ReactiveSetCombiner::~ReactiveSetCombiner() {
 	if(ownSets) {
@@ -101,11 +122,12 @@ ReactiveSetCombiner::~ReactiveSetCombiner() {
 
 void ReactiveSetCombiner::addSet(ReactiveSet* R) {
 	assert(R);
-	assert(R->nPhi == nPhi);
-	for(unsigned int i=0; i<R->nDF(); i++)
+	assert(!(R->nPhi%nPhi));
+	for(unsigned int i=0; i<R->nDF(); i++) {
 		df_set.push_back(mySets.size());
+		df_set_df.push_back( R->nPhi*(i/R->nPhi) + (i%nPhi)*(R->nPhi/nPhi) + (i%R->nPhi)/nPhi );
+	}
 	mySets.push_back(R);
-	set_cum_df.push_back(set_cum_df.back()+R->nDF());
 }
 
 void ReactiveSetCombiner::setInteractionDF(unsigned int DF, double v) {
@@ -116,12 +138,12 @@ void ReactiveSetCombiner::setInteractionDF(unsigned int DF, double v) {
 		if(ixn_df < nDF()) {
 			finalState[ixn_df] = 0;
 			ixn_set = df_set[ixn_df];
-			mySets[ixn_set]->setInteractionDF(ixn_df-set_cum_df[ixn_set],0);
+			mySets[ixn_set]->setInteractionDF(df_set_df[ixn_df],0);
 		}
 		
 		finalState[DF] = v;
 		ixn_set = df_set[DF];
-		mySets[ixn_set]->setInteractionDF(DF-set_cum_df[ixn_set],v);
+		mySets[ixn_set]->setInteractionDF(df_set_df[DF],v);
 	}
 	
 	ixn_df = DF;
@@ -129,13 +151,7 @@ void ReactiveSetCombiner::setInteractionDF(unsigned int DF, double v) {
 
 void ReactiveSetCombiner::_setDF(unsigned int DF, double v) {
 	assert(DF<nDF());
-	unsigned int is = df_set[DF];
-	mySets[is]->setDF(DF-set_cum_df[is],v);
-}
-
-void ReactiveSetCombiner::_setDFv(const mvec& v) {
-	for(unsigned int i=0; i<mySets.size(); i++)
-		mySets[i]->setFinalState(v.subvec(set_cum_df[i], set_cum_df[i+1]));
+	mySets[df_set[DF]]->setDF(df_set_df[DF],v);
 }
 
 void ReactiveSetCombiner::startInteractionScan() {
@@ -146,10 +162,22 @@ void ReactiveSetCombiner::startInteractionScan() {
 
 mvec ReactiveSetCombiner::getReactionTo(ReactiveSet* R, unsigned int phi) {
 	mvec v(nDF()/nPhi);
+	unsigned int cum_df = 0;
 	for(unsigned int i=0; i<mySets.size(); i++) {
-		mvec vi = mySets[i]->getReactionTo(R,phi);
-		v.load_subvec(vi, set_cum_df[i]/nPhi);
+		for(unsigned int j=0; j<(mySets[i]->nPhi/nPhi); j++) {
+			mvec vi = mySets[i]->getReactionTo(R, phi*(mySets[i]->nPhi/nPhi) + j);
+			for(unsigned int k=0; k<vi.size(); k++)
+				v[cum_df + k*(mySets[i]->nPhi/nPhi) + j] = vi[k];
+		}
+		cum_df += mySets[i]->nDF()/nPhi;
 	}
 	return v;
 }
+
+void ReactiveSetCombiner::load_component_DF() {
+	finalState = mvec(nDF());
+	for(unsigned int DF=0; DF<nDF(); DF++)
+		finalState[DF] = mySets[df_set[DF]]->finalState[df_set_df[DF]];
+}
+
 
