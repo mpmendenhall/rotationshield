@@ -27,7 +27,7 @@
 
 class RefCounter {
 public:
-	RefCounter(const std::string& nm = "RefCounter"): ref_name(nm), refcount(0) { ++nReferencedObjects; }
+	RefCounter(const std::string& nm = "RefCounter"): ref_name(nm+"_"+std::to_string(nReferencedObjects)), refcount(0) { ++nReferencedObjects; }
 	virtual ~RefCounter();
 	virtual void retain() const { ++refcount; ++nTotalReferences; }
 	virtual void release() const;

@@ -19,6 +19,7 @@
  */
 
 #include "HoleDipolePerturbation.hh"
+#include "SurfaceCurrentRS.hh"
 
 mvec HoleDipolePerturbation::getReactionTo(ReactiveSet* R, unsigned int phi) {
 	assert(R && phi==0);
@@ -26,8 +27,9 @@ mvec HoleDipolePerturbation::getReactionTo(ReactiveSet* R, unsigned int phi) {
 	BField_Protocol::BFP->x = x + mySurface.snorm(surfacePos,true)*dh;
 	Matrix<2,3,double> RM2 =  Matrix<2,3,double>::identity() * mySurface.rotToLocal(surfacePos);
 	BField_Protocol::BFP->M2 = &RM2;
+	BField_Protocol::BFP->M2B = vec2(0,0);
 	BField_Protocol::BFP->M3 = NULL;
-	BField_Protocol::BFP->caller = this;
+	BField_Protocol::BFP->caller = RS_UID;
 	if(!R->queryInteraction(BField_Protocol::BFP)) { assert(false); return mvec(); }
 	
 	return mvec(BField_Protocol::BFP->M2B);
@@ -36,17 +38,17 @@ mvec HoleDipolePerturbation::getReactionTo(ReactiveSet* R, unsigned int phi) {
 bool HoleDipolePerturbation::queryInteraction(void* ip) {
 	
 	if(ip != BField_Protocol::BFP) return false;
-	if(BField_Protocol::BFP->caller == this) {
-		BField_Protocol::BFP->M2B = vec2(0,0);
+	
+	if(BField_Protocol::BFP->caller == RS_UID || hide_ixn.count(BField_Protocol::BFP->caller)) {
 		return true;
 	}
 	
 	if(BField_Protocol::BFP->M2) {
-		BField_Protocol::BFP->M2B = fieldAtWithTransform2(BField_Protocol::BFP->x, *BField_Protocol::BFP->M2);
+		BField_Protocol::BFP->M2B += fieldAtWithTransform2(BField_Protocol::BFP->x, *BField_Protocol::BFP->M2);
 	} else if(BField_Protocol::BFP->M3) {
-		BField_Protocol::BFP->B = fieldAtWithTransform3(BField_Protocol::BFP->x, *BField_Protocol::BFP->M3);
+		BField_Protocol::BFP->B += fieldAtWithTransform3(BField_Protocol::BFP->x, *BField_Protocol::BFP->M3);
 	} else {
-		BField_Protocol::BFP->B = fieldAt(BField_Protocol::BFP->x);
+		BField_Protocol::BFP->B += fieldAt(BField_Protocol::BFP->x);
 	}
 	return true;
 }

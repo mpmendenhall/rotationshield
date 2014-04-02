@@ -26,6 +26,16 @@ FieldAdaptiveSurface::FieldAdaptiveSurface(const DVFunc1<2,double>& f): l_remap(
 	period = F.period;
 }
 
+vec2 FieldAdaptiveSurface::operator()(double x) const {
+	if(F.period) x=wrap(x);
+	return F(l_remap(x));
+}
+
+vec2 FieldAdaptiveSurface::deriv(double x) const {
+	if(F.period) x=wrap(x);
+	return F.deriv(l_remap(x)) * l_remap.deriv(x);
+}
+
 void FieldAdaptiveSurface::setConstantSpacing() {
 	for(unsigned int i=0; i<l_remap.NX; i++)
 		l_remap.set(i,double(i)/double(l_remap.NX-1));

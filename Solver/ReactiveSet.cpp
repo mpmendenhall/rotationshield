@@ -22,6 +22,8 @@
 #include "ProgressBar.hh"
 #include <iostream>
 
+unsigned int ReactiveSet::n_reactive_sets = 0;
+
 void ReactiveSet::setDF(unsigned int DF, double v) {
 	if(finalState.size() != nDF())
 		finalState = mvec(nDF());
@@ -89,6 +91,10 @@ void ReactiveUnitSet::add_DF_group(unsigned int N) {
 	group_start.push_back(group_start.back()+nPhi*N);
 }
 
+//-----------------------------------------
+
+
+
 // Sub-DF ordering example:
 //----------------------
 //	6	3	2	1	nPhi
@@ -118,6 +124,17 @@ ReactiveSetCombiner::~ReactiveSetCombiner() {
 			delete *it;
 	}
 	mySets.clear();
+}
+
+bool ReactiveSetCombiner::queryInteraction(void* ip) {
+	if(interactionMode()) {
+		assert(ixn_set < mySets.size());
+		return mySets[ixn_set]->queryInteraction(ip);
+	}
+	bool did_interact  = false;
+	for(std::vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++)
+		did_interact |= (*it)->queryInteraction(ip);
+	return did_interact;
 }
 
 void ReactiveSetCombiner::addSet(ReactiveSet* R) {

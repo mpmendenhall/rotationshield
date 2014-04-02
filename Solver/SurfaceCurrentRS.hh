@@ -53,12 +53,11 @@ public:
 	/// constructor
 	SurfaceCurrentRS(SurfaceGeometry* SG, unsigned int nph, unsigned int nz, const std::string& nm = "SurfaceCurrentRS");
 
-	// ReactiveSet subclassed functions
-	//=====================================
-	/// get DF for given phi reacting to state R
-	virtual mvec getReactionTo(ReactiveSet* R, unsigned int phi = 0);
+	//===================================== ReactiveSet subclass
 	/// respond to interaction protocol; return whether protocol recognized
 	virtual bool queryInteraction(void* ip);
+	/// get DF for given phi reacting to state R
+	virtual mvec getReactionTo(ReactiveSet* R, unsigned int phi = 0);
 	//=====================================
 	
 	/// set surface response at all points

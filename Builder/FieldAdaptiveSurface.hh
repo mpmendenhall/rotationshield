@@ -22,6 +22,7 @@
 #define FIELDADAPTIVESURFACE_HH 1
 
 #include "DVFunc.hh"
+#include "SurfaceProfiles.hh"
 #include "FieldEstimator2D.hh"
 #include "BicubicGrid.hh"
 
@@ -33,10 +34,10 @@ public:
 	FieldAdaptiveSurface(const DVFunc1<2,double>& f);
 	
 	/// evaluate function
-	virtual vec2 operator()(double x) const { if(F.period) x=wrap(x); return F(l_remap(x)); }
+	virtual vec2 operator()(double x) const;
 	
 	/// derivative
-	virtual vec2 deriv(double x) const { if(F.period) x=wrap(x); return F.deriv(l_remap(x)) * l_remap.deriv(x); }
+	virtual vec2 deriv(double x) const;
 	
 	/// optimize for field configuration
 	void optimizeSpacing(const FieldEstimator2D& fes, double pfixed = 0.5, bool useDeriv = true);

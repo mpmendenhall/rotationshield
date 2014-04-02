@@ -5,6 +5,15 @@ import time
 from optparse import OptionParser
 from random import shuffle
 
+class ShieldHoleSpec:
+	"""Specification for a hole perturbation in a superconducting shield"""
+	def __init__(self, nearto, radius):
+		self.nearto = tuple(nearto)
+		self.radius = radius
+	
+	def make_cmd(self):
+		return "h %g %g %g"%self.nearto + " %g"%self.radius
+
 class ShieldSpec:
 	"""Specification for a section of a shield"""
 	def __init__(self, mu, nseg, ends, rthick, p=0):
@@ -13,6 +22,7 @@ class ShieldSpec:
 		self.rthick = rthick	# end radius (half thickness
 		self.ends = ends		# endpoints (1 for slab, 2 for tube
 		self.p = p				# adaptive fraction
+		self.holes = []			# hole perturbations
 		
 	def make_cmd(self):
 		"""command line argument for this section"""
@@ -20,6 +30,8 @@ class ShieldSpec:
 		for e in self.ends:
 			cmd += " %g %g"%tuple(e)
 		cmd += " %g %g %i %g"%(self.rthick,self.mu,self.nseg,self.p)
+		for h in self.holes:
+			cmd += " "+h.make_cmd()
 		return cmd
 
 class CoilSpec:
@@ -64,8 +76,10 @@ class StudySetup:
 			cmd += " " + f.make_cmd()
 		
 		cmd += " x bound n %i"%(self.nPhi)
+		npert = 0
 		for s in self.shields:
 			cmd += " " + s.make_cmd()
+			npert += len(s.holes)
 			
 		cmd += " x cell range"
 		for v in self.measCell:
@@ -77,7 +91,10 @@ class StudySetup:
 		cmd += " x"
 		if self.sng_ep is not None:
 			cmd += " ep %g"%self.sng_ep
-		cmd += " solve %s meas x"%(self.solfl)
+		cmd += " solve %s"%(self.solfl)
+		if npert:
+			cmd += " ptb"
+		cmd += " meas x"
 				
 		return "cd ..; ./%s %s > %s/L%f.txt 2>&1\n"%(rshield, cmd, self.logdir, self.r)
 

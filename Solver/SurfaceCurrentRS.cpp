@@ -94,6 +94,7 @@ mvec fieldResponse_IntegF(mvec v, void* params) {
 	BField_Protocol::BFP->x = (*p->S->mySurface)(l);
 	Matrix<2,3,double> RM2 = p->rmat2 * p->S->mySurface->rotToLocal(l);
 	BField_Protocol::BFP->M2 = &RM2;
+	BField_Protocol::BFP->M2B = vec2(0,0);
 	if(!p->RS->queryInteraction(BField_Protocol::BFP)) { assert(false); return mvec(2); }
 	return mvec(BField_Protocol::BFP->M2B * p->S->mySurface->dA(l));
 }
@@ -104,13 +105,14 @@ mvec SurfaceCurrentRS::subelReaction(ReactiveSet* R) {
 		BField_Protocol::BFP->x = (*mySurface)(sc);
 		Matrix<2,3,double> RM2 = sdefs[ixn_el].rmat2 * mySurface->rotToLocal(sc);
 		BField_Protocol::BFP->M2 = &RM2;
+		BField_Protocol::BFP->M2B = vec2(0,0);
 		BField_Protocol::BFP->M3 = NULL;
-		BField_Protocol::BFP->caller = this;
+		BField_Protocol::BFP->caller = RS_UID;
 		if(!R->queryInteraction(BField_Protocol::BFP)) { assert(false); return mvec(); }
 		return mvec(BField_Protocol::BFP->M2B);
 	} else {
 		BField_Protocol::BFP->M3 = NULL;
-		BField_Protocol::BFP->caller = this;
+		BField_Protocol::BFP->caller = RS_UID;
 		
 		AverageFieldIntegParams AFIP;
 		AFIP.RS = R;
@@ -129,17 +131,14 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 
 	if(ip != BField_Protocol::BFP) return false;
 	
-	BField_Protocol::BFP->B = vec3(0,0,0);
-	BField_Protocol::BFP->M2B = vec2(0,0);
-	
 	// case for all DF set; respond with magnetic field
 	if(ixn_df >= nDF()) {
 		if(BField_Protocol::BFP->M2) {
-			BField_Protocol::BFP->M2B = fieldAtWithTransform2(BField_Protocol::BFP->x, *BField_Protocol::BFP->M2);
+			BField_Protocol::BFP->M2B += fieldAtWithTransform2(BField_Protocol::BFP->x, *BField_Protocol::BFP->M2);
 		} else if(BField_Protocol::BFP->M3) {
-			BField_Protocol::BFP->B = fieldAtWithTransform3(BField_Protocol::BFP->x, *BField_Protocol::BFP->M3);
+			BField_Protocol::BFP->B += fieldAtWithTransform3(BField_Protocol::BFP->x, *BField_Protocol::BFP->M3);
 		} else {
-			BField_Protocol::BFP->B = fieldAt(BField_Protocol::BFP->x);
+			BField_Protocol::BFP->B += fieldAt(BField_Protocol::BFP->x);
 		}
 		return true;
 	}
@@ -154,7 +153,7 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 	vec2 ixn_center = surf_coords(ixn_el);	//< responding element coordinate center
 	
 	// whether this is the interaction of an element with itself
-	bool self_ixn = BField_Protocol::BFP->caller == this && el == ixn_el;
+	//bool self_ixn = BField_Protocol::BFP->caller == RS_UID && el == ixn_el;
 
 	// distance between active and responding element
 	unsigned int delta_phi = (i_nphi-c_np + 2*nPhi)%nPhi;
@@ -165,7 +164,7 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 		if(delta_z >= int(nZ)/2) delta_z -= nZ;
 	}
 	
-	bool self_intersection = (BField_Protocol::BFP->caller == this && delta_z == 0 && delta_phi == 0);
+	bool self_intersection = (BField_Protocol::BFP->caller == RS_UID && delta_z == 0 && delta_phi == 0);
 	
 	// How to slice up integration range
 	std::vector<int> integ_domains;
@@ -224,7 +223,7 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 				std::cout << "range:" << ll << ur << " active el:" << el << " " << ixn_center
 					<< " P" << bool(mySurface->polar_integral_center) << " method " << mySurface->myIntegrator2D.getMethod()
 					<< " from " << (*mySurface)(surf_coords(ixn_df)) << " to " << BField_Protocol::BFP->x
-					<< " asking:" << BField_Protocol::BFP->caller << " responding:" << this
+					<< " asking:" << BField_Protocol::BFP->caller << " responding:" << RS_UID
 					<< " errs (" << nerrx << "," << nerry
 					<< ") z: " << nz0 << "/" << i_nz << "/" << nz1 << " phi: " << np0 << "/" << i_nphi << "/" << np1 << std::endl;
 			}

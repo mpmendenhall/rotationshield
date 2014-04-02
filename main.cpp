@@ -147,6 +147,7 @@ void menuSystem(std::deque<std::string> args = std::deque<std::string>()) {
 	
 	OM.addChoice(&SC.doSolve,"solve");
 	OM.addChoice(&SC.doApply,"apply");
+	OM.addChoice(&SC.equilibratePtb,"ptb",SELECTOR_HIDDEN);
 	OM.addChoice(&SC.zeroResponse,"zero");
 	OM.addChoice(&SC.doMeas,"meas");
 	OM.addChoice(&SC.qSurvey,"qf");

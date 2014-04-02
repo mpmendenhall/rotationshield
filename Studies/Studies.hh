@@ -78,6 +78,7 @@ public:
 	
 	std::string basedir;			//< base directory for IO operations
 	MagRSCombiner* RSC;				//< reacting boundary condition surfaces
+	MagRSCombiner* PTB;				//< perturbation reaction
 	MagExtField* IncidentSource;	//< incident field source
 	MixedSource* TotalField;		//< incident + reacting field
 	FieldAnalyzer FA;
@@ -108,7 +109,6 @@ public:
 	InputRequester addTube;
 	InputRequester addBall;
 	InputRequester addTorus;
-	//InputRequester addSheet;
 	OptionsMenu OMsurfaces;
 	
 	InputRequester doSolve;
@@ -118,6 +118,10 @@ public:
 	InputRequester qSurvey;
 	InputRequester addSingular;
 	InputRequester setSingularEpsilon;
+
+	// hidden advanced functions
+	InputRequester punchHole;
+	InputRequester equilibratePtb;
 };
 
 #endif

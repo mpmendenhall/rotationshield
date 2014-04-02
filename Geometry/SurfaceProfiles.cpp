@@ -99,35 +99,3 @@ RoundedTube::RoundedTube(vec2 x0, vec2 x1, double r, double endfrac): PathJoiner
 		append(new Arc2D(-r,th,th-M_PI));
 	}
 }
-
-
-
-//
-//
-//
-
-/*
-/// Parameter distorter for speeding up or slowing down passage through segment in PathJoiner
-class PathStretcher: public DVFunc1<2,double> {
-public:
-	/// constructor
-	PathStretcher(DVFunc1<2,double>* f0, double a, bool dodelete = true): u(a), f(f0), delete_f(dodelete) { assert(f); }
-	/// destructor
-	virtual ~PathStretcher() { if(delete_f) delete f; }
-	/// evaluate function
-	virtual vec2 operator()(double x) const { return (*f)(distort(x)); }
-	/// derivative
-	virtual vec2 deriv(double x) const { return f->deriv(distort(x)) * d_distort(x); }
-
-	double u;				//< distortion parameter, 1 for no distortion, 0 to infty for slow/fast stretch
-	
-protected:
-	/// distortion map function
-	virtual double distort(double l) const { return l * (l*(2*l-3)*(u-1) + u) ; }
-	/// distortion derivative function
-	virtual double d_distort(double l) const { return 6*l*(l-1)*(u-1) + u; }
-
-	DVFunc1<2,double>* f;	//< function being distorted
-	bool delete_f;			//< whether to delete function f on destruction
-};
-*/

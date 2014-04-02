@@ -7,7 +7,7 @@ endgap = 0		# coil-to-main-shield end offset
 sdr = 0.1		# shield-to-coil radial distance
 
 def make_asym_shortcoil_base(nm, r,
-							 dz=-1.0,				# cell z offset
+							 dz=0.25,			# cell z offset
 							 r0=0.70,			# top hole radius
 							 gridt = 58,		# tube Nz grid
 							 gride = 32,		# endcap Nz grid
@@ -53,8 +53,8 @@ def make_smallholes_annular(nm, r, **kwargs):
 	return S
 
 make_setup = make_asym_shortcoil_base
-stname = "ShortCoil"
-#stname = "SC_SmallHole"
+#stname = "ShortCoil"
+stname = "SC_SmallHole"
 
 #make_setup = make_bothends_closed
 #stname = "ClosedCoil"
@@ -125,11 +125,22 @@ def EdgeRadiusScan():
 
 def HoleSizeScan():
 	SS = StudyScan()
-	for r in  unifrange(.002, .03, 8): #unifrange(.02, .5, 8):
+	for r in  unifrange(.02, .5, 8):
 		S = make_setup(stname+"_HoleSize", r, r0=r)
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
+def HolePertScan():
+	SS = StudyScan()
+	for (n,r) in  enumerate(unifrange(.11, .5, 8)): #unifrange(.02, .5, 8):
+		S = make_setup(stname+"_HolePert", r)
+		S.shields[-1].holes.append(ShieldHoleSpec((0,0,0),r))
+		S.solfl = "../MC"
+		if n == -1:
+			os.system(S.make_cmd("RotationShield_Vis"))
+		else:
+			SS.fsimlist.write(S.make_cmd())
+	SS.run()
 #
 # want average gradients < 0.1 uG/cm
 #
@@ -151,13 +162,14 @@ if __name__=="__main__":
 	if options.scan:
 		
 		#MovingCellScan()
-		DistortionScan()
+		#DistortionScan()
 		
 		#GriddingScan()
 		#PhiGriddingScan()
 		#PlateGapScan()
 		#EdgeRadiusScan()
-		#HoleSizeScan()
+		HoleSizeScan()
+		#HolePertScan()
 		#HoleGridScan()
 
 	outdir = os.environ["ROTSHIELD_OUT"]
@@ -170,9 +182,9 @@ if __name__=="__main__":
 		#VPP.keypos = "tc"
 		#VPP.setupGraph("Cell center z [m]")
 		
-		VPP = VarParamPlotter(outdir+"/"+stname+"_Distortion")
-		VPP.keypos = "tl"
-		VPP.setupGraph("Distortion parameter $a$")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"_Distortion")
+		#VPP.keypos = "tl"
+		#VPP.setupGraph("Distortion parameter $a$")
 	
 	
 		#VPP = VarParamPlotter(outdir+"/"+stname+"_ECdz")
@@ -195,9 +207,13 @@ if __name__=="__main__":
 		#VPP.keypos = "tc"
 		#VPP.setupGraph("Solid edge radius [cm]", xtrans=(lambda x: 100*x))
 
-		#VPP = VarParamPlotter(outdir+"/"+stname+"_HoleSize")
+		VPP = VarParamPlotter(outdir+"/"+stname+"_HoleSize")
+		VPP.keypos = "tl"
+		VPP.setupGraph("End hole radius [cm]", xtrans=(lambda x: 100*x), yrange=(-8,6), y2range=(0,30))
+		
+		#VPP = VarParamPlotter(outdir+"/"+stname+"_HolePert")
 		#VPP.keypos = "tl"
-		#VPP.setupGraph("End hole radius [cm]", xtrans=(lambda x: 100*x))
+		#VPP.setupGraph("perturbation hole radius [cm]", xtrans=(lambda x: 100*x))
 		
 		#VPP = VarParamPlotter(outdir+"/"+stname+"_HoleGridding")
 		#VPP.keypos = "tr"

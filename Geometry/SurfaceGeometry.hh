@@ -4,17 +4,15 @@
 #include "Typedefs.hh"
 #include "DVFunc.hh"
 #include "Integrator.hh"
+#include <gsl/gsl_multimin.h>
 
 /// base class for defining surface mapping [0,1]^2 -> R^3
 class SurfaceGeometry: public DVFunc<2,3,double> {
 public:
 	/// constructor
-	SurfaceGeometry(): dflt_integrator_ndivs_x(8), dflt_integrator_ndivs_y(8), polar_integral_center(NULL), polar_r0(0) {
-		myIntegrator.setMethod(INTEG_GSL_QAG);
-		myIntegrator2D.setMethod(INTEG_GSL_QAG);
-	}
+	SurfaceGeometry();
 	/// destructor
-	virtual ~SurfaceGeometry() {}
+	virtual ~SurfaceGeometry();
 
 	/// evaluate function
 	virtual vec3 operator()(const vec2& x) const = 0;
@@ -37,6 +35,10 @@ public:
 	/// calculate min and max distance to corners of region
 	void proximity(vec3 x, vec2 ll, vec2 ur, double& mn, double& mx) const;
 	
+	/// find closest point on surface, and distance^2
+	vec2 closestPoint(vec3 x, double& d2) const;
+	
+	
 	/// whether surface is closed/periodic along particular axis
 	virtual bool isClosed(unsigned int) const { return false; }
 	
@@ -56,6 +58,8 @@ protected:
 	
 	// cache trig functions, since repeated calls will likely be for same values
 	void cache_sincos(double theta, double& s, double& c) const;
+	
+	gsl_multimin_fdfminimizer* myMinimizer;	//< minimizer routine as needed
 };
 
 /// Convenience 2D vector surface
@@ -84,6 +88,9 @@ public:
 	
 	/// differential area dA / dl1 dl2
 	virtual double dA(const vec2& l) const;
+	
+	/// surface normal at point p; when not normalized, magnitude is dA
+	virtual vec3 snorm(const vec2& l, bool normalized = false) const;
 	
 	/// surface area corresponding to l range ll to ur
 	virtual double area(const vec2& ll, const vec2& ur) const;

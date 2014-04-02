@@ -3,6 +3,19 @@
 #include <cmath>
 #include <iostream>
 #include <algorithm>
+#include <cassert>
+
+SurfaceGeometry::SurfaceGeometry(): dflt_integrator_ndivs_x(8), dflt_integrator_ndivs_y(8),
+polar_integral_center(NULL), polar_r0(0) {
+	myIntegrator.setMethod(INTEG_GSL_QAG);
+	myIntegrator2D.setMethod(INTEG_GSL_QAG);
+	myMinimizer = gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, 2);
+	assert(myMinimizer);
+}
+
+SurfaceGeometry::~SurfaceGeometry() {
+	gsl_multimin_fdfminimizer_free(myMinimizer);
+}
 
 vec3 SurfaceGeometry::snorm(const vec2& p, bool normalized) const {
 	if(normalized) {
@@ -111,6 +124,76 @@ mvec SurfaceGeometry::subdividedIntegral(mvec (*f)(vec2, void*), unsigned int fd
 	return m;
 }
 
+struct closestPoint_params {
+	const SurfaceGeometry* S;
+	vec3 x;
+};
+
+double surface_distance_f(const gsl_vector* l, void * params) {
+	closestPoint_params* p = (closestPoint_params*)params;
+	return (p->x - (*p->S)(vec2(gsl_vector_get(l,0),gsl_vector_get(l,1)))).mag2();
+}
+
+void surface_distance_df(const gsl_vector* x, void * params, gsl_vector * g) {
+	closestPoint_params* p = (closestPoint_params*)params;
+	vec2 l(gsl_vector_get(x,0),gsl_vector_get(x,1));
+	vec3 r = p->x - (*p->S)(l);
+	for(unsigned int i=0; i<2; i++)
+		gsl_vector_set(g,i,-2*r.dot(p->S->deriv(l,i)));
+}
+
+void surface_distance_fdf(const gsl_vector* l, void * params, double * f, gsl_vector * g) {
+  *f = surface_distance_f(l, params);
+  surface_distance_df(l, params, g);
+}
+
+vec2 SurfaceGeometry::closestPoint(vec3 x, double& d2) const {
+	
+	// initial guess
+	unsigned int nx = 5;
+	unsigned int ny = 5;
+	gsl_vector* l = gsl_vector_alloc(2);
+	d2 = DBL_MAX;
+	for(unsigned int ix = 0; ix<nx; ix++) {
+		for(unsigned int iy = 0; iy<ny; iy++) {
+			vec2 l0((ix+0.5)/double(nx),(iy+0.5)/double(ny));
+			double d2i = (x-(*this)(l0)).mag2();
+			if(d2i < d2) {
+				d2 = d2i;
+				gsl_vector_set(l, 0, l0[0]);
+				gsl_vector_set(l, 1, l0[1]);
+			}
+		}
+	}
+
+	// minimizer setup
+	closestPoint_params p;
+	p.S = this;
+	p.x = x;
+	gsl_multimin_function_fdf my_func;
+	my_func.n = 2;
+	my_func.f = &surface_distance_f;
+	my_func.df = &surface_distance_df;
+	my_func.fdf = &surface_distance_fdf;
+	my_func.params = &p;
+	gsl_multimin_fdfminimizer_set(myMinimizer, &my_func, l, 0.01, 0.1);
+	
+	// iterate to minimum
+	int status;
+	do {
+		status = gsl_multimin_fdfminimizer_iterate(myMinimizer);
+		if(status) break;
+		status = gsl_multimin_test_gradient(myMinimizer->gradient, 1e-6);
+    } while(status == GSL_CONTINUE);
+	
+	// cleanup and return
+	vec2 l0(gsl_vector_get(gsl_multimin_fdfminimizer_x(myMinimizer), 0), gsl_vector_get(gsl_multimin_fdfminimizer_x(myMinimizer), 1));
+	d2 =  gsl_multimin_fdfminimizer_minimum(myMinimizer);
+	gsl_vector_free(l);
+	return l0;
+}
+
+
 //--------------------------------------
 
 vec2 CylSurfaceGeometry::cache_profile(double l) const {
@@ -147,6 +230,16 @@ vec3 CylSurfaceGeometry::deriv(const vec2& p, unsigned int i) const {
 	
 	assert(false);
 	return vec3(0,0,0);
+}
+
+vec3 CylSurfaceGeometry::snorm(const vec2& p, bool normalized) const {
+	if(!normalized) return SurfaceGeometry::snorm(p, false);
+	
+	double phi = 2*M_PI*p[1];
+	double s,c;
+	cache_sincos(phi,s,c);
+	vec2 dzr = zr_profile->deriv(p[0]).normalized();
+	return vec3(-dzr[0]*c, -dzr[0]*s, dzr[1]);
 }
 
 double CylSurfaceGeometry::dA(const vec2& l) const {

@@ -28,7 +28,7 @@
 class DipoleSource: public FieldSource {
 public:
 	/// Constructor
-	DipoleSource(vec3 X, vec3 M): FieldSource(), x(X), m(M) { }
+	DipoleSource(vec3 X, vec3 M): FieldSource("DipoleSource"), x(X), m(M) { }
 	
 	/// Field at a specified point
 	virtual vec3 fieldAt(const vec3& v) const;

@@ -34,16 +34,20 @@ class InterpolatingRS: public ReactiveSet {
 public:
 	/// constructor
 	InterpolatingRS(unsigned int nph): ReactiveSet(nph) {}
-		
+	
+	//===================================== ReactiveSet subclass
 	/// total number of degrees of freedom
 	virtual unsigned int nDF() const { return InterplDF.n_pts(); }
+	//=====================================
 	
 protected:
 
+	//===================================== ReactiveSet subclass
 	/// additional routines for setting a DF value
 	virtual void _setDF(unsigned int DF, double v) { InterplDF[DF] = v; }
 	/// additional routines for setting entire state vector
 	virtual void _setDFv(const mvec& v) { assert(v.size() == nDF()); InterplDF.setData(&v[0]); }
+	//=====================================
 	
 	InterpolationHelper InterplDF;	//< degrees of freedom in InterpolatingHelper grid
 };
@@ -56,9 +60,11 @@ public:
 	/// destructor
 	virtual ~InterpolatingRS2D() { clear_data(); }
 	
+	//===================================== ReactiveSet subclass
 	/// total number of degrees of freedom
 	virtual unsigned int nDF() const { return nZ*nPhi*nDFi; }
-
+	//=====================================
+	
 	/// evaluate interpolators at point
 	mvec interpl_DF(vec2 l) const;
 	
@@ -66,12 +72,14 @@ public:
 	virtual void printData() const;
 	
 protected:
-	/// determine "address" for DF in interpolating grids
-	void DF_address(unsigned int DF, unsigned int& p, unsigned int& z, unsigned int& d) const;
 	
+	//===================================== ReactiveSet subclass
 	/// additional routines for setting a DF value
 	virtual void _setDF(unsigned int DF, double v);
-		
+	//=====================================
+	
+	/// determine "address" for DF in interpolating grids
+	void DF_address(unsigned int DF, unsigned int& p, unsigned int& z, unsigned int& d) const;
 	/// delete previous grids
 	virtual void clear_data();
 	/// set up data grid

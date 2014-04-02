@@ -26,41 +26,46 @@
 #include "MixedSource.hh"
 
 /// Collections of magnetic-field-responding ReactiveSets
-class MagRSCombiner: public ReactiveSetCombiner, public FieldSource {
+class MagRSCombiner: public ReactiveSetCombiner, public MixedSource {
 public:
 	/// constructor
-	MagRSCombiner(unsigned int nphi): ReactiveSetCombiner(nphi) {}
+	MagRSCombiner(unsigned int nphi): ReactiveSetCombiner(nphi), MixedSource("MagRSCombiner") {}
 	
-	/// Magnetic field at a specified point
-	virtual vec3 fieldAt(const vec3& v) const;
-	/// visualization reoutine
-	virtual void _visualize() const;
+	//===================================== ReactiveSetCombiner subclass
+	/// append a new ReactiveSet
+	virtual void addSet(ReactiveSet* R) { ReactiveSetCombiner::addSet(R); MixedSource::addsource(dynamic_cast<FieldSource*>(R)); }
+	//===================================== MixedSource subclass
+	/// don't do this directly!
+	virtual void addsource(const FieldSource*) { assert(false); }
+	//=====================================
 };
+
 
 /// Applied magnetic field source
 class MagExtField: public ReactiveSet, public MixedSource {
 public:
 	/// constructor
-	MagExtField(): ReactiveSet(0), MixedSource() {}
+	MagExtField(): ReactiveSet(0), MixedSource("MagExtField") {}
 
-	//=====================================
+	//===================================== ReactiveSet subclass
 	/// total number of degrees of freedom
 	virtual unsigned int nDF() const { return 0; }
-	/// get DF for given phi reacting to state R
-	virtual mvec getReactionTo(ReactiveSet*, unsigned int = 0) { return mvec(); }
 	/// respond to interaction protocol; return whether protocol recognized
 	virtual bool queryInteraction(void* ip);
+	/// get DF for given phi reacting to state R
+	virtual mvec getReactionTo(ReactiveSet*, unsigned int = 0) { return mvec(); }
 	//=====================================
 	
 protected:
 
-	//=====================================
+	//===================================== ReactiveSet subclass
 	/// called when a DF is set
 	virtual void _setDF(unsigned int, double) { }
 	/// optional routine for setting entire state vector at once
 	virtual void _setDFv(const mvec&) { }
 	//=====================================
 };
+
 
 /// Magnetic field interaction protocol class singleton
 class BField_Protocol {
@@ -70,7 +75,7 @@ public:
 	const Matrix<2,3,double>* M2;	//< optional 3-to-2 transform matrix
 	const Matrix<3,3,double>* M3;	//< optional 3-to-3 transform matrix
 	vec2 M2B;						//< transformed field
-	const void* caller;				//< pointer to caller
+	unsigned int caller;			//< identifying number of caller
 	static BField_Protocol* BFP;	//< instance to use
 };
 

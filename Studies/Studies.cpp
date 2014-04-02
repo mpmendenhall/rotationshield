@@ -27,6 +27,9 @@
 #include "SurfaceGeometry.hh"
 #include "SurfaceProfiles.hh"
 #include "SurfaceCurrentRS.hh"
+#include "HoleDipolePerturbation.hh"
+#include "GenericSolver.hh"
+#include "MultiQuilibrator.hh"
 #include <cassert>
 
 //--
@@ -264,6 +267,49 @@ void mi_addTorus(StreamInteractor* S) {
 	SC->TotalField->visualize();
 }
 
+//---------------------------------------------
+
+void mi_punchHole(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	float r = S->popFloat();
+	float z = S->popFloat();
+	float y = S->popFloat();
+	float x = S->popFloat();
+	
+	const std::vector<ReactiveSet*>& v = SC->RSC->getSets();
+	if(!v.size()) {
+		std::cout << "No previous surface defined to puncture!\n";
+		return;
+	}
+	SurfaceCurrentRS* RS = dynamic_cast<SurfaceCurrentRS*>(v.back());
+	
+	double d2;
+	vec2 l = RS->mySurface->closestPoint(vec3(x,y,z),d2);
+	std::cout << "Adding hole at " << (*RS->mySurface)(l) << " of radius " << r << "\n";
+	
+	HoleDipolePerturbation* h = new HoleDipolePerturbation(*RS->mySurface, l, r);
+	h->hide_ixn.insert(RS->RS_UID);
+	SC->PTB->addSet(h);
+}
+
+void mi_equilibratePtb(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+
+	// solve perturbation system
+	SC->PTB->incidentState = SC->PTB->getFullReactionTo(SC->IncidentSource);
+	GenericSolver GS;
+	GS.solve(*SC->PTB);
+	
+	// equilibrate system
+	MultiQuilibrator MQ;
+	MQ.addSet(SC->RSC, SC->SS);
+	MQ.addSet(SC->PTB, &GS);
+	while(MQ.step() > 1e-6)
+		SC->TotalField->visualize();
+}
+
+//---------------------------------------------
+
 
 
 
@@ -274,6 +320,7 @@ void mi_addTorus(StreamInteractor* S) {
 SystemConfiguration::SystemConfiguration():
 basedir(getEnvSafe("ROTSHIELD_OUT","./")),
 RSC(new MagRSCombiner(32)),
+PTB(new MagRSCombiner(1)),
 IncidentSource(new MagExtField()),
 TotalField(new MixedSource()),
 FA(TotalField),
@@ -300,7 +347,9 @@ zeroResponse("Zero out surface response state",&mi_zeroResponse,this),
 doMeas("Take field measurement",&mi_meas,this),
 qSurvey("Check field along cell diagonal",&mi_qSurvey,this),
 addSingular("Add enumerated singular state", &mi_addSingular, this),
-setSingularEpsilon("Set SVD pseudo-inverse threshold", &mi_setSingularEpsilon, this) {
+setSingularEpsilon("Set SVD pseudo-inverse threshold", &mi_setSingularEpsilon, this),
+punchHole("Add hole perturbation to superconducting surface", &mi_punchHole, this),
+equilibratePtb("Equilibrate field perturbations", &mi_equilibratePtb, this) {
 	
 	IncidentSource->retain();
 	TotalField->retain();
@@ -308,6 +357,7 @@ setSingularEpsilon("Set SVD pseudo-inverse threshold", &mi_setSingularEpsilon, t
 	
 	TotalField->addsource(IncidentSource);
 	TotalField->addsource(RSC);
+	TotalField->addsource(PTB);
 	
 	outDir.addArg("rel. to $ROTSHIELD_OUT",".");
 	//
@@ -384,6 +434,7 @@ setSingularEpsilon("Set SVD pseudo-inverse threshold", &mi_setSingularEpsilon, t
 	OMsurfaces.addChoice(&addTube,"t");
 	OMsurfaces.addChoice(&addBall,"b");
 	OMsurfaces.addChoice(&addTorus,"l");
+	OMsurfaces.addChoice(&punchHole,"hole",SELECTOR_HIDDEN);
 	OMsurfaces.addChoice(&InputRequester::exitMenu,"x");
 	
 	doSolve.addArg("Saved solution file","none");
@@ -394,6 +445,11 @@ setSingularEpsilon("Set SVD pseudo-inverse threshold", &mi_setSingularEpsilon, t
 	addSingular.addArg("Multiplier","50");
 	
 	setSingularEpsilon.addArg("epsilon","1e-5");
+	
+	punchHole.addArg("near x");
+	punchHole.addArg("y");
+	punchHole.addArg("z","0");
+	punchHole.addArg("radius");
 }
 
 SystemConfiguration::~SystemConfiguration() {
