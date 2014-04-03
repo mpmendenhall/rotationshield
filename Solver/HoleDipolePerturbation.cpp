@@ -54,8 +54,8 @@ bool HoleDipolePerturbation::queryInteraction(void* ip) {
 }
 
 void HoleDipolePerturbation::_setDF(unsigned int, double) {
-	vec3 d0 = mySurface.deriv(surfacePos,0).normalized();
-	vec3 d1 = mySurface.deriv(surfacePos,1).normalized();
+	vec3 d0 = mySurface.deriv(surfacePos,0,true);
+	vec3 d1 = mySurface.deriv(surfacePos,1,true);
 	
 	m = (d0*finalState[0] + d1*finalState[1]) * 8. * a*a*a / 3.;
 }
@@ -64,4 +64,14 @@ void HoleDipolePerturbation::_visualize() const {
 	DipoleSource::_visualize();
 	vsr::setColor(0,0,1);
 	vsr::dot(x + mySurface.snorm(surfacePos,true)*dh);
+	
+	vec3 d0 = mySurface.deriv(surfacePos,0,true);
+	vec3 d1 = mySurface.deriv(surfacePos,1,true);
+	vsr::setColor(1,0,0);
+	vsr::startLines();
+	for(int i=0; i<=21; i++) {
+		double th = 2*M_PI*i/21.;
+		vsr::vertex( x + d0*(a*cos(th)) + d1*(a*sin(th)) );
+	}
+	vsr::endLines();
 }

@@ -32,7 +32,7 @@ public:
 	/// function call
 	virtual vec2 operator()(double x) const { return x0*(1-x) + x1*x; }
 	/// derivative
-	virtual vec2 deriv(double) const { return x1-x0; }
+	virtual vec2 deriv(double, bool normalized = false) const { if(normalized) return (x1-x0).normalized(); return x1-x0; }
 	
 	vec2 x0,x1;	//< endpoints
 };
@@ -45,7 +45,7 @@ public:
 	/// function call
 	virtual vec2 operator()(double x) const;
 	/// derivative
-	virtual vec2 deriv(double x) const;
+	virtual vec2 deriv(double x, bool normalized = false) const;
 	
 	double r;	//< radius
 	vec2 v;		//< center
@@ -77,7 +77,7 @@ public:
 	/// evaluate function
 	virtual vec2 operator()(double x) const { return (*f)(distort(x)); }
 	/// derivative
-	virtual vec2 deriv(double x) const { return f->deriv(distort(x)) * d_distort(x); }
+	virtual vec2 deriv(double x, bool normalized = false) const { return f->deriv(distort(x),normalized) * (normalized?1:d_distort(x)); }
 	
 protected:
 	/// distortion map function
@@ -122,10 +122,10 @@ public:
 	}
 	
 	/// derivative
-	virtual Vec<N,T> deriv(T x) const {
+	virtual Vec<N,T> deriv(T x, bool normalized = false) const {
 		if(this->period) x = wrap(x);
 		unsigned int i = locate(x);
-		return mysegs[i]->deriv(x) * seg_endpts.back()/(seg_endpts[i+1]-seg_endpts[i]);
+		return mysegs[i]->deriv(x,normalized) * (normalized?1:seg_endpts.back()/(seg_endpts[i+1]-seg_endpts[i]));
 	}
 	
 	/// append a segment, spaced to maintain continuous pathlength derivative

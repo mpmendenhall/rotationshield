@@ -18,13 +18,7 @@ SurfaceGeometry::~SurfaceGeometry() {
 }
 
 vec3 SurfaceGeometry::snorm(const vec2& p, bool normalized) const {
-	if(normalized) {
-		vec3 dx = deriv(p,0).normalized();
-		vec3 dy = deriv(p,1).normalized();
-		return cross(dx,dy);
-	} else {
-		return cross(deriv(p,0), deriv(p,1));
-	}
+	return cross(deriv(p,0,normalized), deriv(p,1,normalized));
 }
 
 vec2 SurfaceGeometry::d_pathlength(vec2 l) const {
@@ -32,8 +26,8 @@ vec2 SurfaceGeometry::d_pathlength(vec2 l) const {
 }
 
 Matrix<3,3,double> SurfaceGeometry::rotToLocal(const vec2& x) const {
-	vec3 v0 = deriv(x,0).normalized();
-	vec3 v1 = deriv(x,1).normalized();
+	vec3 v0 = deriv(x,0,true);
+	vec3 v1 = deriv(x,1,true);
 	vec3 v2 = cross(v0,v1);
 	Matrix<3,3,double> M;
 	for(unsigned int i=0; i<3; i++) {
@@ -212,19 +206,20 @@ vec3 CylSurfaceGeometry::operator()(const vec2& p) const {
 	return vec3(zr[1]*c, zr[1]*s, zr[0]);
 }
 
-vec3 CylSurfaceGeometry::deriv(const vec2& p, unsigned int i) const {
-
-	assert(zr_profile);
-	vec2 zr = cache_profile(p[0]);
+vec3 CylSurfaceGeometry::deriv(const vec2& p, unsigned int i,  bool normalized) const {
+	
 	double phi = 2*M_PI*p[1];
 	double s,c;
 	cache_sincos(phi,s,c);
+	assert(zr_profile);
 	
 	if(i==0) {
-		vec2 dzr = zr_profile->deriv(p[0]);
+		vec2 dzr = zr_profile->deriv(p[0],normalized);
 		assert(dzr.mag2());
 		return vec3(dzr[1]*c, dzr[1]*s, dzr[0]);
 	} else if(i==1) {
+		if(normalized) return vec3(-s, c, 0);
+		vec2 zr = cache_profile(p[0]);
 		return vec3(-zr[1]*s*2*M_PI, zr[1]*c*2*M_PI, 0);
 	}
 	
@@ -238,7 +233,7 @@ vec3 CylSurfaceGeometry::snorm(const vec2& p, bool normalized) const {
 	double phi = 2*M_PI*p[1];
 	double s,c;
 	cache_sincos(phi,s,c);
-	vec2 dzr = zr_profile->deriv(p[0]).normalized();
+	vec2 dzr = zr_profile->deriv(p[0],true);
 	return vec3(-dzr[0]*c, -dzr[0]*s, dzr[1]);
 }
 

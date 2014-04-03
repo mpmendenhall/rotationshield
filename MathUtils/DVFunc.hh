@@ -40,15 +40,17 @@ public:
 	virtual Vec<N2,T> operator()(const Vec<N1,T>& x) const = 0;
 	
 	/// partial derivative along axis i
-	virtual Vec<N2,T> deriv(const Vec<N1,T>& x, unsigned int i) const;
+	virtual Vec<N2,T> deriv(const Vec<N1,T>& x, unsigned int i, bool normalized = false) const;
 };
 
 template<unsigned int N1, unsigned int N2, typename T>
-Vec<N2,T> DVFunc<N1,N2,T>::deriv(const Vec<N1,T>& x, unsigned int i) const {
+Vec<N2,T> DVFunc<N1,N2,T>::deriv(const Vec<N1,T>& x, unsigned int i, bool normalized) const {
 	double h = 1e-6;
 	Vec<N1,T> dh;
 	dh[i] += h;
-	return ((*this)(x+dh)-(*this)(x-dh)) / (2.*h);
+	Vec<N2,T> d = ((*this)(x+dh)-(*this)(x-dh)) / (2.*h);
+	if(normalized) return d.normalized();
+	return d;
 }
 
 /// virtual base class for a vector-valued differential function of 1 variable
@@ -66,7 +68,7 @@ public:
 	virtual Vec<N,T> operator()(T x) const = 0;
 	
 	/// derivative
-	virtual Vec<N,T> deriv(T x) const;
+	virtual Vec<N,T> deriv(T x, bool normalized = false) const;
 	
 	/// verify derivative calculation
 	void check_deriv() const {
@@ -76,9 +78,11 @@ public:
 };
 
 template<unsigned int N, typename T>
-Vec<N,T> DVFunc1<N,T>::deriv(T x) const {
+Vec<N,T> DVFunc1<N,T>::deriv(T x, bool normalized) const {
 	double h = 1e-6;
-	return ((*this)(x+h)-(*this)(x-h)) / (2.*h);
+	Vec<N,T> d = ((*this)(x+h)-(*this)(x-h)) / (2.*h);
+	if(normalized) return d.normalized();
+	return d;
 }
 
 /// virtual base class for a differentiable univariate function

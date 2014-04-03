@@ -96,9 +96,9 @@ void SurfaceCurrentSource::vis_coords(const vec2& l, double s) const {
 	if(!mySurface) return;
 	
 	vec3 o = (*mySurface)(l);
-	vec3 dx = mySurface->deriv(l,0).normalized();
-	vec3 dy = mySurface->deriv(l,1).normalized();
-	vec3 dz = mySurface->snorm(l,true);
+	vec3 dx = mySurface->deriv(l,0,true);
+	vec3 dy = mySurface->deriv(l,1,true);
+	vec3 dz = cross(dx,dy); //mySurface->snorm(l,true);
 	
 	vsr::line(o, o+dx*s);
 	vsr::line(o, o+dy*s);

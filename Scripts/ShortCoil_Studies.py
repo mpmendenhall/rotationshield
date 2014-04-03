@@ -52,9 +52,38 @@ def make_smallholes_annular(nm, r, **kwargs):
 	
 	return S
 
-make_setup = make_asym_shortcoil_base
+def make_holey(nm,r,**kwargs):
+	"""'Realistic' endcap with many hole perturbations"""
+	S = make_bothends_closed(nm, r, **kwargs)
+	
+	S.shields[-1].holes.append(ShieldHoleSpec((0,0,0), .127*0.5))
+	S.shields[-1].holes.append(ShieldHoleSpec((.2963, -.2963, 0), .127*0.5))
+	
+	S.shields[-1].holes.append(ShieldHoleSpec((-.4572, 0, 0), .1778*0.5))
+	S.shields[-1].holes.append(ShieldHoleSpec((.2540, 0, 0), .1778*0.5))
+
+	r0 = 1.1176*0.5
+	a = .0762*0.5
+	for i in range(5):
+		th = 2*pi*i/36.
+		for sgx in (-1,1):
+			for sgy in (-1,1):
+				S.shields[-1].holes.append(ShieldHoleSpec((r0*cos(0.61+th)*sgx, r0*sin(0.61+th)*sgy, 0), a))
+	S.shields[-1].holes.append(ShieldHoleSpec((r0, 0, 0), a))
+	S.shields[-1].holes.append(ShieldHoleSpec((-0.0191, .5482, 0), a))
+	S.shields[-1].holes.append(ShieldHoleSpec((-0.0191, -.5482, 0), a))
+		
+	r0 = 1.32*0.5
+	for i in range(6):
+		th = 2*pi*i/6.
+		S.shields[-1].holes.append(ShieldHoleSpec((r0*cos(th), r0*sin(th), 0), a))
+	
+	return S
+
+
+#make_setup = make_asym_shortcoil_base
 #stname = "ShortCoil"
-stname = "SC_SmallHole"
+#stname = "SC_SmallHole"
 
 #make_setup = make_bothends_closed
 #stname = "ClosedCoil"
@@ -62,12 +91,14 @@ stname = "SC_SmallHole"
 #make_setup = make_smallholes_annular
 #stname = "SC_SmallAnnular"
 
+make_setup = make_holey
+stname = "SC_manyholes"
 
 def DistortionScan():
 	SS = StudyScan()
 	for (n,r) in enumerate(unifrange(-0.01, 0.01, 8, True)):
-		S = make_setup(stname+"_Distortion",r)
-		S.solfl = "../MC"
+		S = make_setup(stname+"/Distortion",r)
+		S.solfl = "../../MC"
 		S.fields[-1].dist = [r]
 		if False: #n==0:
 			os.system(S.make_cmd("RotationShield_Vis"))
@@ -78,8 +109,8 @@ def DistortionScan():
 def MovingCellScan():
 	SS = StudyScan()
 	for (n,r) in enumerate(unifrange(-1, 0.5, 32, True)):
-		S = make_setup(stname+"_MovingCell",r,dz=r)
-		S.solfl = "../MC"
+		S = make_setup(stname+"/MovingCell",r,dz=r)
+		S.solfl = "../../MC"
 		if n == -1:
 			os.system(S.make_cmd("RotationShield_Vis"))
 		else:
@@ -89,14 +120,14 @@ def MovingCellScan():
 def GriddingScan():
 	SS = StudyScan()
 	for r in range(0,31)[::-1]:
-		S = make_setup(stname+"_Gridding", r, gridt=11+2*r, gride=7+r)
+		S = make_setup(stname+"/Gridding", r, gridt=11+2*r, gride=7+r)
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
 def HoleGridScan():
 	SS = StudyScan()
 	for r in range(0,24)[::3][::-1]:
-		S = make_setup(stname+"_HoleGridding", r, gridhx = r)
+		S = make_setup(stname+"/HoleGridding", r, gridhx = r)
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
@@ -104,7 +135,7 @@ def PhiGriddingScan():
 	SS = StudyScan()
 	for r in range(0,17)[::-1]:
 		nPhi = int(2**(3+r/4.))
-		S = make_setup(stname+"_PhiGridding", nPhi, gridt=29, gride=16)
+		S = make_setup(stname+"/PhiGridding", nPhi, gridt=29, gride=16)
 		S.nPhi = nPhi
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
@@ -112,28 +143,28 @@ def PhiGriddingScan():
 def PlateGapScan():
 	SS = StudyScan()
 	for r in unifrange(.01, .1, 8, True) + unifrange(.001, .015, 8, True):
-		S = make_setup(stname+"_PlateGap", r, dz=-1, plategap = r)
+		S = make_setup(stname+"/PlateGap", r, dz=-1, plategap = r)
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
 def EdgeRadiusScan():
 	SS = StudyScan()
 	for r in  unifrange(.01, .1, 8) + unifrange(.001, .015, 8):
-		S = make_setup(stname+"_EdgeRadius", r, dz=0, sr = r)
+		S = make_setup(stname+"/EdgeRadius", r, dz=0, sr = r)
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
 def HoleSizeScan():
 	SS = StudyScan()
 	for r in  unifrange(.02, .5, 8):
-		S = make_setup(stname+"_HoleSize", r, r0=r)
+		S = make_setup(stname+"/HoleSize", r, r0=r)
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
 def HolePertScan():
 	SS = StudyScan()
 	for (n,r) in  enumerate(unifrange(.11, .5, 8)): #unifrange(.02, .5, 8):
-		S = make_setup(stname+"_HolePert", r)
+		S = make_setup(stname+"/HolePert", r)
 		S.shields[-1].holes.append(ShieldHoleSpec((0,0,0),r))
 		S.solfl = "../MC"
 		if n == -1:
@@ -161,14 +192,14 @@ if __name__=="__main__":
 	
 	if options.scan:
 		
-		#MovingCellScan()
+		MovingCellScan()
 		#DistortionScan()
 		
 		#GriddingScan()
 		#PhiGriddingScan()
 		#PlateGapScan()
 		#EdgeRadiusScan()
-		HoleSizeScan()
+		#HoleSizeScan()
 		#HolePertScan()
 		#HoleGridScan()
 
@@ -178,44 +209,44 @@ if __name__=="__main__":
 
 	if options.plot:
 	
-		#VPP = VarParamPlotter(outdir+"/"+stname+"_MovingCell")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"/MovingCell")
 		#VPP.keypos = "tc"
 		#VPP.setupGraph("Cell center z [m]")
 		
-		#VPP = VarParamPlotter(outdir+"/"+stname+"_Distortion")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"/Distortion")
 		#VPP.keypos = "tl"
 		#VPP.setupGraph("Distortion parameter $a$")
 	
 	
-		#VPP = VarParamPlotter(outdir+"/"+stname+"_ECdz")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"/ECdz")
 		#VPP.keypos = "tl"
 		#VPP.setupGraph("Wires to endcap distance [m]")
 
-		#VPP = VarParamPlotter(outdir+"/"+stname+"_Gridding")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"/Gridding")
 		#VPP.keypos = "tr"
 		#VPP.setupGraph("longitudinal grid divisions $N_Z$ ($N_\\phi = 32$)", logy2=True, xtrans=(lambda x: 25+4*x))
 		
-		#VPP = VarParamPlotter(outdir+"/"+stname+"_PhiGridding")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"/PhiGridding")
 		#VPP.keypos = "tr"
 		#VPP.setupGraph("radial grid divisions $N_\\phi$ ($N_Z = 61$)", logx=True, xrange=(7,150))
 		
-		#VPP = VarParamPlotter(outdir+"/"+stname+"_PlateGap")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"/PlateGap")
 		#VPP.keypos = "tl"
 		#VPP.setupGraph("shield-to-endplate gap [cm]", xtrans=(lambda x: 100*x))
 	
-		#VPP = VarParamPlotter(outdir+"/"+stname+"_EdgeRadius")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"/EdgeRadius")
 		#VPP.keypos = "tc"
 		#VPP.setupGraph("Solid edge radius [cm]", xtrans=(lambda x: 100*x))
 
-		VPP = VarParamPlotter(outdir+"/"+stname+"_HoleSize")
+		VPP = VarParamPlotter(outdir+"/"+stname+"/HoleSize")
 		VPP.keypos = "tl"
-		VPP.setupGraph("End hole radius [cm]", xtrans=(lambda x: 100*x), yrange=(-8,6), y2range=(0,30))
+		VPP.setupGraph("End hole radius [cm]", xtrans=(lambda x: 100*x), yrange=(-8,6), y2range=(0,15))
 		
-		#VPP = VarParamPlotter(outdir+"/"+stname+"_HolePert")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"/HolePert")
 		#VPP.keypos = "tl"
-		#VPP.setupGraph("perturbation hole radius [cm]", xtrans=(lambda x: 100*x))
+		#VPP.setupGraph("perturbation hole radius [cm]", xtrans=(lambda x: 100*x), yrange=(-8,6), y2range=(0,15))
 		
-		#VPP = VarParamPlotter(outdir+"/"+stname+"_HoleGridding")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"/HoleGridding")
 		#VPP.keypos = "tr"
 		#VPP.setupGraph("additional grid divisions")
 		
@@ -230,7 +261,7 @@ if __name__=="__main__":
 				FI.BC.plotFields(2,0,1,2)
 		else:
 			
-			FI = FieldInfo(outdir+"/"+stname+"_ECdz/X_0.050000/")
+			FI = FieldInfo(outdir+"/"+stname+"/ECdz/X_0.050000/")
 			#FI = FieldInfo(outdir+"/foo/")
 			
 			if 1:

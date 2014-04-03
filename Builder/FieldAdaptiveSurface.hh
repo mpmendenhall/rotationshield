@@ -37,7 +37,7 @@ public:
 	virtual vec2 operator()(double x) const;
 	
 	/// derivative
-	virtual vec2 deriv(double x) const;
+	virtual vec2 deriv(double x, bool normalized = false) const;
 	
 	/// optimize for field configuration
 	void optimizeSpacing(const FieldEstimator2D& fes, double pfixed = 0.5, bool useDeriv = true);

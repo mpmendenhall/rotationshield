@@ -84,7 +84,7 @@ public:
 	virtual vec3 operator()(const vec2& x) const;
 	
 	/// partial derivative along axis i
-	virtual vec3 deriv(const vec2& x, unsigned int i) const;
+	virtual vec3 deriv(const vec2& x, unsigned int i, bool normalized = false) const;
 	
 	/// differential area dA / dl1 dl2
 	virtual double dA(const vec2& l) const;
@@ -117,7 +117,7 @@ public:
 	virtual vec3 operator()(const vec2& x) const { return transf_M * (*baseGeom)(x) + transl_v; }
 	
 	/// partial derivative along axis i
-	virtual vec3 deriv(const vec2& x, unsigned int i) const { return transf_M * baseGeom->deriv(x,i); }
+	virtual vec3 deriv(const vec2& x, unsigned int i, bool normalized = false) const { return (transf_M * baseGeom->deriv(x,i,normalized)).normalized(); }
 	
 	/// differential area dA / dl1 dl2
 	virtual double dA(const vec2& l) const { return baseGeom->dA(l); } // TODO do this right

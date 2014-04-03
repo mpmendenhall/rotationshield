@@ -29,8 +29,9 @@ vec2 Arc2D::operator()(double x) const {
 	double th = t0+dt*x;
 	return v + vec2(r*cos(th), r*sin(th));
 }
-vec2 Arc2D::deriv(double x) const {
+vec2 Arc2D::deriv(double x, bool normalized) const {
 	double th = t0+dt*x;
+	if(normalized) return vec2(-sin(th), cos(th));
 	return vec2(-r*sin(th)*dt, r*cos(th)*dt);
 }
 

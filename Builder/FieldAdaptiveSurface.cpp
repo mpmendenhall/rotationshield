@@ -31,8 +31,9 @@ vec2 FieldAdaptiveSurface::operator()(double x) const {
 	return F(l_remap(x));
 }
 
-vec2 FieldAdaptiveSurface::deriv(double x) const {
+vec2 FieldAdaptiveSurface::deriv(double x, bool normalized) const {
 	if(F.period) x=wrap(x);
+	if(normalized) return F.deriv(l_remap(x),normalized);
 	return F.deriv(l_remap(x)) * l_remap.deriv(x);
 }
 
@@ -62,7 +63,7 @@ void FieldAdaptiveSurface::optimizeSpacing(const FieldEstimator2D& fes, double p
 		vec2 zr = F(l);
 		if(useDeriv) {
 			// bunch up at high field derivatives along profile curve
-			vec2 dv = F.deriv(l).normalized();
+			vec2 dv = F.deriv(l,true);
 			fstr[i] = fstr[i-1] + fabs(fes.derivAt(zr,dv*0.0002).dot(dv));
 		} else {
 			// bunch up at high fields
