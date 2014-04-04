@@ -4,6 +4,7 @@ import os
 import time
 from optparse import OptionParser
 from random import shuffle
+from math import *
 
 class ShieldHoleSpec:
 	"""Specification for a hole perturbation in a superconducting shield"""
@@ -13,6 +14,11 @@ class ShieldHoleSpec:
 	
 	def make_cmd(self):
 		return "h %g %g %g"%self.nearto + " %g"%self.radius
+		
+	def rotate(self,theta):
+		c = cos(theta)
+		s = sin(theta)
+		self.nearto = (c*self.nearto[0]-s*self.nearto[1], s*self.nearto[0]+c*self.nearto[1], self.nearto[2])
 
 class ShieldSpec:
 	"""Specification for a section of a shield"""
@@ -34,20 +40,28 @@ class ShieldSpec:
 			cmd += " "+h.make_cmd()
 		return cmd
 
+	def rot_pert(self,th):
+		for p in self.holes:
+			p.rotate(th)
+
 class CoilSpec:
 	"""Specification for cos theta coil"""
-	def __init__(self, r=0.61, l=2.5, N=15):
+	def __init__(self, r=0.61, l=2.5, N=15, j=1.0):
 		self.N = N			# half-coil n loops
 		self.r = r			# radius
 		self.l = l			# length
+		self.j = j
 		self.ends = None	# end wire style; None for default ["arc","arc"]
 		self.dist = []		# distortion parameters
+		self.offset = None
 	def make_cmd(self):
-		cmd = "c geom %i %g %g"%(self.N, self.r, self.l)
+		cmd = "c geom %i %g %g %g"%(self.N, self.r, self.l, self.j)
 		if self.ends:
 			cmd += " ends %s %s"%tuple(self.ends)
 		for (n,a) in enumerate(self.dist):
 			cmd += " dist %i %g"%(n+1,a)
+		if self.offset:
+			cmd += " off %g %g %g"%tuple(self.offset)
 		cmd += " x"
 		return cmd
 

@@ -87,7 +87,7 @@ public:
 class CosThetaBuilder: public StreamInteractor {
 public:
 	/// constructor
-	CosThetaBuilder(unsigned int n = 15, double r = 0.5, double l = 1.0,
+	CosThetaBuilder(unsigned int n = 15, double r = 0.5, double l = 1.0, double j=1.0,
 					AnglePositioner* ap = new ShiftPositioner(), EndTranslator* et = NULL);
 	
 	/// build coil into MixedSource
@@ -98,6 +98,7 @@ public:
 	unsigned int ncoils;		//< number of saddle coils per half
 	float radius;				//< coil radius
 	float length;				//< coil length
+	float j_total;				//< total current through all loops on one side
 	
 	AnglePositioner* AP;
 	EndTranslator* ET;
@@ -119,6 +120,7 @@ public:
 	InputRequester setDistortion;
 	NameSelector selectEndcap;
 	InputRequester setEndcaps;
+	InputRequester setTranslation;
 	OptionsMenu OMcoil;
 	
 	

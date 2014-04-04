@@ -61,6 +61,7 @@ Stringmap VecTrans::getInfo() const {
 //--------------------------------------------------------------------
 
 void mi_setGeometry(StreamInteractor* S) {
+	float j = S->popFloat();
 	float l = S->popFloat();
 	float r = S->popFloat();
 	float n = S->popInt();
@@ -69,6 +70,7 @@ void mi_setGeometry(StreamInteractor* S) {
 	CT->ncoils = n;
 	CT->radius = r;
 	CT->length = l;
+	CT->j_total = j;
 }
 
 void mi_setDistortion(StreamInteractor* S) {
@@ -97,14 +99,23 @@ void mi_setEndcaps(StreamInteractor* S) {
 	}
 }
 
+void mi_setTranslation(StreamInteractor* S) {
+	float z = S->popFloat();
+	float y = S->popFloat();
+	float x = S->popFloat();
+	CosThetaBuilder* CT = dynamic_cast<CosThetaBuilder*>(S);
+	CT->ET = new VecTrans(vec3(x,y,z));
+}
+
 //--------------------------------------------------------------------
 
-CosThetaBuilder::CosThetaBuilder(unsigned int n, double r, double l, AnglePositioner* ap, EndTranslator* et):
-ncoils(n), radius(r), length(l), AP(ap), ET(et), nArc(100),
+CosThetaBuilder::CosThetaBuilder(unsigned int n, double r, double l, double j, AnglePositioner* ap, EndTranslator* et):
+ncoils(n), radius(r), length(l), j_total(j), AP(ap), ET(et), nArc(100),
 setGeometry("Geometry", &mi_setGeometry, this),
 setDistortion("Distortion", &mi_setDistortion, this),
 selectEndcap("end wire shape"),
 setEndcaps("End wires", &mi_setEndcaps, this),
+setTranslation("Position offset", &mi_setTranslation, this),
 OMcoil("Cos Theta Coil") {
 
 	myCap[0] = myCap[1] = CAP_ARC;
@@ -112,6 +123,7 @@ OMcoil("Cos Theta Coil") {
 	setGeometry.addArg("half-N loops","15");
 	setGeometry.addArg("radius","0.5");
 	setGeometry.addArg("length","1");
+	setGeometry.addArg("current","1");
 	//
 	setDistortion.addArg("n","1");
 	setDistortion.addArg("a_n","-0.001");
@@ -124,9 +136,14 @@ OMcoil("Cos Theta Coil") {
 	setEndcaps.addArg(&selectEndcap,"-z");
 	setEndcaps.addArg(&selectEndcap,"+z");
 	//
+	setTranslation.addArg("x","0");
+	setTranslation.addArg("y","0");
+	setTranslation.addArg("z","0");
+	//
 	OMcoil.addChoice(&setGeometry,"geom");
 	OMcoil.addChoice(&setDistortion,"dist");
 	OMcoil.addChoice(&setEndcaps,"ends");
+	OMcoil.addChoice(&setTranslation,"off");
 	
 }
 
@@ -138,6 +155,7 @@ void CosThetaBuilder::writeInfo(QFile& qOut) const {
 	m.insert("length",length);
 	m.insert("radius",radius);
 	m.insert("ncoils",itos(ncoils));
+	m.insert("current",j_total);
 	qOut.insert("cosThetaCoil",m);
 }
 
@@ -173,7 +191,7 @@ void CosThetaBuilder::buildEndpoints() {
 					xmul = (a3)?-1:1;
 					ymul = (a2)?-1:1;
 					zmul = (a1)?-1:1;
-					phi = AP->angle(i+a3*ncoils+a2*2*ncoils+a1*4*ncoils,ncoils);
+					phi = AP->angle(i + a3*ncoils + a2*2*ncoils + a1*4*ncoils, ncoils);
 					x = radius*cos(phi);
 					y = radius*sin(phi);
 					endp[8*i + a1 + 2*a2 + 4*a3] = vec3(x*xmul,y*ymul,zmul*length*0.5) + (ET?ET->trans(ncoils,i,a1,a2,a3):vec3());
@@ -187,7 +205,7 @@ void CosThetaBuilder::buildSides(MixedSource& M) {
 	for(unsigned int i=0; i<ncoils; i++)
 		for(unsigned int xside = 0; xside < 2; xside++)
 			for(unsigned int yside = 0; yside < 2; yside++)
-				M.addsource(new LineSource(getEndp(i,xside,yside,!yside),getEndp(i,xside,yside,yside),1.0/double(ncoils)));
+				M.addsource(new LineSource(getEndp(i,xside,yside,!yside),getEndp(i,xside,yside,yside), j_total/double(ncoils)));
 }
 
 void CosThetaBuilder::buildArcCap(MixedSource& M, unsigned int zside, unsigned int nseg) {
@@ -196,12 +214,12 @@ void CosThetaBuilder::buildArcCap(MixedSource& M, unsigned int zside, unsigned i
 		for(unsigned int yside = 0; yside < 2; yside++) {
 			for(unsigned int i=0; i<ncoils-1; i++) {
 				if(yside == zside)
-					M.arc(getEndp(i,xside,yside,zside),getEndp(i+1,xside,yside,zside),(i+1)/double(ncoils),nseg);
+					M.arc(getEndp(i,xside,yside,zside),getEndp(i+1,xside,yside,zside),(i+1)*j_total/double(ncoils),nseg);
 				else
-					M.arc(getEndp(i+1,xside,yside,zside),getEndp(i,xside,yside,zside),(i+1)/double(ncoils),nseg);
+					M.arc(getEndp(i+1,xside,yside,zside),getEndp(i,xside,yside,zside),(i+1)*j_total/double(ncoils),nseg);
 			}
 		}
-		M.arc(getEndp(ncoils-1,xside,zside,zside),getEndp(ncoils-1,xside,!zside,zside),1.0,nseg);
+		M.arc(getEndp(ncoils-1,xside,zside,zside),getEndp(ncoils-1,xside,!zside,zside),j_total,nseg);
 	}
 }
 
@@ -211,19 +229,19 @@ void CosThetaBuilder::buildLineCap(MixedSource& M, unsigned int zside) {
 		for(unsigned int yside = 0; yside < 2; yside++) {
 			for(unsigned int i=0; i<ncoils-1; i++) {
 				if(yside == zside)
-					M.addsource( new LineSource(getEndp(i,xside,yside,zside),getEndp(i+1,xside,yside,zside),(i+1)/double(ncoils)) );
+					M.addsource( new LineSource(getEndp(i,xside,yside,zside),getEndp(i+1,xside,yside,zside),(i+1)*j_total/double(ncoils)) );
 				else
-					M.addsource( new LineSource(getEndp(i+1,xside,yside,zside),getEndp(i,xside,yside,zside),(i+1)/double(ncoils)) );
+					M.addsource( new LineSource(getEndp(i+1,xside,yside,zside),getEndp(i,xside,yside,zside),(i+1)*j_total/double(ncoils)) );
 			}
 		}
-		M.addsource( new LineSource( getEndp(ncoils-1,xside,zside,zside),getEndp(ncoils-1,xside,!zside,zside),1.0) );
+		M.addsource( new LineSource( getEndp(ncoils-1,xside,zside,zside),getEndp(ncoils-1,xside,!zside,zside),j_total) );
 	}
 }
 
 void CosThetaBuilder::buildStraightCap(MixedSource& M, unsigned int zside) {
 	for(unsigned int xside = 0; xside < 2; xside++)
 		for(unsigned int i=0; i<ncoils; i++)
-			M.addsource(new LineSource(getEndp(i,xside,zside,zside),getEndp(i,xside,!zside,zside),1.0/double(ncoils)));
+			M.addsource(new LineSource(getEndp(i,xside,zside,zside),getEndp(i,xside,!zside,zside),j_total/double(ncoils)));
 }
 
 void CosThetaBuilder::buildMixedCaps(MixedSource& M, float rinner) {
@@ -236,11 +254,11 @@ void CosThetaBuilder::buildMixedCaps(MixedSource& M, float rinner) {
 				vec3 v1 = getEndp(i,xside,zside,zside);
 				vec3 v2 = getEndp(i,xside,!zside,zside);
 				if(fabs(v1[0]) >= rinner*radius) {
-					M.addsource(new LineSource(v1,v2,1.0/double(ncoils)));
+					M.addsource(new LineSource(v1,v2,j_total/double(ncoils)));
 				} else {
 					float l = (1-sqrt(rinner*radius*rinner*radius-v1[0]*v1[0])/radius)*0.5;
-					M.addsource(new LineSource(v1,v1*(1-l) + v2*l,1.0/double(ncoils)));
-					M.addsource(new LineSource(v1*l + v2*(1-l),v2,1.0/double(ncoils)));
+					M.addsource(new LineSource(v1,v1*(1-l) + v2*l,j_total/double(ncoils)));
+					M.addsource(new LineSource(v1*l + v2*(1-l),v2,j_total/double(ncoils)));
 					innercircle[xside][0][zside].push_back(v1*(1-l) + v2*l);
 					innercircle[xside][1][zside].push_back(v1*l + v2*(1-l));
 				}
@@ -260,19 +278,19 @@ void CosThetaBuilder::buildMixedCaps(MixedSource& M, float rinner) {
 					
 					for(unsigned int i=0; i<imax-1; i++) {
 						if(yside)
-							M.arc(innercircle[xside][yside][zside][i]+dz[zside],innercircle[xside][yside][zside][i+1]+dz[zside],(i+1)/double(ncoils),32);
+							M.arc(innercircle[xside][yside][zside][i]+dz[zside],innercircle[xside][yside][zside][i+1]+dz[zside], (i+1)*j_total/double(ncoils),32);
 						else
-							M.arc(innercircle[xside][yside][zside][i+1]+dz[zside],innercircle[xside][yside][zside][i]+dz[zside],(i+1)/double(ncoils),32);
+							M.arc(innercircle[xside][yside][zside][i+1]+dz[zside],innercircle[xside][yside][zside][i]+dz[zside], (i+1)*j_total/double(ncoils),32);
 					}
 					
 					for(unsigned int i=0; i<imax; i++) {
 						if(!yside)
-							M.addsource(new LineSource(innercircle[xside][yside][zside][i],innercircle[xside][yside][zside][i]+dz[zside],1/double(ncoils)));
+							M.addsource(new LineSource(innercircle[xside][yside][zside][i],innercircle[xside][yside][zside][i]+dz[zside],j_total/double(ncoils)));
 						else
-							M.addsource(new LineSource(innercircle[xside][yside][zside][i]+dz[zside],innercircle[xside][yside][zside][i],1/double(ncoils)));
+							M.addsource(new LineSource(innercircle[xside][yside][zside][i]+dz[zside],innercircle[xside][yside][zside][i],j_total/double(ncoils)));
 					}
 				}
-				M.arc(innercircle[xside][true][zside][imax-1]+dz[zside],innercircle[xside][false][zside][imax-1]+dz[zside],double(imax)/double(ncoils),32);
+				M.arc(innercircle[xside][true][zside][imax-1]+dz[zside],innercircle[xside][false][zside][imax-1]+dz[zside],double(imax)*j_total/double(ncoils),32);
 			}
 		}
 	}

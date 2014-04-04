@@ -7,8 +7,8 @@ endgap = 0		# coil-to-main-shield end offset
 sdr = 0.1		# shield-to-coil radial distance
 
 def make_asym_shortcoil_base(nm, r,
-							 dz=0.25,			# cell z offset
-							 r0=0.70,			# top hole radius
+							 dz=-0.75,			# cell z offset
+							 r0=0.50,			# top hole radius
 							 gridt = 58,		# tube Nz grid
 							 gride = 32,		# endcap Nz grid
 							 gridhx = 0,		# extra gridding on hole side
@@ -22,7 +22,7 @@ def make_asym_shortcoil_base(nm, r,
 	clen = 2.5
 	crad = 1.0
 	S.fields.append(CoilSpec(crad, clen, 15))	# r=1, l=2.5, N=15 cos theta coil
-	S.fields[-1].dist = [-0.0033]				# Closed: -.0032; smallhole -0.0033
+	S.fields[-1].dist = [-0.0036]				# Closed: -.0032; smallhole -0.0033; r=70cm -.0005; flattener -0.0036
 	S.fields[-1].ends = ["none","none"]			# "endless" wires
 	
 	srad = crad + sr + sdr
@@ -80,9 +80,18 @@ def make_holey(nm,r,**kwargs):
 	
 	return S
 
+def make_outercoil(nm,r,**kwargs):
+	"""Big-hole shield with outside cos theta flattener"""
+	S = make_asym_shortcoil_base(nm, r, **kwargs)
+	S.fields.append(CoilSpec(1.0, 0.5, 15))
+	S.fields[-1].offset = (0,0, 0.25 + 1.25 + 2*0.01 + 0.04)
+	S.fields[-1].ends = ["line","none"]
+	S.fields[-1].j = 1.29
 
-#make_setup = make_asym_shortcoil_base
-#stname = "ShortCoil"
+	return S;
+
+make_setup = make_outercoil
+stname = "ShortCoil_50cm"
 #stname = "SC_SmallHole"
 
 #make_setup = make_bothends_closed
@@ -91,16 +100,17 @@ def make_holey(nm,r,**kwargs):
 #make_setup = make_smallholes_annular
 #stname = "SC_SmallAnnular"
 
-make_setup = make_holey
-stname = "SC_manyholes"
+#make_setup = make_holey
+#stname = "SC_manyholes"
 
 def DistortionScan():
 	SS = StudyScan()
-	for (n,r) in enumerate(unifrange(-0.01, 0.01, 8, True)):
+	for (n,r) in enumerate(unifrange(-0.02, 0, 8, True)):
 		S = make_setup(stname+"/Distortion",r)
-		S.solfl = "../../MC"
-		S.fields[-1].dist = [r]
-		if False: #n==0:
+		S.solfl = "../../SC"
+		for f in S.fields:
+			f.dist = [r, -0.020, -0.030]
+		if n==-1:
 			os.system(S.make_cmd("RotationShield_Vis"))
 		else:
 			SS.fsimlist.write(S.make_cmd())
@@ -108,9 +118,9 @@ def DistortionScan():
 
 def MovingCellScan():
 	SS = StudyScan()
-	for (n,r) in enumerate(unifrange(-1, 0.5, 32, True)):
+	for (n,r) in enumerate(unifrange(-1, 0.5, 16, True)):
 		S = make_setup(stname+"/MovingCell",r,dz=r)
-		S.solfl = "../../MC"
+		S.solfl = "../../SC"
 		if n == -1:
 			os.system(S.make_cmd("RotationShield_Vis"))
 		else:
@@ -166,15 +176,32 @@ def HolePertScan():
 	for (n,r) in  enumerate(unifrange(.11, .5, 8)): #unifrange(.02, .5, 8):
 		S = make_setup(stname+"/HolePert", r)
 		S.shields[-1].holes.append(ShieldHoleSpec((0,0,0),r))
-		S.solfl = "../MC"
+		S.solfl = "../SC"
 		if n == -1:
 			os.system(S.make_cmd("RotationShield_Vis"))
 		else:
 			SS.fsimlist.write(S.make_cmd())
 	SS.run()
-#
-# want average gradients < 0.1 uG/cm
-#
+
+def RotateEnd():
+	SS = StudyScan()
+	for r in  unifrange(0, 2*pi, 32):
+		S = make_setup(stname+"/EndRot", r)
+		S.shields[-1].rot_pert(r)
+		S.solfl = "../../SC"
+		SS.fsimlist.write(S.make_cmd())
+	SS.run()
+
+def Outer_Jscan():
+	SS = StudyScan()
+	for r in  unifrange(0, 2, 32):
+		S = make_setup(stname+"/OuterJ", r)
+		S.fields[-1].j = r
+		S.solfl = "../../SC"
+		SS.fsimlist.write(S.make_cmd())
+	SS.run()
+
+
 
 if __name__=="__main__":
 
@@ -192,8 +219,8 @@ if __name__=="__main__":
 	
 	if options.scan:
 		
-		MovingCellScan()
-		#DistortionScan()
+		#MovingCellScan()
+		DistortionScan()
 		
 		#GriddingScan()
 		#PhiGriddingScan()
@@ -202,6 +229,8 @@ if __name__=="__main__":
 		#HoleSizeScan()
 		#HolePertScan()
 		#HoleGridScan()
+		#RotateEnd()
+		#Outer_Jscan()
 
 	outdir = os.environ["ROTSHIELD_OUT"]
 
@@ -213,9 +242,9 @@ if __name__=="__main__":
 		#VPP.keypos = "tc"
 		#VPP.setupGraph("Cell center z [m]")
 		
-		#VPP = VarParamPlotter(outdir+"/"+stname+"/Distortion")
-		#VPP.keypos = "tl"
-		#VPP.setupGraph("Distortion parameter $a$")
+		VPP = VarParamPlotter(outdir+"/"+stname+"/Distortion")
+		VPP.keypos = "tl"
+		VPP.setupGraph("Distortion parameter $a_1, -0.02, -0.03$")
 	
 	
 		#VPP = VarParamPlotter(outdir+"/"+stname+"/ECdz")
@@ -238,9 +267,9 @@ if __name__=="__main__":
 		#VPP.keypos = "tc"
 		#VPP.setupGraph("Solid edge radius [cm]", xtrans=(lambda x: 100*x))
 
-		VPP = VarParamPlotter(outdir+"/"+stname+"/HoleSize")
-		VPP.keypos = "tl"
-		VPP.setupGraph("End hole radius [cm]", xtrans=(lambda x: 100*x), yrange=(-8,6), y2range=(0,15))
+		#VPP = VarParamPlotter(outdir+"/"+stname+"/HoleSize")
+		#VPP.keypos = "tl"
+		#VPP.setupGraph("End hole radius [cm]", xtrans=(lambda x: 100*x), yrange=(-8,6), y2range=(0,15))
 		
 		#VPP = VarParamPlotter(outdir+"/"+stname+"/HolePert")
 		#VPP.keypos = "tl"
@@ -250,6 +279,15 @@ if __name__=="__main__":
 		#VPP.keypos = "tr"
 		#VPP.setupGraph("additional grid divisions")
 		
+		#VPP = VarParamPlotter(outdir+"/"+stname+"/EndRot")
+		#VPP.keypos = "tc"
+		#VPP.setupGraph("Endcap rotation angle [degrees]", xrange=(0,360), xtrans=(lambda x: 180*x/pi))
+	
+		#VPP = VarParamPlotter(outdir+"/"+stname+"/OuterJ")
+		#VPP.keypos = "tc"
+		#VPP.setupGraph("External coil relative current")
+
+
 		if VPP is not None:
 			VPP.makePlot(PGlist=[PG_n(),PG_3He()])
 			VPP.outputPlot()
