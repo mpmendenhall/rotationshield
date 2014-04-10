@@ -19,7 +19,7 @@
  */
 
 #ifndef CONTROLMENU_HH
-#define CONTROLMENU_HH 1
+#define CONTROLMENU_HH
 
 #include "strutils.hh"
 #include <cassert>

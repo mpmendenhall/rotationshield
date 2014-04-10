@@ -29,13 +29,20 @@ class ShieldSpec:
 		self.ends = ends		# endpoints (1 for slab, 2 for tube
 		self.p = p				# adaptive fraction
 		self.holes = []			# hole perturbations
+		self.nwiggles = 0		# optional wiggle slab number
+		self.wigglesize = 0		# optional wiggle size amplitude
 		
 	def make_cmd(self):
 		"""command line argument for this section"""
 		cmd = ["s","t"][len(self.ends)-1]
+		if self.nwiggles:
+			cmd = "w"
 		for e in self.ends:
 			cmd += " %g %g"%tuple(e)
-		cmd += " %g %g %i %g"%(self.rthick,self.mu,self.nseg,self.p)
+		cmd += " %g"%(self.rthick)
+		if self.nwiggles:
+			cmd += " %i %g"%(self.nwiggles, self.wigglesize)
+		cmd += " %g %i %g"%(self.mu,self.nseg,self.p)
 		for h in self.holes:
 			cmd += " "+h.make_cmd()
 		return cmd

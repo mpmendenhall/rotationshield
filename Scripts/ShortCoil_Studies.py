@@ -22,14 +22,14 @@ def make_asym_shortcoil_base(nm, r,
 	clen = 2.5
 	crad = 1.0
 	S.fields.append(CoilSpec(crad, clen, 15))	# r=1, l=2.5, N=15 cos theta coil
-	S.fields[-1].dist = [-0.0036]				# Closed: -.0032; smallhole -0.0033; r=70cm -.0005; flattener -0.0036
+	S.fields[-1].dist = [-0.0032]				# Closed: -.0032; smallhole -0.0033; r=70cm -.0005; flattener -0.0036
 	S.fields[-1].ends = ["none","none"]			# "endless" wires
 	
 	srad = crad + sr + sdr
 	shz = 0.5*clen + endgap
 	S.shields.append(ShieldSpec(10000, gridt, [(-shz, srad),(shz, srad)], sr))
 	
-	S.shields.append(ShieldSpec(0, gride, [(-shz-sr-plategap, srad+sr)], sr))
+	S.shields.append(ShieldSpec(0, gride, [[-shz-sr-plategap, srad+sr]], sr))
 	S.shields.append(ShieldSpec(0, gride+gridhx, [(shz+sr+plategap,r0), (shz+sr+plategap, srad+sr)], sr))
 	
 	S.measGrid = (7,11,7)
@@ -80,6 +80,14 @@ def make_holey(nm,r,**kwargs):
 	
 	return S
 
+def make_wiggley(nm, r, nwiggles = 2, wsize = 0.02, **kwargs):
+	S = make_bothends_closed(nm, r, **kwargs)
+	S.shields[-2].nwiggles = nwiggles
+	S.shields[-2].wigglesize = wsize
+	if nwiggles%2:
+		S.shields[-2].ends[0][0] += 2*wsize
+	return S
+
 def make_outercoil(nm,r,**kwargs):
 	"""Big-hole shield with outside cos theta flattener"""
 	S = make_asym_shortcoil_base(nm, r, **kwargs)
@@ -90,8 +98,8 @@ def make_outercoil(nm,r,**kwargs):
 
 	return S;
 
-make_setup = make_outercoil
-stname = "ShortCoil_50cm"
+#make_setup = make_outercoil
+#stname = "ShortCoil_50cm"
 #stname = "SC_SmallHole"
 
 #make_setup = make_bothends_closed
@@ -102,6 +110,9 @@ stname = "ShortCoil_50cm"
 
 #make_setup = make_holey
 #stname = "SC_manyholes"
+
+make_setup = make_wiggley
+stname = "SC_Wiggles"
 
 def DistortionScan():
 	SS = StudyScan()
@@ -118,10 +129,10 @@ def DistortionScan():
 
 def MovingCellScan():
 	SS = StudyScan()
-	for (n,r) in enumerate(unifrange(-1, 0.5, 16, True)):
+	for (n,r) in enumerate(unifrange(-1, 1, 32, True)):
 		S = make_setup(stname+"/MovingCell",r,dz=r)
 		S.solfl = "../../SC"
-		if n == -1:
+		if n == 0:
 			os.system(S.make_cmd("RotationShield_Vis"))
 		else:
 			SS.fsimlist.write(S.make_cmd())
@@ -201,6 +212,14 @@ def Outer_Jscan():
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
+def WiggleScan():
+	SS = StudyScan()
+	nw = 3
+	for r in  unifrange(-0.02, 0.02, 7):
+		S = make_setup(stname+"/WiggleSize", r, wsize = r, nwiggles=nw, dz = -0.5)
+		#S.solfl = "SC_%i"%nw
+		SS.fsimlist.write(S.make_cmd())
+	SS.run()
 
 
 if __name__=="__main__":
@@ -219,8 +238,8 @@ if __name__=="__main__":
 	
 	if options.scan:
 		
-		#MovingCellScan()
-		DistortionScan()
+		MovingCellScan()
+		#DistortionScan()
 		
 		#GriddingScan()
 		#PhiGriddingScan()
@@ -231,6 +250,7 @@ if __name__=="__main__":
 		#HoleGridScan()
 		#RotateEnd()
 		#Outer_Jscan()
+		#WiggleScan()
 
 	outdir = os.environ["ROTSHIELD_OUT"]
 
@@ -238,13 +258,13 @@ if __name__=="__main__":
 
 	if options.plot:
 	
-		#VPP = VarParamPlotter(outdir+"/"+stname+"/MovingCell")
-		#VPP.keypos = "tc"
-		#VPP.setupGraph("Cell center z [m]")
+		VPP = VarParamPlotter(outdir+"/"+stname+"/MovingCell")
+		VPP.keypos = "tc"
+		VPP.setupGraph("Cell center z [m]")
 		
-		VPP = VarParamPlotter(outdir+"/"+stname+"/Distortion")
-		VPP.keypos = "tl"
-		VPP.setupGraph("Distortion parameter $a_1, -0.02, -0.03$")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"/Distortion")
+		#VPP.keypos = "tl"
+		#VPP.setupGraph("Distortion parameter $a_1, -0.02, -0.03$")
 	
 	
 		#VPP = VarParamPlotter(outdir+"/"+stname+"/ECdz")
@@ -287,6 +307,9 @@ if __name__=="__main__":
 		#VPP.keypos = "tc"
 		#VPP.setupGraph("External coil relative current")
 
+		#VPP = VarParamPlotter(outdir+"/"+stname+"/WiggleSize")
+		#VPP.keypos = "tc"
+		#VPP.setupGraph("Bottom plate wiggle amplitude [cm]", xtrans=(lambda x: 100*x))
 
 		if VPP is not None:
 			VPP.makePlot(PGlist=[PG_n(),PG_3He()])

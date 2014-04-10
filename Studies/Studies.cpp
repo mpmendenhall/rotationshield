@@ -226,6 +226,27 @@ void mi_addSlab(StreamInteractor* S) {
 	SC->TotalField->visualize();
 }
 
+void mi_addWiggleSlab(StreamInteractor* S) {
+	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+	float o = S->popFloat();
+	unsigned int ns = S->popInt();
+	float mu = S->popFloat();
+	float a = S->popFloat();
+	unsigned int nw = (unsigned int)S->popInt();
+	float er = S->popFloat();
+	float r = S->popFloat();
+	float z = S->popFloat();
+	
+	WiggleSlab* SB = new WiggleSlab(z, r, 2*er, nw, a);
+	DVFunc1<2,double>* FAS = SC->adaptSurface(SB,o);
+	CylSurfaceGeometry* SG = new CylSurfaceGeometry(FAS);
+	SurfaceCurrentRS* RS = new SurfaceCurrentRS(SG, SC->RSC->nPhi, ns);
+	RS->setSurfaceResponse(SurfaceI_Response(mu));
+	RS->point_ixn = false;
+	SC->RSC->addSet(RS);
+	
+	SC->TotalField->visualize();
+}
 
 void mi_addBall(StreamInteractor* S) {
 	SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
@@ -340,6 +361,7 @@ addSlab("Add circular slab", &mi_addSlab, this),
 addTube("Add tube", &mi_addTube, this),
 addBall("Add ball", &mi_addBall, this),
 addTorus("Add torus", &mi_addTorus, this),
+addWiggleSlab("Add wiggly slab", &mi_addWiggleSlab, this),
 OMsurfaces("Boundary conditions"),
 doSolve("Solve boundary condition interactions",&mi_Solve,this),
 doApply("(Re)apply incident field to boundaries",&mi_Recalc,this),
@@ -429,11 +451,21 @@ equilibratePtb("Equilibrate field perturbations", &mi_equilibratePtb, this) {
 	addTorus.addArg("nZ","11");
 	addTorus.addArg("adapt","0");
 	//
+	addWiggleSlab.addArg("z","0");
+	addWiggleSlab.addArg("r","0.7");
+	addWiggleSlab.addArg("end radius","0.05");
+	addWiggleSlab.addArg("n wiggles","1");
+	addWiggleSlab.addArg("amplitude","0.1");
+	addWiggleSlab.addArg("mu","0");
+	addWiggleSlab.addArg("nZ","11");
+	addWiggleSlab.addArg("adapt","0");
+	//
 	OMsurfaces.addChoice(&setPhi,"n");
 	OMsurfaces.addChoice(&addSlab,"s");
 	OMsurfaces.addChoice(&addTube,"t");
 	OMsurfaces.addChoice(&addBall,"b");
 	OMsurfaces.addChoice(&addTorus,"l");
+	OMsurfaces.addChoice(&addWiggleSlab,"w");
 	OMsurfaces.addChoice(&punchHole,"hole",SELECTOR_HIDDEN);
 	OMsurfaces.addChoice(&InputRequester::exitMenu,"x");
 	

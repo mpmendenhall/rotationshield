@@ -44,6 +44,17 @@ vec2 Dish::operator()(double x) const {
 
 //----
 
+CosineLine::CosineLine(vec2 start, vec2 end, unsigned int ncyc, double ampl):
+x0(start), x1(end), n(ncyc) {
+	o = rhOrtho((x1-x0).normalized()*ampl);
+}
+
+vec2 CosineLine::operator()(double x) const {
+	return x0*(1-x) + x1*x + o*(1-cos(M_PI*n*x));
+}
+
+//----
+
 ParamStretcher::ParamStretcher(DVFunc1<2,double>* f0, double d0, double r0, double d1, double r1, bool dodelete):
 ri0(1./fabs(r0)), ri1(1./fabs(r1)), c0(-(d0-1)*fabs(r0)), c1((d1-1)*fabs(r1)), k(1), h(0), f(f0), delete_f(dodelete) {
 	k = 1./(distort(1)-distort(0));
@@ -69,6 +80,28 @@ RoundedSlab::RoundedSlab(double z0, double r, double w, double endfrac): PathJoi
 	
 	append(new ParamStretcher(new Line2D(vec2(z0-0.5*w, fabs(r-0.5*w)), vec2(z0-0.5*w, 0)),
 							 	s, r, 1, 1));
+}
+
+//----
+
+WiggleSlab::WiggleSlab(double z0, double r, double w, unsigned int n, double a, double endfrac) {
+	
+	w = copysign(w,r);
+	
+	assert(fabs(r) > fabs(0.5*w));
+	
+	double sidelen = 2*fabs(r-0.5*w);
+	double endlen = fabs(0.5*w)*M_PI;
+	double s = (1-endfrac)/endfrac * endlen/sidelen;
+
+	append(new ParamStretcher(new CosineLine(vec2(z0+0.5*w, 0), vec2(z0+0.5*w, fabs(r-0.5*w)), n, a),
+							  1, 1, s, r));
+				
+	append(new Arc2D(0.5*w, 0, r<0 ? -M_PI:M_PI));
+	
+	append(new ParamStretcher(new CosineLine(vec2(z0-0.5*w, fabs(r-0.5*w)), vec2(z0-0.5*w, 0), n, a*(n%2?1:-1)),
+							 	s, r, 1, 1));
+
 }
 
 //----

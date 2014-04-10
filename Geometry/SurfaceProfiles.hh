@@ -66,6 +66,19 @@ public:
 	double r;
 };
 
+/// line with cosine wiggles
+class CosineLine: public DVFunc1<2,double> {
+public:
+	/// constructor
+	CosineLine(vec2 start, vec2 end, unsigned int ncyc, double ampl);
+	/// function call
+	virtual vec2 operator()(double x) const;
+	
+protected:
+	vec2 x0,x1,o;	//< endpoints and orthogonal
+	unsigned int n;	//< number of cycles
+};
+
 /// Parameter distorter for speeding/slowing arclength traversal at ends of path
 class ParamStretcher: public DVFunc1<2,double> {
 public:
@@ -193,6 +206,16 @@ public:
 	/// destructor
 	virtual ~RoundedSlab() { clear(); }
 };
+
+/// Slab with CosineLine wiggly sides
+class WiggleSlab: public PathJoiner<2,double> {
+public:
+	/// constructor
+	WiggleSlab(double z0, double r, double w, unsigned int n, double a, double endfrac = 0.33);
+	/// destructor
+	virtual ~WiggleSlab() { clear(); }
+};
+
 
 /// Rounded-end finite-thickness tube
 class RoundedTube: public PathJoiner<2,double> {

@@ -109,6 +109,7 @@ public:
 	InputRequester addTube;
 	InputRequester addBall;
 	InputRequester addTorus;
+	InputRequester addWiggleSlab;
 	OptionsMenu OMsurfaces;
 	
 	InputRequester doSolve;
