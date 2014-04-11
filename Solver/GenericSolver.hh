@@ -19,7 +19,8 @@
  */
 
 #ifndef GENERICSOLVER_HH
-#define GENERICSOLVER_HH 1
+/// Make sure this header is only loaded once
+#define GENERICSOLVER_HH
 
 #include "Typedefs.hh"
 #include "InteractionSolver.hh"
@@ -52,10 +53,10 @@ protected:
 	void buildInteractionMatrix(ReactiveSet& R);
 
 #ifdef WITH_LAPACKE
-	mmat the_ixn;								//< The interaction matrix R between degrees of freedom
-	LAPACKE_Matrix_SVD<double,double>*  my_SVD;	//< SVD of (1-R)
+	mmat the_ixn;								///< The interaction matrix R between degrees of freedom
+	LAPACKE_Matrix_SVD<double,double>*  my_SVD;	///< SVD of (1-R)
 #else
-	gsl_matrix* the_GF; //< The inverted interaction matrix, i.e. the Green's Function for the system
+	gsl_matrix* the_GF; ///< The inverted interaction matrix, i.e. the Green's Function for the system
 #endif
 
 };

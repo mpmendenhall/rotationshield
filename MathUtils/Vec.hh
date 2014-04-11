@@ -18,8 +18,10 @@
  *
  */
 
+/// \file Vec.hh \brief Templatized fixed-length array class with mathematical operations
 #ifndef VEC_HH
-#define VEC_HH 1
+/// Make sure this header is only loaded once
+#define VEC_HH
 
 #include <stdlib.h>
 #include <math.h>
@@ -137,7 +139,7 @@ public:
 
 	
 protected:
-	T x[N]; //< vector elements
+	T x[N]; ///< vector elements
 };
 
 template<unsigned int N, typename T>

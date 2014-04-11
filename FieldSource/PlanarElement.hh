@@ -19,7 +19,8 @@
  */
 
 #ifndef PLANARELEMENT_HH
-#define PLANARELEMENT_HH 1
+/// Make sure this header is only loaded once
+#define PLANARELEMENT_HH
 
 #include "ReactiveElement.hh"
 
@@ -41,7 +42,7 @@ public:
 	/// Visualize the element
 	virtual void _visualize() const;
 	
-	Plane p;		//< The plane in which the element resides
+	Plane p;		///< The plane in which the element resides
 };
 
 

@@ -19,7 +19,8 @@
  */
 
 #ifndef PLANESOURCE_HH
-#define PLANESOURCE_HH 1
+/// Make sure this header is only loaded once
+#define PLANESOURCE_HH
 
 #include "PlanarElement.hh"
 #include "Matrix.hh"
@@ -54,8 +55,8 @@ public:
 	virtual mmat fieldAtComponents(vec3 p0) const;
 			
 private:
-	double murel;	//< relative permeability
-	mmat rmat;		//< response matrix to applied field
+	double murel;	///< relative permeability
+	mmat rmat;		///< response matrix to applied field
 	
 	/// generate correct response matrix to applied fields
 	void setRmat() {

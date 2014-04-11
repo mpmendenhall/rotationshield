@@ -21,8 +21,8 @@
 /// \file InterpolatingRS.hh \brief Virtual base class for interpolated collections of interacting degrees of freedom
 
 #ifndef INTERPOLATINGRS_HH
-/// Makes sure to only load this file once
-#define INTERPOLATINGRS_HH 1
+/// Make sure this header is only loaded once
+#define INTERPOLATINGRS_HH
 
 #include "ReactiveSet.hh"
 #include "InterpolationHelper.hh"
@@ -49,7 +49,7 @@ protected:
 	virtual void _setDFv(const mvec& v) { assert(v.size() == nDF()); InterplDF.setData(&v[0]); }
 	//=====================================
 	
-	InterpolationHelper InterplDF;	//< degrees of freedom in InterpolatingHelper grid
+	InterpolationHelper InterplDF;	///< degrees of freedom in InterpolatingHelper grid
 };
 
 /// Simplified case for 2D interpolation
@@ -85,9 +85,9 @@ protected:
 	/// set up data grid
 	virtual void make_grids(unsigned int nz, unsigned int ndf);
 	
-	std::vector<BicubicGrid*> G;	//< degrees of freedom stored in interpolator grid
-	unsigned int nZ;				//< grid size in z direction
-	unsigned int nDFi;				//< number of DF per element
+	std::vector<BicubicGrid*> G;	///< degrees of freedom stored in interpolator grid
+	unsigned int nZ;				///< grid size in z direction
+	unsigned int nDFi;				///< number of DF per element
 };
 
 

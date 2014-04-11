@@ -18,8 +18,10 @@
  *
  */
 
+/// \file VarMat.hh \brief Templatized variable-size matrices with mathematical operations
 #ifndef VARMAT_HH
-#define VARMAT_HH 1
+/// Make sure this header is only loaded once
+#define VARMAT_HH
 
 #include "VarVec.hh"
 #include "Matrix.hh"

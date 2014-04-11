@@ -18,8 +18,10 @@
  *
  */
 
+/// \file Typedefs.hh \brief Typedefs for useful common objects
 #ifndef TYPEDEFS_HH
-#define TYPEDEFS_HH 1
+/// Make sure this header is only loaded once
+#define TYPEDEFS_HH
 
 #include "Vec.hh"
 #include "Matrix.hh"

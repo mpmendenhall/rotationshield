@@ -18,8 +18,10 @@
  *
  */
 
+/// \file "DVFunc.hh" \brief Differentiable vector-valued functions template classes
 #ifndef DVFUNC_HH
-#define DVFUNC_HH 1
+/// Make sure this header is only loaded once
+#define DVFUNC_HH
 
 #include "Vec.hh"
 #include <vector>
@@ -62,7 +64,7 @@ public:
 	/// destructor
 	virtual ~DVFunc1() {}
 	
-	T period;	//< period of function, if periodic
+	T period;	///< period of function, if periodic
 		
 	/// evaluate function
 	virtual Vec<N,T> operator()(T x) const = 0;

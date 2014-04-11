@@ -1,5 +1,6 @@
 #ifndef SURFACEGEOMETRY_HH
-#define SURFACEGEOMETRY_HH 1
+/// Make sure this header is only loaded once
+#define SURFACEGEOMETRY_HH
 
 #include "Typedefs.hh"
 #include "DVFunc.hh"
@@ -42,24 +43,24 @@ public:
 	/// whether surface is closed/periodic along particular axis
 	virtual bool isClosed(unsigned int) const { return false; }
 	
-	unsigned int dflt_integrator_ndivs_x;	//< default number of sections to partition x integral in
-	unsigned int dflt_integrator_ndivs_y;	//< default number of sections to partition y integral in
-	vec2* polar_integral_center;			//< optional center point for switching to polar mode
-	double polar_r0;						//< starting radius for polar integrals
+	unsigned int dflt_integrator_ndivs_x;	///< default number of sections to partition x integral in
+	unsigned int dflt_integrator_ndivs_y;	///< default number of sections to partition y integral in
+	vec2* polar_integral_center;			///< optional center point for switching to polar mode
+	double polar_r0;						///< starting radius for polar integrals
 	
 	/// convenience mechanism for surface integrals
 	mvec subdividedIntegral(mvec (*f)(vec2, void*), unsigned int fdim, void* fparams, vec2 ll, vec2 ur, unsigned int ndx=0, unsigned int ndy=0) const;
 
-	mutable Integrator myIntegrator;		//< integrator for internal calculations
-	IntegratorND myIntegratorND;			//< multidimensional integrator for internal calculations
-	mutable Integrator2D myIntegrator2D;	//< surface field integrator, for polar-form CQUAD integrations
+	mutable Integrator myIntegrator;		///< integrator for internal calculations
+	IntegratorND myIntegratorND;			///< multidimensional integrator for internal calculations
+	mutable Integrator2D myIntegrator2D;	///< surface field integrator, for polar-form CQUAD integrations
 
 protected:
 	
 	// cache trig functions, since repeated calls will likely be for same values
 	void cache_sincos(double theta, double& s, double& c) const;
 	
-	gsl_multimin_fdfminimizer* myMinimizer;	//< minimizer routine as needed
+	gsl_multimin_fdfminimizer* myMinimizer;	///< minimizer routine as needed
 };
 
 /// Convenience 2D vector surface
@@ -96,7 +97,7 @@ public:
 	virtual double area(const vec2& ll, const vec2& ur) const;
 	
 	// geometry-defining functions
-	DVFunc1<2,double>* zr_profile;	//< z,r (l) profile
+	DVFunc1<2,double>* zr_profile;	///< z,r (l) profile
 	
 	/// whether surface is closed/periodic along particular axis
 	virtual bool isClosed(unsigned int a) const { return a==0 ? (zr_profile && zr_profile->period) : a==1; }
@@ -125,8 +126,8 @@ public:
 	/// whether surface is closed/periodic along particular axis
 	virtual bool isClosed(unsigned int a) const { return baseGeom->isClosed(a); }
 	
-	vec3 transl_v;					//< translation vector
-	Matrix<3,3,double> transf_M;	//< transformation matrix
+	vec3 transl_v;					///< translation vector
+	Matrix<3,3,double> transf_M;	///< transformation matrix
 	
 protected:
 	SurfaceGeometry* baseGeom;

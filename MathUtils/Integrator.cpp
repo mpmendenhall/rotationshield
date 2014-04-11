@@ -209,12 +209,12 @@ void Integrator2D::setup_singularities(double a, double b) {
 /// Contains arguments for general 2D integrating function
 class integratingParams_2D {
 public:
-	double (*f2)(vec2,void*);	//< pointer to the 2D function being integrated
-	void* fparams;				//< parameters for integrating function
-	Integrator* yIntegrator;	//< Integrator for y-direction integrals
-	double x;					//< x value being integrated
-	double y0;					//< y lower bound of integration
-	double y1;					//< y upper bound of integration
+	double (*f2)(vec2,void*);	///< pointer to the 2D function being integrated
+	void* fparams;				///< parameters for integrating function
+	Integrator* yIntegrator;	///< Integrator for y-direction integrals
+	double x;					///< x value being integrated
+	double y0;					///< y lower bound of integration
+	double y1;					///< y upper bound of integration
 };
 
 // slice of a 2D function at constant x
@@ -251,11 +251,11 @@ double Integrator2D::integrate2D(double (*f)(vec2,void*), vec2 ll, vec2 ur, void
 /// Contains arguments for general 2D integrating function
 class integratingParams_V2D: public integratingParams {
 public:
-	mvec (*f2)(vec2,void *);	//< pointer to the 2D function being integrated
-	Integrator* yIntegrator;	//< Integrator for y-direction integrals
-	double x;					//< x value being integrated
-	double y0;					//< y lower bound of integration
-	double y1;					//< y upper bound of integration
+	mvec (*f2)(vec2,void *);	///< pointer to the 2D function being integrated
+	Integrator* yIntegrator;	///< Integrator for y-direction integrals
+	double x;					///< x value being integrated
+	double y0;					///< y lower bound of integration
+	double y1;					///< y upper bound of integration
 };
 
 // slice of a 2D function at constant x
@@ -312,12 +312,12 @@ mvec Integrator2D::integrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, void* pa
 /// Contains arguments for polar 2D integrating function
 class integratingParams_V2D_P: public integratingParams {
 public:
-	mvec (*f2)(vec2,void *);	//< pointer to the 2D function being integrated
-	Integrator* yIntegrator;	//< Integrator for y-direction integrals
-	double r;					//< r distance
-	vec2 c;						//< integration center point
-	vec2 ll;					//< integration rectangle lower corner
-	vec2 ur;					//< integration rectangle upper corner
+	mvec (*f2)(vec2,void *);	///< pointer to the 2D function being integrated
+	Integrator* yIntegrator;	///< Integrator for y-direction integrals
+	double r;					///< r distance
+	vec2 c;						///< integration center point
+	vec2 ll;					///< integration rectangle lower corner
+	vec2 ur;					///< integration rectangle upper corner
 };
 
 // arc of a 2D function

@@ -21,7 +21,7 @@
 /// \file "BlockCMat.hh" \brief Block Circulant matrices, combining Circulant FFTW with internal LAPACKE matrix calculations
 #ifndef BLOCKCMAT_HH
 /// Make sure this header is only loaded once
-#define BLOCKCMAT_HH 1
+#define BLOCKCMAT_HH
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -74,10 +74,10 @@ protected:
 #ifdef WITH_LAPACKE
 	std::vector< LAPACKE_Matrix_SVD<double,lapack_complex_double>* > block_SVDs;
 #endif
-	VarVec<double> svalues;		//< sorted singular values
-	VarVec<unsigned int> sloc;	//< location of sorted singular-values in sub-matrix
-	BlockCMat* PsI;				//< pseudo-inverse
-	double PsI_epsilon;			//< threshold for singular vectors
+	VarVec<double> svalues;		///< sorted singular values
+	VarVec<unsigned int> sloc;	///< location of sorted singular-values in sub-matrix
+	BlockCMat* PsI;				///< pseudo-inverse
+	double PsI_epsilon;			///< threshold for singular vectors
 };
 
 #endif

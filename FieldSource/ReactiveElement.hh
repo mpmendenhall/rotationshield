@@ -19,7 +19,8 @@
  */
 
 #ifndef REACTIVEELEMENT_HH
-#define REACTIVEELEMENT_HH 1
+/// Make sure this header is only loaded once
+#define REACTIVEELEMENT_HH
 
 #include "FieldSource.hh"
 #include "Color.hh"
@@ -71,7 +72,7 @@ public:
 		
 protected:
 	
-	mvec state;		//< vector describing state of element (e.g. surface current for a PlaneSource)
+	mvec state;		///< vector describing state of element (e.g. surface current for a PlaneSource)
 };
 
 #endif

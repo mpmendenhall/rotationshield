@@ -19,7 +19,8 @@
  */
 
 #ifndef COSTHETABUILDER_HH
-#define COSTHETABUILDER_HH 1
+/// Make sure this header is only loaded once
+#define COSTHETABUILDER_HH
 
 #include "MixedSource.hh"
 #include "Typedefs.hh"
@@ -50,7 +51,7 @@ public:
 	/// get information in Stringmap form
 	virtual Stringmap getInfo() const;
 	
-	VarVec<double> shift; //< shifting parameters
+	VarVec<double> shift; ///< shifting parameters
 };
 
 //--------------------------------------------------------------------
@@ -78,8 +79,8 @@ public:
 	/// get information in Stringmap form
 	virtual Stringmap getInfo() const;
 	
-	vec3 trans1;	//< translation for one end
-	vec3 trans2;	//< translation for other end
+	vec3 trans1;	///< translation for one end
+	vec3 trans2;	///< translation for other end
 };
 
 //--------------------------------------------------------------------
@@ -95,10 +96,10 @@ public:
 	/// write info to QFile
 	void writeInfo(QFile& qOut) const;
 	
-	unsigned int ncoils;		//< number of saddle coils per half
-	float radius;				//< coil radius
-	float length;				//< coil length
-	float j_total;				//< total current through all loops on one side
+	unsigned int ncoils;		///< number of saddle coils per half
+	float radius;				///< coil radius
+	float length;				///< coil length
+	float j_total;				///< total current through all loops on one side
 	
 	AnglePositioner* AP;
 	EndTranslator* ET;
@@ -107,12 +108,12 @@ public:
 	vec3 getEndp(unsigned int n, bool xside, bool yside, bool zside);
 	
 	enum capType {
-		CAP_LINE,		//< line segments between endpoints
-		CAP_STRAIGHT,	//< rectangular coils straight across ends
-		CAP_ARC,		//< curved arcs between endpoints
-		CAP_NONE		//< no endcap wires constructed
+		CAP_LINE,		///< line segments between endpoints
+		CAP_STRAIGHT,	///< rectangular coils straight across ends
+		CAP_ARC,		///< curved arcs between endpoints
+		CAP_NONE		///< no endcap wires constructed
 	};
-	capType myCap[2];	//< how to construct endcaps on each side
+	capType myCap[2];	///< how to construct endcaps on each side
 	unsigned int nArc;
 	
 	// menu user interface

@@ -19,7 +19,8 @@
  */
 
 #ifndef NCUBE_HH
-#define NCUBE_HH 1
+/// Make sure this header is only loaded once
+#define NCUBE_HH
 
 #include "Visr.hh"
 #include "Vec.hh"
@@ -45,7 +46,7 @@ public:
 	Vec<N,double> apply(const Vec<N,double>& v) const;
 	
 private:
-	gsl_matrix* M; //< the rotation matrix
+	gsl_matrix* M; ///< the rotation matrix
 };
 
 template<int N>

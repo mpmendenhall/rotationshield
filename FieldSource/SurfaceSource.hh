@@ -1,8 +1,8 @@
 /// \file SurfaceSource.hh \brief Base class for extended 2D surface magnetic field sources
 
 #ifndef SURFACESOURCE_HH
-/// Makes sure to only load this file once
-#define SURFACESOURCE_HH 1
+/// Make sure this header is only loaded once
+#define SURFACESOURCE_HH
 
 #include "FieldSource.hh"
 #include "Integrator.hh"
@@ -41,10 +41,10 @@ public:
 	/// draw lines around a rectangular region
 	virtual void visualize_region(vec2 ll, vec2 ur) const;
 	
-	SurfaceGeometry* mySurface;	//< surface on which source is defined
+	SurfaceGeometry* mySurface;	///< surface on which source is defined
 
-	unsigned int vis_n1;		//< visualization gridding, z
-	unsigned int vis_n2;		//< visualization gridding, phi
+	unsigned int vis_n1;		///< visualization gridding, z
+	unsigned int vis_n2;		///< visualization gridding, phi
 };
 
 

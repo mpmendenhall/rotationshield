@@ -19,7 +19,8 @@
  */
 
 #ifndef LINESOURCE_HH
-#define LINESOURCE_HH 1
+/// Make sure this header is only loaded once
+#define LINESOURCE_HH
 
 #include "FieldSource.hh"
 
@@ -58,8 +59,8 @@ public:
 	static double sF2(double a2, double b2, double x1, double x2) { return sF2(a2,b2,x2) - sF2(a2,b2,x1); }
 	
 private:
-	const Line l;	//< The line along which current flows
-	const double j; //< The current
+	const Line l;	///< The line along which current flows
+	const double j; ///< The current
 };
 
 #endif

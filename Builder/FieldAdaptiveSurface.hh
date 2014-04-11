@@ -19,7 +19,8 @@
  */
 
 #ifndef FIELDADAPTIVESURFACE_HH
-#define FIELDADAPTIVESURFACE_HH 1
+/// Make sure this header is only loaded once
+#define FIELDADAPTIVESURFACE_HH
 
 #include "DVFunc.hh"
 #include "SurfaceProfiles.hh"
@@ -54,9 +55,9 @@ protected:
 	/// wrap a number into [0,1) for periodic function, starting half-way on outside
 	double wrap(double x) const { double i; return x>=0 ? modf(x,&i) : 1+modf(x,&i); }
 	
-	CubicGrid l_remap;	//< distortion function, as interpolator
+	CubicGrid l_remap;	///< distortion function, as interpolator
 	
-	const DVFunc1<2,double>& F;	//< reference function being distorted
+	const DVFunc1<2,double>& F;	///< reference function being distorted
 };
 
 #endif

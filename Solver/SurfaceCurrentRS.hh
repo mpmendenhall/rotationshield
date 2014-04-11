@@ -21,8 +21,8 @@
 /// \file SurfaceCurrentRS.hh \brief ReactiveSet for a surface current responding to magnetic field conditions
 
 #ifndef SURFACECURRENTRS_HH
-/// Makes sure to only load this file once
-#define SURFACECURRENTRS_HH 1
+/// Make sure this header is only loaded once
+#define SURFACECURRENTRS_HH
 
 #include "SurfaceCurrentSource.hh"
 #include "InterpolatingRS.hh"
@@ -42,8 +42,8 @@ public:
 		rmat2(1,0) = -rmat2(0,1);
 	}
 	
-	double murel;					//< relative permeability
-	Matrix<2,3,double> rmat2;		//< response matrix to applied field
+	double murel;					///< relative permeability
+	Matrix<2,3,double> rmat2;		///< response matrix to applied field
 };
 
 
@@ -79,16 +79,16 @@ public:
 	/// set up current loop response around given ring of z elements
 	void set_current_loop(unsigned int z, double i=1.0, bool phidir = true);
 	
-	bool point_ixn;	//< whether to use fields at point, or averaged over range
+	bool point_ixn;	///< whether to use fields at point, or averaged over range
 				
 protected:
 	
 	/// one surface element's reaction
 	mvec subelReaction(ReactiveSet* R);
 	
-	unsigned int ixn_el;	//< interacting element currently being probed
+	unsigned int ixn_el;	///< interacting element currently being probed
 	
-	std::vector<SurfaceI_Response> sdefs;	//< surface response definitions at each site
+	std::vector<SurfaceI_Response> sdefs;	///< surface response definitions at each site
 };
 
 #endif

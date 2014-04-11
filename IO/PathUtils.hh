@@ -18,8 +18,10 @@
  *
  */
 
+/// \file "PathUtils.hh" \brief Utility functions for filesystem operations
 #ifndef PATHUTILS_HH
-#define PATHUTILS_HH 1
+/// Make sure this header is only loaded once
+#define PATHUTILS_HH
 
 #include <string>
 #include <vector>

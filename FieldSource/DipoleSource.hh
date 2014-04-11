@@ -19,7 +19,8 @@
  */
 
 #ifndef DIPOLESOURCE_HH
-#define DIPOLESOURCE_HH 1
+/// Make sure this header is only loaded once
+#define DIPOLESOURCE_HH
 
 #include "FieldSource.hh"
 
@@ -36,8 +37,8 @@ public:
 	virtual void _visualize() const;
 	
 protected:
-	vec3 x;	//< location
-	vec3 m;	//< dipole moment
+	vec3 x;	///< location
+	vec3 m;	///< dipole moment
 };
 
 #endif

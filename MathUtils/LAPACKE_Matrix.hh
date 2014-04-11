@@ -22,14 +22,16 @@
  *
  */
 
+/// \file MAPACKE_Matrix.hh \brief Convenience interface to LAPACK matrix operations
 #ifndef LAPACKE_MATRIX_HH
-#define LAPACKE_MATRIX_HH 1
+/// Make sure this header is only loaded once
+#define LAPACKE_MATRIX_HH
+
 #ifdef WITH_LAPACKE
 
 #include <VarMat.hh>
 #include <complex.h>
-#define lapack_complex_float    float _Complex
-//#define lapack_complex_double   double _Complex
+#define lapack_complex_float  std::complex<float>
 #define lapack_complex_double  std::complex<double>
 #include "lapacke.h"
 #include "BinaryOutputObject.hh"
@@ -319,11 +321,11 @@ protected:
 	/// non-calculating constructor
 	LAPACKE_Matrix_SVD(): PsI(NULL), PsI_epsilon(0) {}
 
-	VarMat<T> S;		//< singular values diagonal
-	VarMat<CT> U;		//< left singular vectors
-	VarMat<CT> VT;		//< right singular vectors
-	VarMat<CT>* PsI;	//< pseudo-inverse
-	T PsI_epsilon;		//< threshold for singular vectors
+	VarMat<T> S;		///< singular values diagonal
+	VarMat<CT> U;		///< left singular vectors
+	VarMat<CT> VT;		///< right singular vectors
+	VarMat<CT>* PsI;	///< pseudo-inverse
+	T PsI_epsilon;		///< threshold for singular vectors
 	
 	/// appropriate data type version of xGEBRD bidiagonal reduction
 	static lapack_int (*f_gebrd)(int, lapack_int, lapack_int, CT*, lapack_int, T*, T*, CT*, CT*);

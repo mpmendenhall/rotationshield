@@ -21,7 +21,7 @@
 /// \file "tests.hh" \brief Tests to make sure everything is working properly
 #ifndef TESTS_HH
 /// Make sure this header is only loaded once
-#define TESTS_HH 1
+#define TESTS_HH
 
 #include "Typedefs.hh"
 

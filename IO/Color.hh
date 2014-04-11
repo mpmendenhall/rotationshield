@@ -18,8 +18,10 @@
  *
  */
 
+/// \file Color.hh \brief Color calculation utilities
 #ifndef COLOR_HH
-#define COLOR_HH 1
+/// Make sure this header is only loaded once
+#define COLOR_HH
 
 #include "Vec.hh"
 #include <math.h>

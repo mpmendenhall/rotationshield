@@ -21,7 +21,7 @@
 /// \file "FieldAnalyzer.hh" \brief Routines for analyzing the simulated fields
 #ifndef ANALYSIS_HH
 /// Make sure this header is only loaded once
-#define ANALYSIS_HH 1
+#define ANALYSIS_HH
 
 #include "FieldSource.hh"
 #include "VarVec.hh"
@@ -58,7 +58,7 @@ public:
 	static double simpsonCoeff(unsigned int n, unsigned int ntot);
 
 protected:
-	const FieldSource* FS; //< the FieldSource producing the fields being analyzed
+	const FieldSource* FS; ///< the FieldSource producing the fields being analyzed
 };
 
 #endif

@@ -21,8 +21,8 @@
 /// \file ReactiveSet.hh \brief Virtual base class for collections of interacting degrees of freedom
 
 #ifndef REACTIVESET_HH
-/// Makes sure to only load this file once
-#define REACTIVESET_HH 1
+/// Make sure this header is only loaded once
+#define REACTIVESET_HH
 
 #include "Typedefs.hh"
 #include <vector>
@@ -69,10 +69,10 @@ public:
 	bool interactionMode() const { return ixn_df < nDF(); }
 	
 	
-	const unsigned int nPhi;	//< internal periodic symmetry
-	const unsigned int RS_UID;	//< unique identifier
-	mvec incidentState; 		//< non-interacting initial state vector
-	mvec finalState;			//< final state after interactions
+	const unsigned int nPhi;	///< internal periodic symmetry
+	const unsigned int RS_UID;	///< unique identifier
+	mvec incidentState; 		///< non-interacting initial state vector
+	mvec finalState;			///< final state after interactions
 	
 protected:
 	
@@ -84,8 +84,8 @@ protected:
 	virtual void _setDFv(const mvec& v);
 	//=====================================
 	
-	unsigned int ixn_df;					//< interaction DF currently set
-	static unsigned int n_reactive_sets;	//< number of created reactive sets
+	unsigned int ixn_df;					///< interaction DF currently set
+	static unsigned int n_reactive_sets;	///< number of created reactive sets
 };
 
 
@@ -130,17 +130,17 @@ protected:
 	void add_DF_group(unsigned int N);
 	
 	// interaction calculator cache variables
-	unsigned int ixn_el;	//< sub-element currently set for interaction study
-	unsigned int ixn_el_df;	//< sub-element's DF currently set for interaction study
+	unsigned int ixn_el;	///< sub-element currently set for interaction study
+	unsigned int ixn_el_df;	///< sub-element's DF currently set for interaction study
 	
 	// groups
 	unsigned int n_subels() const { return (unsigned int)group_DF.size()*nPhi; }
-	std::vector<unsigned int> group_DF;		//< number of DF for elements in this group
-	std::vector<unsigned int> group_start;	//< starting index for each group of nPhi sub-elements
+	std::vector<unsigned int> group_DF;		///< number of DF for elements in this group
+	std::vector<unsigned int> group_start;	///< starting index for each group of nPhi sub-elements
 	
 	// individual DF
-	std::vector<unsigned int> df_subel;		//< sub-element number corresponding to each DF
-	std::vector<unsigned int> df_subel_df;	//< sub-element's DF corresponding to each DF
+	std::vector<unsigned int> df_subel;		///< sub-element number corresponding to each DF
+	std::vector<unsigned int> df_subel_df;	///< sub-element's DF corresponding to each DF
 };
 
 
@@ -179,7 +179,7 @@ public:
 	/// get access to set listing
 	const std::vector<ReactiveSet*>& getSets() { return mySets; }
 	
-	bool ownSets;	//< whether this object is responsible for deleting its member sets
+	bool ownSets;	///< whether this object is responsible for deleting its member sets
 	
 protected:
 
@@ -188,10 +188,10 @@ protected:
 	virtual void _setDF(unsigned int DF, double v);
 	//=====================================
 	
-	unsigned int ixn_set;					//< set currently responsible for interacting
-	std::vector<ReactiveSet*> mySets;		//< sub-units this class combined
-	std::vector<unsigned int> df_set;		//< which set each DF belongs to
-	std::vector<unsigned int> df_set_df;	//< which DF of its subset each DF corresponds to
+	unsigned int ixn_set;					///< set currently responsible for interacting
+	std::vector<ReactiveSet*> mySets;		///< sub-units this class combined
+	std::vector<unsigned int> df_set;		///< which set each DF belongs to
+	std::vector<unsigned int> df_set_df;	///< which DF of its subset each DF corresponds to
 };
 
 #endif

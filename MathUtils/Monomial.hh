@@ -18,8 +18,10 @@
  *
  */
 
+/// \file "Monomial.hh" \brief Templatized monomial term for a polynomial
 #ifndef MONOMIAL_HH
-#define MONOMIAL_HH 1
+/// Make sure this header is only loaded once
+#define MONOMIAL_HH
 
 #include "Vec.hh"
 #include <iostream>
@@ -99,10 +101,10 @@ public:
 	/// division operator
 	const Monomial<N,T,P> operator/(T other) const;
 	
-	T val;					//< dimensionless value
-	Vec<N,P> dimensions;	//< unit dimensions
+	T val;					///< dimensionless value
+	Vec<N,P> dimensions;	///< unit dimensions
 	
-	static const char* vletters; //< letters for variable names
+	static const char* vletters; ///< letters for variable names
 	
 	
 };

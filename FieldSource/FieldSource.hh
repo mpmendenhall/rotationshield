@@ -21,8 +21,8 @@
 /// \file FieldSource.hh \brief Base class for magnetic field sources
 
 #ifndef FIELDSOURCE_HH
-/// Makes sure to only load this file once
-#define FIELDSOURCE_HH 1
+/// Make sure this header is only loaded once
+#define FIELDSOURCE_HH
 
 #include "Geometry.hh"
 #include "SurfaceGeometry.hh"
@@ -64,8 +64,8 @@ public:
 	virtual vec3 field_RMS_near(const SurfaceGeometry& S, double dh = 0, vec2 ll = vec2(0,0), vec2 ur = vec2(1,1)) const;
 		
 private:
-	static Integrator lineIntegrator; //< Integrator for averaging over lines
-	static Integrator planeIntegrator; //< Integrator for averaging over planes
+	static Integrator lineIntegrator; ///< Integrator for averaging over lines
+	static Integrator planeIntegrator; ///< Integrator for averaging over planes
 };
 
 #endif

@@ -19,7 +19,8 @@
  */
 
 #ifndef MAGRS_HH
-#define MAGRS_HH 1
+/// Make sure this header is only loaded once
+#define MAGRS_HH
 
 #include "ReactiveSet.hh"
 #include "FieldSource.hh"
@@ -70,13 +71,13 @@ protected:
 /// Magnetic field interaction protocol class singleton
 class BField_Protocol {
 public:
-	vec3 x;	//< position
-	vec3 B;	//< magnetic field
-	const Matrix<2,3,double>* M2;	//< optional 3-to-2 transform matrix
-	const Matrix<3,3,double>* M3;	//< optional 3-to-3 transform matrix
-	vec2 M2B;						//< transformed field
-	unsigned int caller;			//< identifying number of caller
-	static BField_Protocol* BFP;	//< instance to use
+	vec3 x;	///< position
+	vec3 B;	///< magnetic field
+	const Matrix<2,3,double>* M2;	///< optional 3-to-2 transform matrix
+	const Matrix<3,3,double>* M3;	///< optional 3-to-3 transform matrix
+	vec2 M2B;						///< transformed field
+	unsigned int caller;			///< identifying number of caller
+	static BField_Protocol* BFP;	///< instance to use
 };
 
 #endif

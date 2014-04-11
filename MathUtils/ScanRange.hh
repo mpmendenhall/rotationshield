@@ -21,7 +21,7 @@
 /// \file "ScanRange.hh" \brief Class for scanning a variable over an interval
 #ifndef SCANRANGE_HH
 /// Make sure this header is only loaded once
-#define SCANRANGE_HH 1
+#define SCANRANGE_HH
 
 /// Class for scanning over an interval in a specified number of uniform steps
 class ScanRange {
@@ -46,11 +46,11 @@ public:
 	/// Print the status of the scan to stdout
 	void printStatus() const { printf("%g [%i/%i]",current(),n,nmax); }
 	
-	const int nmax; //< total number of steps over interval
-	const double s; //< Starting point of interval
-	const double e; //< Ending point of interval
+	const int nmax; ///< total number of steps over interval
+	const double s; ///< Starting point of interval
+	const double e; ///< Ending point of interval
 private:
-	int n; //< Step number in [0,#nmax)
+	int n; ///< Step number in [0,#nmax)
 };
 
 

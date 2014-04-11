@@ -21,16 +21,16 @@
  /// \file "MultiQuilibrator.hh" \brief Bring several individual solved systems into mutual equilibrium
 #ifndef MULTIQUILIBRATOR_HH
 /// Make sure this header is only loaded once
-#define MULTIQUILIBRATOR_HH 1
+#define MULTIQUILIBRATOR_HH
 
 #include "InteractionSolver.hh"
 #include <vector>
 
 struct solvedSet {
-	ReactiveSet* RS;		//< the interacting system
-	InteractionSolver* IS;	//< its solver
-	mvec v_inc;				//< initial incident response
-	mvec v_ext;				//< sequence of perturbation responses
+	ReactiveSet* RS;		///< the interacting system
+	InteractionSolver* IS;	///< its solver
+	mvec v_inc;				///< initial incident response
+	mvec v_ext;				///< sequence of perturbation responses
 };
 
 /// Iteratively equilibrates multiple ReactiveSets
@@ -54,7 +54,7 @@ protected:
 	/// update one set
 	double update_set(unsigned int i);
 	
-	std::vector<solvedSet> mySets;	//< interacting systems
+	std::vector<solvedSet> mySets;	///< interacting systems
 	
 };
 

@@ -19,7 +19,8 @@
  */
 
 #ifndef INFINITELINESOURCE_HH
-#define INFINITELINESOURCE_HH 1
+/// Make sure this header is only loaded once
+#define INFINITELINESOURCE_HH
 
 #include "FieldSource.hh"
 
@@ -45,8 +46,8 @@ public:
 	virtual void _visualize() const { l.visualizeDirected(sign(j)); }
 		
 private:
-	const Line l;	//< The line along which current flows
-	const double j; //< The current
+	const Line l;	///< The line along which current flows
+	const double j; ///< The current
 };
 
 #endif

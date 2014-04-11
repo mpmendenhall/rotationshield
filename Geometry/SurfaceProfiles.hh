@@ -19,7 +19,8 @@
  */
 
 #ifndef SURFACEPROFILES_HH
-#define SURFACEPROFILES_HH 1
+/// Make sure this header is only loaded once
+#define SURFACEPROFILES_HH
 
 #include "SurfaceGeometry.hh"
 #include <cmath>
@@ -34,7 +35,7 @@ public:
 	/// derivative
 	virtual vec2 deriv(double, bool normalized = false) const { if(normalized) return (x1-x0).normalized(); return x1-x0; }
 	
-	vec2 x0,x1;	//< endpoints
+	vec2 x0,x1;	///< endpoints
 };
 
 /// Arc of circle
@@ -47,10 +48,10 @@ public:
 	/// derivative
 	virtual vec2 deriv(double x, bool normalized = false) const;
 	
-	double r;	//< radius
-	vec2 v;		//< center
-	double t0;	//< start angle
-	double dt;	//< angular range
+	double r;	///< radius
+	vec2 v;		///< center
+	double t0;	///< start angle
+	double dt;	///< angular range
 };
 
 /// Parabolic dish
@@ -75,8 +76,8 @@ public:
 	virtual vec2 operator()(double x) const;
 	
 protected:
-	vec2 x0,x1,o;	//< endpoints and orthogonal
-	unsigned int n;	//< number of cycles
+	vec2 x0,x1,o;	///< endpoints and orthogonal
+	unsigned int n;	///< number of cycles
 };
 
 /// Parameter distorter for speeding/slowing arclength traversal at ends of path
@@ -106,8 +107,8 @@ protected:
 	double k;
 	double h;
 	
-	DVFunc1<2,double>* f;	//< function being distorted
-	bool delete_f;			//< whether to delete function f on destruction
+	DVFunc1<2,double>* f;	///< function being distorted
+	bool delete_f;			///< whether to delete function f on destruction
 };
 
 //
@@ -193,8 +194,8 @@ protected:
 	/// wrap a number into [0,1) for periodic function, starting half-way on outside
 	T wrap(T x) const { T i; x += 0.5*seg_endpts[1]/seg_endpts.back(); return x>=0 ? modf(x,&i) : 1+modf(x,&i); }
 	
-	std::vector< DVFunc1<N,T>* > mysegs;	//< subsections
-	std::vector<T> seg_endpts;				//< map from global l to sub-range endpoints
+	std::vector< DVFunc1<N,T>* > mysegs;	///< subsections
+	std::vector<T> seg_endpts;				///< map from global l to sub-range endpoints
 	std::vector< Vec<N,T> > seg_offsets;	// endpoint offsets for each segment
 };
 

@@ -21,7 +21,7 @@
 /// \file SMExcept.hh \brief exception handling class
 #ifndef SMEXCEPT_HH
 /// make sure this file is only included once
-#define SMEXCEPT_HH 1
+#define SMEXCEPT_HH
 
 #include <exception>
 #include "QFile.hh"

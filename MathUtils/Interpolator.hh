@@ -20,7 +20,7 @@
 
 #ifndef INTERPOLATOR_HH
 /// make sure this file is loaded only once
-#define INTERPOLATOR_HH 1
+#define INTERPOLATOR_HH
 
 #include <vector>
 #include <cassert>
@@ -29,9 +29,9 @@
 
 /// boundary conditions for interpolation
 enum BoundaryCondition {
-	BC_INFINITE,		//< extend endpoint values out to infinity
-	BC_CYCLIC,			//< cyclic boundary conditions
-	BC_DERIVCLAMP_ZERO	//< BC for clamping derivative to 0 at 0 for bicubic interpolation
+	BC_INFINITE,		///< extend endpoint values out to infinity
+	BC_CYCLIC,			///< cyclic boundary conditions
+	BC_DERIVCLAMP_ZERO	///< BC for clamping derivative to 0 at 0 for bicubic interpolation
 };
 
 /// infinite, bi-directional sequence of points
@@ -66,8 +66,8 @@ protected:
 		}
 		return 0;
 	}
-	int npts;				//< number of internal gridpoints
-	BoundaryCondition bc;	//< boundary conditions for generating sequence
+	int npts;				///< number of internal gridpoints
+	BoundaryCondition bc;	///< boundary conditions for generating sequence
 };
 
 /// data sequence based on internal array of doubles
@@ -86,7 +86,7 @@ public:
 		printf("(%i)\n",npts);
 	}
 protected:	
-	std::vector<double> pts;	//< internal list of points
+	std::vector<double> pts;	///< internal list of points
 };
 
 /// generic interpolator for intermediate points in a sequence
@@ -111,8 +111,8 @@ public:
 	/// set half-space offset for symmetric distribution in o0 to o0+s
 	void setSymmetricOffset(double o0 = 0) { offset = o0 + 0.5*scale/myData->getNpts(); }
 	
-	double scale;			//< internal length scale
-	double offset;			//< zero point coordinate offset
+	double scale;			///< internal length scale
+	double offset;			///< zero point coordinate offset
 	
 protected:
 	/// locate position in data coordinates, remainder in [0,1)
@@ -122,7 +122,7 @@ protected:
 			*remainder = l-floor(l);
 		return int(floor(l));
 	}
-	DataSequence* myData;	//< sequence to be interpolated
+	DataSequence* myData;	///< sequence to be interpolated
 };
 
 /// linear interpolator
@@ -178,7 +178,7 @@ public:
 	static Interpolator* newCubiTerpolator(DataSequence* L) { return new CubiTerpolator(L); }
 	
 protected:
-	double A;	//< "sharpening" coefficient, default = -0.5
+	double A;	///< "sharpening" coefficient, default = -0.5
 };
 
 /// a sequence of interpolators for multi-dimensional interpolation between interpolators
@@ -191,7 +191,7 @@ public:
 	/// data retreival
 	virtual double valueAt(int i, void* xopts) const { return myInterpolators[coerce(i)]->eval((const double*)xopts); }
 protected:
-	std::vector<Interpolator*> myInterpolators;	//< interpolators in sequence
+	std::vector<Interpolator*> myInterpolators;	///< interpolators in sequence
 };
 
 

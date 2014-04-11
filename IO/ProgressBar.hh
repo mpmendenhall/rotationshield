@@ -18,8 +18,10 @@
  *
  */
 
+/// \file ProgressBar.hh \brief Text output progress bar
 #ifndef PROGRESSBAR_HH
-#define PROGRESSBAR_HH 1
+/// Make sure this header is only loaded once
+#define PROGRESSBAR_HH
 
 #include <stdio.h>
 #include <string>
@@ -39,13 +41,13 @@ public:
 	
 protected:
 
-	const unsigned int ntotal;	//< total number of items to completion
-	const unsigned int nsteps;	//< number of steps to mark = ntotal/nmod
-	const unsigned int nmod;	//< number of items per marked step
+	const unsigned int ntotal;	///< total number of items to completion
+	const unsigned int nsteps;	///< number of steps to mark = ntotal/nmod
+	const unsigned int nmod;	///< number of items per marked step
 	
-	unsigned int c;				//< number of items completed
-	unsigned int s;				//< steps displayed
-	const bool verbose;			//< whether to display the progress bar
+	unsigned int c;				///< number of items completed
+	unsigned int s;				///< steps displayed
+	const bool verbose;			///< whether to display the progress bar
 };
 
 #endif

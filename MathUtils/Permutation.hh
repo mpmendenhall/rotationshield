@@ -21,7 +21,7 @@
 /// \file "Permutation.hh" \brief Permutation matrices
 #ifndef PERMUTATION_HH
 /// Make sure this header is loaded only once
-#define PERMUTATION_HH 1
+#define PERMUTATION_HH
 
 #include <stdlib.h>
 #include <vector>
@@ -61,7 +61,7 @@ public:
 	const Permutation operator*(const Permutation& p) const;
 	
 private:
-	std::vector<unsigned int> data; //< the permutation data
+	std::vector<unsigned int> data; ///< the permutation data
 };
 
 #endif

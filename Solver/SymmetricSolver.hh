@@ -21,7 +21,7 @@
 /// \file "SymmetricSolver.hh" \brief Contains the class for solving symmetric interacting systems
 #ifndef SYMMETRICSOLVER_HH
 /// Make sure this header is only loaded once
-#define SYMMETRICSOLVER_HH 1
+#define SYMMETRICSOLVER_HH
 
 #include "Typedefs.hh"
 #include "InteractionSolver.hh"
@@ -70,8 +70,8 @@ protected:
 	/// check inversion accuracy
 	static double checkInversion(const BlockCMat& M, const BlockCMat& MI, unsigned int nPhi);
 	
-	BlockCMat the_ixn;			//< The interaction matrix R between degrees of freedom
-	BlockCMat_SVD* the_GF;		//< the Green's Function for the system, (I-R)^-1
+	BlockCMat the_ixn;			///< The interaction matrix R between degrees of freedom
+	BlockCMat_SVD* the_GF;		///< the Green's Function for the system, (I-R)^-1
 };
 
 

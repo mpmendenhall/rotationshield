@@ -19,7 +19,8 @@
  */
 
 #ifndef ANGLES_HH
-#define ANGLES_HH 1
+/// Make sure this header is only loaded once
+#define ANGLES_HH
 
 #include <vector>
 #include <set>
@@ -38,8 +39,8 @@ struct angular_interval {
 	/// add a rotating angle
 	void add(double a);
 	
-	double th0;	//< start angle
-	double th1;	//< end angle
+	double th0;	///< start angle
+	double th1;	///< end angle
 };
 
 /// interval comparison for ordering
@@ -61,7 +62,7 @@ public:
 	std::vector<angular_interval> get_intervals(bool merge_wrap = true) const;
 
 protected:
-	std::set<angular_interval> endpts;	//< interval endpoints
+	std::set<angular_interval> endpts;	///< interval endpoints
 };
 
 /// string output representation for angular intervals

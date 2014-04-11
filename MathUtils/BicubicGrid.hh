@@ -19,7 +19,8 @@
  */
 
 #ifndef BICUBICGRID_HH
-#define BICUBICGRID_HH 1
+/// Make sure this header is only loaded once
+#define BICUBICGRID_HH
 
 /// evaluate cubic spline for y in 0,1, points at -1,0,1,2
 double eval_cubic(double y, const double* d);
@@ -28,10 +29,10 @@ double eval_cubic_deriv(double y, const double* d);
 
 /// boundary conditions for interpolation
 enum IBC {
-		IB_CYCLIC,	//< cyclic edges
-		IB_ZERO,	//< zero-pad edges
-		IB_LINEAR,	//< linear approach to edges
-		IB_REPEAT	//< repeat end value
+		IB_CYCLIC,	///< cyclic edges
+		IB_ZERO,	///< zero-pad edges
+		IB_LINEAR,	///< linear approach to edges
+		IB_REPEAT	///< repeat end value
 };
 
 /// simple 1D bicubic interpolator; faster than general interpolator schemes
@@ -42,8 +43,8 @@ public:
 	/// destructor
 	~CubicGrid();
 	
-	const unsigned int NX;	//< number of grid points
-	IBC bc;					//< boundary condition
+	const unsigned int NX;	///< number of grid points
+	IBC bc;					///< boundary condition
 	
 	/// evaluate at x in user coordinates
 	double operator()(double x) const;
@@ -65,8 +66,8 @@ protected:
 	/// set value at point x,y, in internal coordinates
 	void _set(unsigned int x, double v);
 	
-	double sx,ox;	//< user coordinate locations of first and last point in each dimension
-	double* data;	//< data with edge guard values
+	double sx,ox;	///< user coordinate locations of first and last point in each dimension
+	double* data;	///< data with edge guard values
 };
 
 
@@ -78,8 +79,8 @@ public:
 	/// destructor
 	~BicubicGrid();
 	
-	const unsigned int NX;	//< number of grid points in x direction
-	const unsigned int NY;	//< number of grid points in y direction
+	const unsigned int NX;	///< number of grid points in x direction
+	const unsigned int NY;	///< number of grid points in y direction
 	
 	/// evaluate at (x,y) in user coordinates
 	double operator()(double x, double y) const;
@@ -89,7 +90,7 @@ public:
 	/// set scale factors for user range, points at ends
 	void setUserRange(double r0, double r1, bool xdirection, double e = 0);
 	
-	IBC bc[2];	//< boundary condition for each axis
+	IBC bc[2];	///< boundary condition for each axis
 	
 	/// set value at point x,y
 	void set(unsigned int x, unsigned int y, double v);
@@ -113,8 +114,8 @@ protected:
 	/// set value at point x,y, in internal coordinates
 	void _set(unsigned int x, unsigned int y, double v);
 	
-	double sx,sy,ox,oy;		//< user coordinate locations of first and last point in each dimension
-	double** data;			//< data with edge guard values
+	double sx,sy,ox,oy;		///< user coordinate locations of first and last point in each dimension
+	double** data;			///< data with edge guard values
 };
 
 #endif

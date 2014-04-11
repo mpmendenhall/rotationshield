@@ -21,8 +21,8 @@
 /// \file Studies.hh \brief Utility classes for setting up Cos Theta Coil studies
 
 #ifndef STUDIES_HH
-/// Makes sure to only load this file once
-#define STUDIES_HH 1
+/// Make sure this header is only loaded once
+#define STUDIES_HH
 
 #include "MixedSource.hh"
 #include "SymmetricSolver.hh"
@@ -42,11 +42,11 @@ public:
 	/// cell info as Stringmap
 	Stringmap getInfo() const;
 	
-	vec3 ll;				//< lower corner
-	vec3 ur;				//< upper corner
-	unsigned int nx,ny,nz;	//< number of points to sample along each axis
-	unsigned int vx,vy,vz;	//< number of points to visualize along each axis
-	bool saveGrid;			//< whether to save gridded output on survey
+	vec3 ll;				///< lower corner
+	vec3 ur;				///< upper corner
+	unsigned int nx,ny,nz;	///< number of points to sample along each axis
+	unsigned int vx,vy,vz;	///< number of points to visualize along each axis
+	bool saveGrid;			///< whether to save gridded output on survey
 };
 
 /// Utility class for configuring field measurement
@@ -76,15 +76,15 @@ public:
 	void add_singular_state(unsigned int i, double c);
 	
 	
-	std::string basedir;			//< base directory for IO operations
-	MagRSCombiner* RSC;				//< reacting boundary condition surfaces
-	MagRSCombiner* PTB;				//< perturbation reaction
-	MagExtField* IncidentSource;	//< incident field source
-	MixedSource* TotalField;		//< incident + reacting field
+	std::string basedir;			///< base directory for IO operations
+	MagRSCombiner* RSC;				///< reacting boundary condition surfaces
+	MagRSCombiner* PTB;				///< perturbation reaction
+	MagExtField* IncidentSource;	///< incident field source
+	MixedSource* TotalField;		///< incident + reacting field
 	FieldAnalyzer FA;
-	fieldCell cell;					//< field measurement cell
-	SymmetricSolver* SS;			//< system solver
-	CosThetaBuilder CTB;			//< cos theta field coil builder
+	fieldCell cell;					///< field measurement cell
+	SymmetricSolver* SS;			///< system solver
+	CosThetaBuilder CTB;			///< cos theta field coil builder
 	
 	
 	

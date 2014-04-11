@@ -18,8 +18,10 @@
  *
  */
 
+/// \file Visr.hh \brief Simple OpenGL visualization window
 #ifndef VISCONTROLLER_HH
-#define VISCONTROLLER_HH 1
+/// Make sure this header is only loaded once
+#define VISCONTROLLER_HH
 
 #include "Vec.hh"
 #include "Typedefs.hh"

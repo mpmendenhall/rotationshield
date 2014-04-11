@@ -19,7 +19,8 @@
  */
 
 #ifndef GEOMETRY_HH
-#define GEOMETRY_HH 1
+/// Make sure this header is only loaded once
+#define GEOMETRY_HH
 
 #include <cmath>
 #include <algorithm>
@@ -43,10 +44,10 @@ public:
 	void _visualize() const;
 	void visualizeDirected(float j = 1.0) const;
 	
-	const vec3 s; //< Starting point
-	const vec3 e; //< Ending point
-	const double len; //< Length of the line, \f$ |e-s| \f$
-	vec3 dv; //< Normalized direction \f$ \frac{e-s}{|e-s|} \f$
+	const vec3 s; ///< Starting point
+	const vec3 e; ///< Ending point
+	const double len; ///< Length of the line, \f$ |e-s| \f$
+	vec3 dv; ///< Normalized direction \f$ \frac{e-s}{|e-s|} \f$
 };
 
 
@@ -84,10 +85,10 @@ public:
 		return v;
 	}
 	
-	vec2 start;		//< starting (z,r)
-	vec2 end;		//< ending (z,r)
-	double theta0;	//< center angle
-	double dTheta;	//< subtended angle
+	vec2 start;		///< starting (z,r)
+	vec2 end;		///< ending (z,r)
+	double theta0;	///< center angle
+	double dTheta;	///< subtended angle
 };
 
 /// An (oriented) plane, represented by an origin and two width/direction vectors
@@ -130,13 +131,13 @@ public:
 	/// split into grid of sub-sections
 	std::vector<Plane> subdivide(unsigned int nX, unsigned int nZ) const;
 	
-	double area; //< area of the plane
-	double wx;	//< width in "x" (\f$\hat\phi\f$) direction
-	double wz;	//< width along z direction
-	vec3 o; //< center of the plane
-	vec3 dx; //< vector along the "x" edge of the plane
-	vec3 dz; //< vector along the "z" edge of the plane
-	vec3 sn; //< Surface normal \f$ \frac{dx \times dz}{|dx||dz|} \f$
+	double area; ///< area of the plane
+	double wx;	///< width in "x" (\f$\hat\phi\f$) direction
+	double wz;	///< width along z direction
+	vec3 o; ///< center of the plane
+	vec3 dx; ///< vector along the "x" edge of the plane
+	vec3 dz; ///< vector along the "z" edge of the plane
+	vec3 sn; ///< Surface normal \f$ \frac{dx \times dz}{|dx||dz|} \f$
 	
 };
 

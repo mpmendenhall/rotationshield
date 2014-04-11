@@ -19,7 +19,8 @@
  */
 
 #ifndef INTERPOLATIONHELPER_HH
-#define INTERPOLATIONHELPER_HH 1
+/// Make sure this header is only loaded once
+#define INTERPOLATIONHELPER_HH
 
 #include "Interpolator.hh"
 
@@ -82,9 +83,9 @@ protected:
 	unsigned int from_flat_index(unsigned int& n) const;
 	
 	Interpolator* myInterpolator;
-	std::vector<InterpolationHelper*> subInterpolators;	//< sub-interpolators if not lowest dimension
-	std::vector<double> myData;							//< internal list of data points if lowest dimension
-	std::vector<unsigned int> cum_sum_dpts;				//< cumulative sum of datapoints in underlying structures
+	std::vector<InterpolationHelper*> subInterpolators;	///< sub-interpolators if not lowest dimension
+	std::vector<double> myData;							///< internal list of data points if lowest dimension
+	std::vector<unsigned int> cum_sum_dpts;				///< cumulative sum of datapoints in underlying structures
 };
 
 

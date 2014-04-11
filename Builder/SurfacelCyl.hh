@@ -21,8 +21,8 @@
 /// \file SurfacelCyl.hh \brief Cylindrical arrangements of surface elements (replacement for legacy SurfacelCyl)
 
 #ifndef SurfacelCyl_HH
-/// Makes sure to only load this file once
-#define SurfacelCyl_HH 1
+/// Make sure this header is only loaded once
+#define SurfacelCyl_HH
 
 #include "ReactiveSet.hh"
 #include "ReactiveElement.hh"
@@ -61,10 +61,10 @@ public:
 	/// respond to interaction protocol; respond if protocol identified
 	virtual bool queryInteraction(void* ip);
 	
-	bool verbose;	//< whether to display calculation progress
+	bool verbose;	///< whether to display calculation progress
 	
 protected:
-	std::vector<ReactiveElement*> surfacels;	//< the surface elements
+	std::vector<ReactiveElement*> surfacels;	///< the surface elements
 	
 	//======================================
 	/// set state for i^th sub-element
@@ -90,7 +90,7 @@ public:
 	const unsigned int nTheta;
 protected:
 	
-	PlanarElement* base;	//< PlanarElement that will be replicated into a ring
+	PlanarElement* base;	///< PlanarElement that will be replicated into a ring
 };
 
 /// Base class for describing cylindrically-symmetric gridded surfaces (i.e. the magnetic shield)
@@ -114,7 +114,7 @@ public:
 	void makeOptCyl(unsigned int nZ0, unsigned int nZ1, double r, double z0, double z1, PlanarElement* base, FieldEstimator2D* fe = NULL) { OptCone(nZ0,nZ1,vec2(z0,r),vec2(z1,r),base,fe); }
 	
 protected:
-	std::vector<ShieldSegment*> segments;	//< element generators for each ring in shield
+	std::vector<ShieldSegment*> segments;	///< element generators for each ring in shield
 };
 
 

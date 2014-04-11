@@ -19,8 +19,8 @@
  */
 
 #ifndef UNIFORMFIELD_HH
-/// Makes sure to only load this file once
-#define UNIFORMFIELD_HH 1
+/// Make sure this header is only loaded once
+#define UNIFORMFIELD_HH
 
 #include "FieldSource.hh"
 #include <stdio.h>
@@ -33,7 +33,7 @@ public:
 	/// Destructor
 	virtual ~UniformField() {}
 	
-	vec3 B; //< the uniform field vector
+	vec3 B; ///< the uniform field vector
 	
 	/// Magnetic field at a specified point
 	virtual vec3 fieldAt(const vec3&) const { return B; }

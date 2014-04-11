@@ -25,9 +25,9 @@ Integrator FieldSource::planeIntegrator = Integrator();
 
 /// Used for numerical integration of magnetic fields over Lines/Planes
 struct fieldIntegratorParams {
-	const Line* l; //< Line over which to integrate
-	const Plane* p; //< Plane over which to integrate
-	const FieldSource* fs; //< source of the fields being integrated
+	const Line* l; ///< Line over which to integrate
+	const Plane* p; ///< Plane over which to integrate
+	const FieldSource* fs; ///< source of the fields being integrated
 };
 
 /// For integrating magnetic fields over a Line using an Integrator

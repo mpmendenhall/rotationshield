@@ -124,7 +124,7 @@ void SurfacelCyl::OptCone(unsigned int nZ0, unsigned int nZ1, vec2 s, vec2 e, Pl
 	double slope = 0;
 	if(nZ1) {
 		slope = fstr[ngridpts-1]*nZ0/((ngridpts-1.0)*nZ1); // add a constant slope for fixed partitions
-		if(!(slope>1e-10)) slope=1e-10;	//< fix problems with extremely low fields
+		if(!(slope>1e-10)) slope=1e-10;	///< fix problems with extremely low fields
 	}
 	for(unsigned int i=0; i<ngridpts; i++)
 		fstr[i] += i*slope;

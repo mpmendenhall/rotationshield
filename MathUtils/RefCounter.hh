@@ -19,7 +19,8 @@
  */
 
 #ifndef REFCOUNTER_HH
-#define REFCOUNTER_HH 1
+/// Make sure this header is only loaded once
+#define REFCOUNTER_HH
 
 #include <cassert>
 #include <stdio.h>
@@ -34,7 +35,7 @@ public:
 	static int referencedObjectCount() { return nReferencedObjects; }
 	static int totalReferenceCount() { return nTotalReferences; }
 	
-	std::string ref_name;	//< name for this object, for tracing down deletion issues
+	std::string ref_name;	///< name for this object, for tracing down deletion issues
 	
 protected:
 	mutable unsigned int refcount;

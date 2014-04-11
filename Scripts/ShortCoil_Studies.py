@@ -80,7 +80,7 @@ def make_holey(nm,r,**kwargs):
 	
 	return S
 
-def make_wiggley(nm, r, nwiggles = 2, wsize = 0.02, **kwargs):
+def make_wiggley(nm, r, nwiggles = 3, wsize = 0.02, **kwargs):
 	S = make_bothends_closed(nm, r, **kwargs)
 	S.shields[-2].nwiggles = nwiggles
 	S.shields[-2].wigglesize = wsize

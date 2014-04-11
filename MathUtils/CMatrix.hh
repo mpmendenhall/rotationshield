@@ -23,7 +23,7 @@
 /// \file "CMatrix.hh" \brief Circulant matrices
 #ifndef CMATRIX_HH
 /// Make sure this header is only loaded once
-#define CMATRIX_HH 1
+#define CMATRIX_HH
 
 #include <iostream>
 #include <fftw3.h>
@@ -42,18 +42,18 @@ public:
 	/// destructor
 	~cmatrix_fft() { delete[] realspace; delete[] kspace; }
 	
-	const unsigned int M;			//< number of elements
-	fftw_plan forwardplan;			//< FFTW data for forward Fourier Transforms of this size
-	fftw_plan reverseplan;			//< FFTW data for inverse Fourier Transforms of this size
-	double* realspace;				//< array for holding real-space side of transform data
-	complex<double>* kspace;		//< array for holding kspace-side of transform data
+	const unsigned int M;			///< number of elements
+	fftw_plan forwardplan;			///< FFTW data for forward Fourier Transforms of this size
+	fftw_plan reverseplan;			///< FFTW data for inverse Fourier Transforms of this size
+	double* realspace;				///< array for holding real-space side of transform data
+	complex<double>* kspace;		///< array for holding kspace-side of transform data
 
 	/// get FFTer for dimension m
 	static cmatrix_fft& get_ffter(unsigned int m);
 	
 protected:
 
-	static std::map<unsigned int,cmatrix_fft*> ffters;	//< loaded FFTers
+	static std::map<unsigned int,cmatrix_fft*> ffters;	///< loaded FFTers
 };
 
 namespace VarVec_element_IO {
@@ -165,7 +165,7 @@ public:
 	
 private:
 	
-	unsigned int M;	//< number of cycles
+	unsigned int M;	///< number of cycles
 	
 	/// calculate K-space data from real space
 	void calculateKData() const;
@@ -175,10 +175,10 @@ private:
 	/// zero all entries in this CMatrix
 	void zero() const;
 	
-	mutable std::vector<double> data;						//< real-space data
-	mutable std::vector< complex<double> > kdata;			//< K-space data
-	mutable bool has_realspace;								//< whether the real-space representation of this matrix has been calculated
-	mutable bool has_kspace;								//< whether the k-space representation of this matrix has been calculated
+	mutable std::vector<double> data;						///< real-space data
+	mutable std::vector< complex<double> > kdata;			///< K-space data
+	mutable bool has_realspace;								///< whether the real-space representation of this matrix has been calculated
+	mutable bool has_kspace;								///< whether the k-space representation of this matrix has been calculated
 };
 
 std::ostream& operator<<(std::ostream& o, const CMatrix& m);

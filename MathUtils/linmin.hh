@@ -21,7 +21,7 @@
 /// \file "linmin.hh" \brief Least-squares linear polynomial fits
 #ifndef LINMIN_HH
 /// Make sure this header is included only once
-#define LINMIN_HH 1
+#define LINMIN_HH
 
 #include "gsl/gsl_matrix.h"
 #include "gsl/gsl_vector.h"

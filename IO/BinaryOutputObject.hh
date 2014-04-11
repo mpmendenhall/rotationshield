@@ -18,8 +18,10 @@
  *
  */
 
+/// \file BinaryOutputObject.hh \brief base utility class for tag-string-delimited binary IO
 #ifndef BINARYOUTPUTOBJECT_HH
-#define BINARYOUTPUTOBJECT_HH 1
+/// Make sure this header is only loaded once
+#define BINARYOUTPUTOBJECT_HH
 
 #include <iostream>
 #include <stdio.h>

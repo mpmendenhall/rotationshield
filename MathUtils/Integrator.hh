@@ -35,8 +35,8 @@
  */
 
 #ifndef INTEGRATOR_HH
-/// Make sure the file is only loaded once
-#define INTEGRATOR_HH 1
+/// Make sure this header is only loaded once
+#define INTEGRATOR_HH
 
 #include "gsl/gsl_integration.h"
 #include "gsl/gsl_errno.h"
@@ -49,14 +49,14 @@
 
 /// internal integration method specifier
 enum Integration_Method {
-	INTEG_GSL_QNG  = 0,	//< non-adaptive
-	INTEG_GSL_QAG  = 1,	//< adaptive
-	INTEG_GSL_QAGS = 2,	//< adaptive with singular points
-	INTEG_GSL_QAGP = 3,	//< adaptive with specified singular points
-	INTEG_GSL_CQUAD= 4	//< adaptive CQUAD
+	INTEG_GSL_QNG  = 0,	///< non-adaptive
+	INTEG_GSL_QAG  = 1,	///< adaptive
+	INTEG_GSL_QAGS = 2,	///< adaptive with singular points
+	INTEG_GSL_QAGP = 3,	///< adaptive with specified singular points
+	INTEG_GSL_CQUAD= 4	///< adaptive CQUAD
 };
 
-const unsigned int INTEG_WS_SIZE = 512;	//< size of integrating workspace (max. number of evaluation intervals)
+const unsigned int INTEG_WS_SIZE = 512;	///< size of integrating workspace (max. number of evaluation intervals)
 
 /// Contains the arguments for generalIntegratingFunction()
 class integratingParams {
@@ -67,14 +67,14 @@ public:
 	/// destructor
 	virtual ~integratingParams() {}
 	
-	void* fparams; 					//< additional arguments for the function being integrated
-	mvec (*f)(double,void *);		//< pointer to the function being integrated
-	unsigned int axis;				//< which of the three vector components is currently being integrated
-	unsigned int n_dim;				//< dimension of return vector
-	std::map<double,mvec> m;		//< cache for evaluated function points
+	void* fparams; 					///< additional arguments for the function being integrated
+	mvec (*f)(double,void *);		///< pointer to the function being integrated
+	unsigned int axis;				///< which of the three vector components is currently being integrated
+	unsigned int n_dim;				///< dimension of return vector
+	std::map<double,mvec> m;		///< cache for evaluated function points
 	
-	std::string nm;					//< name describing integration, for error display
-	static bool verbose;			//< whether to display pts during integration
+	std::string nm;					///< name describing integration, for error display
+	static bool verbose;			///< whether to display pts during integration
 };
 
 ///	The Integrator class uses gsl_integration_qag()
@@ -102,13 +102,13 @@ public:
 	 \param params additional parameters for the integrated function */
 	mvec integrate(mvec (*f)(double,void*), double a, double b, void* params = NULL);
 	
-	double rel_err;					//< relative error target, OR
-	double abs_err;					//< absolute error target
-	unsigned int err_count;			//< note of integration errors
+	double rel_err;					///< relative error target, OR
+	double abs_err;					///< absolute error target
+	unsigned int err_count;			///< note of integration errors
 	/// return and reset error counter
 	unsigned int reset_errcount() { unsigned int e = err_count; err_count = 0; return e; }
 	
-	std::set<double> singularities;	//< known singular points
+	std::set<double> singularities;	///< known singular points
 	
 	/// print meanings of GSL error codes
 	static void printErrorCodes();
@@ -127,11 +127,11 @@ protected:
 	
 	/// set list of interesting singularities
 	virtual void setup_singularities(double a, double b);
-	std::vector<double> _singularities;	//< singularities in integrating range
+	std::vector<double> _singularities;	///< singularities in integrating range
 	
-	Integration_Method myMethod;					//< selection of internal integration method
-	gsl_integration_workspace* gslIntegrationWS; 	//< needed by GSL integration routines called in integrate()
-	gsl_integration_cquad_workspace * gsl_cqd_ws;	//< needed by
+	Integration_Method myMethod;					///< selection of internal integration method
+	gsl_integration_workspace* gslIntegrationWS; 	///< needed by GSL integration routines called in integrate()
+	gsl_integration_cquad_workspace * gsl_cqd_ws;	///< needed by
 };
 
 /// 2-dimensional vector integrator; main use is polar integration around singularity (otherwise, use IntegratorND below)
@@ -161,7 +161,7 @@ public:
 	/// performs polar integral around point, clipped to specfied rectangle
 	mvec polarIntegrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, vec2 c, void* params = NULL, double r1 = -666, double r0 = 0);
 	
-	std::vector<vec2> xysingularities;	//< known singularities
+	std::vector<vec2> xysingularities;	///< known singularities
 	
 	/// set integration method
 	virtual void setMethod(Integration_Method m) { Integrator::setMethod(m); yIntegrator.setMethod(m); }
@@ -174,7 +174,7 @@ protected:
 	/// set list of interesting singularities
 	virtual void setup_singularities(double a, double b);
 	
-	Integrator yIntegrator; //< integrator for second dimension
+	Integrator yIntegrator; ///< integrator for second dimension
 };
 
 /// Multi-dimensional integrator, wrapper for "cubature" code
@@ -190,8 +190,8 @@ public:
 	mvec integratePolar(mvec (*f)(vec2, void*), unsigned int fdim, vec2 x0, vec2 ll, vec2 ur, void* params = NULL, double r1 = -666, double r0 = 0) const;
 	
 	
-	double rel_err;		//< relative error target, OR
-	double abs_err;		//< absolute error target
+	double rel_err;		///< relative error target, OR
+	double abs_err;		///< absolute error target
 };
 
 

@@ -18,8 +18,10 @@
  *
  */
 
+/// \file strutils.hh \brief String manipulation utilities
 #ifndef STRUTILS_HH
-#define STRUTILS_HH 1
+/// Make sure this header is only loaded once
+#define STRUTILS_HH
 
 #include <string>
 #include <vector>

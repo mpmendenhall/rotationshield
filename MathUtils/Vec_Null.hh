@@ -18,8 +18,10 @@
  *
  */
 
+/// \file Vec_Null.hh \brief Special case for 0-element vectors
 #ifndef VEC_NULL_HH
-#define VEC_NULL_HH 1
+/// Make sure this header is only loaded once
+#define VEC_NULL_HH
 
 /// Special 0 case
 template<typename T>

@@ -21,8 +21,8 @@
 /// \file SurfaceCurrentSource.hh \brief Magnetic field from a surface current density
 
 #ifndef SURFACECURRENTSOURCE_HH
-/// Makes sure to only load this file once
-#define SURFACECURRENTSOURCE_HH 1
+/// Make sure this header is only loaded once
+#define SURFACECURRENTSOURCE_HH
 
 #include "SurfaceSource.hh"
 
@@ -40,8 +40,8 @@ public:
 	/// Net current of the FieldSource
 	virtual vec3 net_current() const { return netCurrent(vec2(0,0),vec2(1,1)); }
 	
-	vec2 (*sj)(vec2, void*);	//< surface current density as a function of surface coordinate
-	void* sjparams;				//< extra parameters for surface function
+	vec2 (*sj)(vec2, void*);	///< surface current density as a function of surface coordinate
+	void* sjparams;				///< extra parameters for surface function
 	
 	/// Visualize the field source
 	virtual void _visualize() const;

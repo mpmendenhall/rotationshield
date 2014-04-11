@@ -18,8 +18,10 @@
  *
  */
 
+/// \file VisSurface.hh \brief Visualize parameters mapped onto a surface
 #ifndef VISSURFACE_HH
-#define VISSURFACE_HH 1
+/// Make sure this header is only loaded once
+#define VISSURFACE_HH
 
 #include "Visr.hh"
 #include "SurfaceGeometry.hh"
@@ -38,13 +40,13 @@ public:
 	/// visualization routine
 	virtual void _visualize() const;
 	
-	SurfaceGeometry* mySurface;	//< surface over which current is distributed
-	unsigned int vis_nx;		//< fineness of x grid
-	unsigned int vis_ny;		//< fineness oy y grid
+	SurfaceGeometry* mySurface;	///< surface over which current is distributed
+	unsigned int vis_nx;		///< fineness of x grid
+	unsigned int vis_ny;		///< fineness oy y grid
 
-	double (*f_height)(vec2, const void*);	//< color generator
+	double (*f_height)(vec2, const void*);	///< color generator
 	void* hparams;
-	vec4 (*f_color)(vec2, const void*);		//< surface normal offset generator
+	vec4 (*f_color)(vec2, const void*);		///< surface normal offset generator
 	void* cparams;
 };
 

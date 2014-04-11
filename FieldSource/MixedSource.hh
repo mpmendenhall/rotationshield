@@ -19,7 +19,8 @@
  */
 
 #ifndef MIXEDSOURCE_HH
-#define MIXEDSOURCE_HH 1
+/// Make sure this header is only loaded once
+#define MIXEDSOURCE_HH
 
 #include "FieldSource.hh"
 #include "LineSource.hh"
@@ -69,7 +70,7 @@ public:
 	
 private:
 
-	std::vector<const FieldSource*> sources; //< component sources
+	std::vector<const FieldSource*> sources; ///< component sources
 };
 
 #endif

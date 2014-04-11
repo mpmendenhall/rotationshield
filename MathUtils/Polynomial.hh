@@ -18,8 +18,10 @@
  *
  */
 
+/// \file "Polynomial.hh" \brief Templatized polynomial manipulation
 #ifndef POLYNOMIAL_HH
-#define POLYNOMIAL_HH 1
+/// Make sure this header is only loaded once
+#define POLYNOMIAL_HH
 
 #include "Monomial.hh"
 #include <map>
@@ -84,9 +86,9 @@ public:
 	/// output in LaTeX form
 	std::ostream& latexForm(std::ostream& o) const;
 	
-	std::map<Vec<N,unsigned int>, T> terms; //< terms of the polynomial
-	typename std::map< Vec<N,unsigned int> , T >::iterator it; //< iterator for terms
-	mutable typename std::map< Vec<N,unsigned int> , T >::const_iterator cit; //< const iterator for terms
+	std::map<Vec<N,unsigned int>, T> terms; ///< terms of the polynomial
+	typename std::map< Vec<N,unsigned int> , T >::iterator it; ///< iterator for terms
+	mutable typename std::map< Vec<N,unsigned int> , T >::const_iterator cit; ///< const iterator for terms
 };
 
 template<unsigned int N, typename T>

@@ -82,9 +82,9 @@ mvec SurfaceCurrentRS::getReactionTo(ReactiveSet* R, unsigned int phi) {
 
 /// parameters for averaging field over a region
 struct AverageFieldIntegParams {
-	ReactiveSet* RS;			//< field source
-	const SurfaceCurrentRS* S;	//< this surface being integrated over
-	Matrix<2,3,double> rmat2;	//< 2-component response matrix to local field
+	ReactiveSet* RS;			///< field source
+	const SurfaceCurrentRS* S;	///< this surface being integrated over
+	Matrix<2,3,double> rmat2;	///< 2-component response matrix to local field
 };
 
 /// field response integration function via protocol
@@ -144,13 +144,13 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 	}
 	
 	// z and phi numbers of active and responding element
-	unsigned int el = ixn_df % (nZ*nPhi);	//< active element
-	int c_nz = el/nPhi;			//< center z of active element
-	int c_np = el%nPhi;			//< center phi of active element
+	unsigned int el = ixn_df % (nZ*nPhi);	///< active element
+	int c_nz = el/nPhi;			///< center z of active element
+	int c_np = el%nPhi;			///< center phi of active element
 	
-	int i_nz = ixn_el/nPhi;		//< responding element z
-	int i_nphi = ixn_el%nPhi;	//< responding element phi
-	vec2 ixn_center = surf_coords(ixn_el);	//< responding element coordinate center
+	int i_nz = ixn_el/nPhi;		///< responding element z
+	int i_nphi = ixn_el%nPhi;	///< responding element phi
+	vec2 ixn_center = surf_coords(ixn_el);	///< responding element coordinate center
 	
 	// whether this is the interaction of an element with itself
 	//bool self_ixn = BField_Protocol::BFP->caller == RS_UID && el == ixn_el;
@@ -232,7 +232,7 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
 		}
 	}
 		
-	mySurface->myIntegrator2D.setMethod(INTEG_GSL_QAG); //< reset default method
+	mySurface->myIntegrator2D.setMethod(INTEG_GSL_QAG); ///< reset default method
 	
 	return true;
 }

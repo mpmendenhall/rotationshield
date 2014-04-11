@@ -18,8 +18,10 @@
  *
  */
 
+/// \file VarVec.hh \brief templatized variable-length arrays with mathematical operations
 #ifndef VARVEC_HH
-#define VARVEC_HH 1
+/// Make sure this header is only loaded once
+#define VARVEC_HH
 
 #include <stdlib.h>
 #include <string.h>

@@ -1,6 +1,8 @@
-#ifndef INTERPOLATOR_HH
-#define INTERPOLATOR_HH 1
 /// \file "interpolator.hh" \brief Adaptive mesh interpolator
+
+#ifndef INTERPOLATOR_HH
+/// Make sure this header is only loaded once
+#define INTERPOLATOR_HH
 
 #include "Visr.hh"
 #include <math.h>

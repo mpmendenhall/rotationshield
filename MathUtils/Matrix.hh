@@ -18,8 +18,10 @@
  *
  */
 
+/// \file Matrix.hh \brief Templatized fixed-size matrix class
 #ifndef MATRIX_HH
-#define MATRIX_HH 1
+/// Make sure this header is only loaded once
+#define MATRIX_HH
 
 #include "Vec.hh"
 #include <vector>

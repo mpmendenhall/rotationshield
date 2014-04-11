@@ -19,7 +19,8 @@
  */
 
 #ifndef INTERACTIONSOLVER_HH
-#define INTERACTIONSOLVER_HH 1
+/// Make sure this header is only loaded once
+#define INTERACTIONSOLVER_HH
 
 #include "ReactiveSet.hh"
 #include "Typedefs.hh"
@@ -48,11 +49,11 @@ public:
 	/// get right singular vector
 	virtual mvec get_singular_vector(unsigned int) const { return mvec(); }
 		
-	bool verbose;	//< whether to display solver progress
+	bool verbose;	///< whether to display solver progress
 
 protected:
 
-	double singular_epsilon;	//< singular value threshold
+	double singular_epsilon;	///< singular value threshold
 };
 
 #endif

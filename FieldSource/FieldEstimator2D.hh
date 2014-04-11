@@ -21,8 +21,8 @@
 /// \file FieldEstimator2D.hh \brief 2D magnetic fields
 
 #ifndef FIELDESTIMATOR2D_HH
-/// Makes sure to only load this file once
-#define FIELDESTIMATOR2D_HH 1
+/// Make sure this header is only loaded once
+#define FIELDESTIMATOR2D_HH
 
 #include "FieldSource.hh"
 #include <vector>

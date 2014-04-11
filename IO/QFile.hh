@@ -18,8 +18,10 @@
  *
  */
 
+/// \file "QFile.hh" \brief Simple key:value file format
 #ifndef QFILE_HH
-#define QFILE_HH 1
+/// Make sure this header is only loaded once
+#define QFILE_HH
 
 #include <map>
 #include <vector>
@@ -66,7 +68,7 @@ public:
 	/// convert to RData format
 	//RData* toRData() const;
 	
-	std::multimap< std::string, std::string > dat;	//< key-value multimap
+	std::multimap< std::string, std::string > dat;	///< key-value multimap
 	
 protected:
 	
@@ -142,8 +144,8 @@ public:
 
 protected:
 	
-	std::string name;								//< name for this object
-	std::multimap< std::string, Stringmap > dat;	//< key-value multimap
+	std::string name;								///< name for this object
+	std::multimap< std::string, Stringmap > dat;	///< key-value multimap
 
 };
 

@@ -19,7 +19,8 @@
  */
 
 #ifndef HOLEDIPOLEPERTURBATION_HH
-#define HOLEDIPOLEPERTURBATION_HH 1
+/// Make sure this header is only loaded once
+#define HOLEDIPOLEPERTURBATION_HH
 
 #include "DipoleSource.hh"
 #include "ReactiveSet.hh"
@@ -45,9 +46,9 @@ public:
 	/// Visualize the interactor
 	virtual void _visualize() const;
 	
-	double a;	//< hole radius
-	double dh;	//< height above surface to evaluate response field
-	std::set<unsigned int> hide_ixn;	//< perturbed sets from which to hide interaction
+	double a;	///< hole radius
+	double dh;	///< height above surface to evaluate response field
+	std::set<unsigned int> hide_ixn;	///< perturbed sets from which to hide interaction
 
 	
 protected:
@@ -57,8 +58,8 @@ protected:
 	virtual void _setDF(unsigned int DF, double v);
 	//=====================================
 	
-	const SurfaceGeometry& mySurface;	//< surface to which this is "attached"
-	vec2 surfacePos;					//< position on surface
+	const SurfaceGeometry& mySurface;	///< surface to which this is "attached"
+	vec2 surfacePos;					///< position on surface
 };
 
 #endif
