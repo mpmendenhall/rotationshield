@@ -39,14 +39,20 @@ Stringmap ShiftPositioner::getInfo() const {
 	return m;
 }
 
-/*
-double alarconKPositioner(unsigned int i, unsigned int ncoils, void* params) {	
+//--------------------------------------------------------------------
+
+double AlarconKPositioner::angle(unsigned int i, unsigned int ncoils) const {
 	i = i%ncoils;
-	double k = *(double*)params;
 	double x0 = (0.5+i)/(double)ncoils;
 	return atan2(sqrt(1/(x0*x0)-1),(1-k)*(1-k));
 }
-*/
+
+Stringmap AlarconKPositioner::getInfo() const {
+	Stringmap m;
+	m.insert("class","AlarconKPositioner");
+	m.insert("k",k);
+	return m;
+}
 
 //--------------------------------------------------------------------
 
@@ -80,12 +86,28 @@ void mi_setDistortion(StreamInteractor* S) {
 	CosThetaBuilder* CT = dynamic_cast<CosThetaBuilder*>(S);
 	assert(CT->AP);
 	ShiftPositioner* SP = dynamic_cast<ShiftPositioner*>(CT->AP);
+	if(!SP) {
+		printf("Changing to ShiftPositioner type distortion\n");
+		delete CT->AP;
+		SP = new ShiftPositioner();
+		CT->AP = SP;
+	}
 	if(n<=0) SP->shift = VarVec<double>(0);
 	else {
 		while(SP->shift.size()<(unsigned int)n) SP->shift.push_back(0);
 		SP->shift[n-1] = a;
 	}
 }
+
+void mi_setDistortionK(StreamInteractor* S) {
+	float k = S->popFloat();
+	
+	CosThetaBuilder* CT = dynamic_cast<CosThetaBuilder*>(S);
+	assert(CT->AP);
+	delete CT->AP;
+	CT->AP = new AlarconKPositioner(k);
+}
+
 
 void mi_setEndcaps(StreamInteractor* S) {
 	std::string ec[2];
@@ -113,6 +135,7 @@ CosThetaBuilder::CosThetaBuilder(unsigned int n, double r, double l, double j, A
 ncoils(n), radius(r), length(l), j_total(j), AP(ap), ET(et), nArc(100),
 setGeometry("Geometry", &mi_setGeometry, this),
 setDistortion("Distortion", &mi_setDistortion, this),
+setDistortionK("Distortion K", &mi_setDistortionK, this),
 selectEndcap("end wire shape"),
 setEndcaps("End wires", &mi_setEndcaps, this),
 setTranslation("Position offset", &mi_setTranslation, this),
@@ -128,6 +151,8 @@ OMcoil("Cos Theta Coil") {
 	setDistortion.addArg("n","1");
 	setDistortion.addArg("a_n","-0.001");
 	//
+	setDistortionK.addArg("k","0.005");
+	//
 	selectEndcap.addChoice("smooth arc","arc");
 	selectEndcap.addChoice("straight line","line");
 	selectEndcap.addChoice("no end wires","none");
@@ -142,6 +167,7 @@ OMcoil("Cos Theta Coil") {
 	//
 	OMcoil.addChoice(&setGeometry,"geom");
 	OMcoil.addChoice(&setDistortion,"dist");
+	OMcoil.addChoice(&setDistortionK,"kdist");
 	OMcoil.addChoice(&setEndcaps,"ends");
 	OMcoil.addChoice(&setTranslation,"off");
 	

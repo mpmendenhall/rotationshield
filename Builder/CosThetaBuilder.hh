@@ -54,6 +54,20 @@ public:
 	VarVec<double> shift; ///< shifting parameters
 };
 
+/// Alarcon "k" position shift used in cos theta coil production
+class AlarconKPositioner: public AnglePositioner {
+public:
+	/// constructor
+	AlarconKPositioner(double K): k(K) {}
+	/// get wire angle
+	virtual double angle(unsigned int i, unsigned int ncoils) const;
+	/// get information in Stringmap form
+	virtual Stringmap getInfo() const;
+
+	const double k;
+};
+
+
 //--------------------------------------------------------------------
 
 /// base class for translating wires
@@ -119,6 +133,8 @@ public:
 	// menu user interface
 	InputRequester setGeometry;
 	InputRequester setDistortion;
+	InputRequester setDistortionK;
+	
 	NameSelector selectEndcap;
 	InputRequester setEndcaps;
 	InputRequester setTranslation;
