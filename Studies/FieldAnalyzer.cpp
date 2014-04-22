@@ -107,17 +107,17 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
 	char axisnames[] = "xyz";
 	
 	unsigned int polOrder = 0;
-	for(unsigned int i=1; i<=4; i++)	// TODO variable max polynomial order
+	for(unsigned int i=1; i<=8; i++)
 		if(nX>i && nY>i && nZ>i) polOrder = i;
-	Polynomial<3,double> p = Polynomial<3,double>::lowerTriangleTerms(polOrder);
 	for(int i=0; i<3; i++) {
+		Polynomial<3,double> p = Polynomial<3,double>::lowerTriangleTerms(polOrder);
+		resids = polynomialFit(coords, bfield[i], p);
+		p.prune(1e-9*bRMS);
 		resids = polynomialFit(coords, bfield[i], p);
 		gsl_vector_free(bfield[i]);
 		statsout << "#" << polOrder << "th order polynomial (" << p.terms.size() << " terms) fit to B" << axisnames[i]
 			<< " centered at " << xcenter << ", rms residual = " << resids << std::endl;
-		Polynomial<3,double> p2 = p;
-		p2.prune(1e-12*bRMS);
-		p2.tableForm(statsout);
+		p.tableForm(statsout);
 	}
 	gsl_matrix_free(coords);
 	

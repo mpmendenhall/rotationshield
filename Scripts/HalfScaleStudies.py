@@ -3,50 +3,41 @@
 from StudyPlotter import *
 from ShieldStudyLauncher import *
 
-def make_halfscale_base(nm,r):
+
+def make_halfscale_base(nm, r,
+						kdist = 0.005,
+						gridt = 58):
 
 	S = StudySetup(nm,r)
-	S.set_csgeom(clen = 2.146, crad = 0.324, dlen = 0.0065, drad = 0.038)
+	S.nPhi = 64
+	S.fields.append(CoilSpec(0.324, 2.146, 15))	# r=1, l=2.5, N=15 cos theta coil
+	S.fields[-1].kdist = kdist
 	
-	# SC bottom plate
-	if 1:
-		S.shsects.append(ShieldSection(0,6,12,"nax","nrd"))
-		S.shsects[0].off[0] = [-0.051, 0] # 0.102]
-		S.shsects[0].off[1] = [-0.051, 0.051]
+	sr = 0.02
+	srad = 0.362 + sr
+	shz = 0.5*2.16
 	
-	# main shield
-	S.shsects.append(ShieldSection(10000,10,20,"nrd","prd"))
+	S.shields.append(ShieldSpec(10000, gridt, [(-shz, srad),(shz, srad)], sr, 0.80))
 	
-	S.measGrid = (7,7,13)
-	S.measCell = [(-.18,-0.18,-0.4), (0.18,0.18,0.4)]
-	S.dist = [-0.0126]
-	
+	S.measGrid = (9,9,13)
+	S.measCell = [(-0.10, -0.10, 0), (0.10, 0.10, 1.0)]
+
 	return S
 
+make_setup = make_halfscale_base
+stname = "HS_Base"
 
-def OpenEnded():
+def kDistScan():
 	SS = StudyScan()
-	for x in unifrange(0, 0, 1, True):
-		S = make_halfscale_base("Halfscale_Open",x)
-		S.shsects[0].off[0][1] = x
-		SS.fsimlist.write(S.make_cmd())
+	for (n,r) in  enumerate(unifrange(0, .01, 16)):
+		S = make_setup(stname+"/kDist", r, kdist = r)
+		S.solfl = "../SC"
+		if n == -1:
+			os.system(S.make_cmd("RotationShield_Vis"))
+		else:
+			SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
-def NegApertureScan():
-	SS = StudyScan()
-	for x in unifrange(0, 0.2, 7, True):
-		S = make_halfscale_base("Halfscale_NegAperture",x)
-		S.shsects[0].off[0][1] = x
-		SS.fsimlist.write(S.make_cmd())
-	SS.run()
-
-def EndcapDistance():
-	SS = StudyScan()
-	for x in unifrange(-0.05, 0, 7, True):
-		S = make_halfscale_base("Halfscale_EC_Dist",x)
-		S.shsects[0].off[0][0] = S.shsects[0].off[1][0] = x
-		SS.fsimlist.write(S.make_cmd())
-	SS.run()
 
 if __name__=="__main__":
 
@@ -64,48 +55,32 @@ if __name__=="__main__":
 	
 	if options.scan:
 	
-		#OpenEnded()
-		#NegApertureScan()
-		EndcapDistance()
-		
-		exit(0)
+		kDistScan()
 
 	outdir = os.environ["ROTSHIELD_OUT"]
 
 	VPP = None
 
 	if options.plot:
-	
-		VPP = VarParamPlotter(outdir+"/Halfscale_NegAperture")
-		VPP.keypos = "br"
-		VPP.setupGraph("Bottom plate aperture size [m]")
+
+		VPP = VarParamPlotter(outdir+"/"+stname+"/kDist")
+		VPP.keypos = "tc"
+		VPP.setupGraph("coil distortion `$k$'")
 
 		if VPP is not None:
 			VPP.makePlot()
 			VPP.outputPlot()
-			
 
 	if options.fplt:
 		if VPP is not None:
 			for r,FI in VPP.datlist:
 				FI.plotFields(2,0,1,2)
 		else:
-		
-			pltdirs = ["Halfscale_NegAperture/X_0.000000/", "Halfscale_Open/X_0.000000/", "Halfscale_NegAperture/X_0.100000/", "Halfscale_EC_Dist/X_0.000000/"]
 			
-			for d in pltdirs:
-				FI = FieldInfo(outdir+d)
-				
-				FI.BC.ll = [-10,-10,-40]
-				FI.BC.ur = [10,10,40]
-		
-				FI.plotFields(2,0,1,2) # Bz along z
-				FI.plotFields(0,0,1,2) # Bx along z
-				
-				#FI.plotFields(0,0,2,1) # Bx along y
-				
-				#FI.plotCellProjection(1,0)
-				#FI.plotCellProjection(1,2)
-				#FI.plotCellProjection(0,2)
-
+			FI = FieldInfo(outdir+"/"+stname+"/kDist/X_0.000000/")
+			
+			if 1:
+				FI.BC.plotFields(2,0,1,2) # Bz along z
+				FI.BC.plotFields(0,0,2,1) # Bx along y
+				FI.BC.plotFields(0,0,1,2) # Bx along z
 

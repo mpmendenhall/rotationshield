@@ -60,13 +60,17 @@ class CoilSpec:
 		self.j = j
 		self.ends = None	# end wire style; None for default ["arc","arc"]
 		self.dist = []		# distortion parameters
+		self.kdist = None
 		self.offset = None
+		
 	def make_cmd(self):
 		cmd = "c geom %i %g %g %g"%(self.N, self.r, self.l, self.j)
 		if self.ends:
 			cmd += " ends %s %s"%tuple(self.ends)
 		for (n,a) in enumerate(self.dist):
 			cmd += " dist %i %g"%(n+1,a)
+		if self.kdist is not None:
+			cmd += " kdist %g"%self.kdist
 		if self.offset:
 			cmd += " off %g %g %g"%tuple(self.offset)
 		cmd += " x"
