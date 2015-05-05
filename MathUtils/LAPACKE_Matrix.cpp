@@ -26,30 +26,39 @@
 #include "LAPACKE_Matrix.hh"
 
 template<>
-auto Mat_Ops_Real<float>::f_gemm = &cblas_sgemm;
+void (*Mat_Ops_Real<float>::f_gemm)(const enum CBLAS_ORDER, const enum CBLAS_TRANSPOSE, const enum CBLAS_TRANSPOSE,
+                                                  const int, const int, const int, const float, const float*, const int lda,
+                                                  const float*, const int, const float, float*, const int) = &cblas_sgemm;
 template<>
-auto Mat_Ops_Real<double>::f_gemm = &cblas_dgemm;
+void (*Mat_Ops_Real<double>::f_gemm)(const enum CBLAS_ORDER, const enum CBLAS_TRANSPOSE, const enum CBLAS_TRANSPOSE,
+                                     const int, const int, const int, const double, const double*, const int lda,
+                                     const double*, const int, const double, double*, const int) = &cblas_dgemm;
+                                                                                                              
+template<>
+void (*Mat_Ops_Complex<lapack_complex_float>::f_gemm)(const enum CBLAS_ORDER, const enum CBLAS_TRANSPOSE, const enum CBLAS_TRANSPOSE,
+                                                      const int, const int, const int, const void*, const void*, const int lda,
+                                                      const void*, const int, const void*, void*, const int) = &cblas_cgemm;
+template<>
+void (*Mat_Ops_Complex<lapack_complex_double>::f_gemm)(const enum CBLAS_ORDER, const enum CBLAS_TRANSPOSE, const enum CBLAS_TRANSPOSE,
+                                                       const int, const int, const int, const void*, const void*, const int lda,
+                                                       const void*, const int, const void*, void*, const int) = &cblas_zgemm;
 
+                                                
 template<>
-auto Mat_Ops_Complex<lapack_complex_float>::f_gemm = &cblas_cgemm;
+lapack_int (*LAPACKE_Matrix_SVD<double,double>::f_gebrd)(int, lapack_int, lapack_int, double*, lapack_int, double*, double*, double*, double*) = &LAPACKE_dgebrd;
 template<>
-auto Mat_Ops_Complex<lapack_complex_double>::f_gemm = &cblas_zgemm;
-
+lapack_int (*LAPACKE_Matrix_SVD<double,double>::f_bdsqr)(int, char, lapack_int, lapack_int, lapack_int, lapack_int, double*, double*, double*, lapack_int, double*, lapack_int, double*, lapack_int) = &LAPACKE_dbdsqr;
 template<>
-auto LAPACKE_Matrix_SVD<double,double>::f_gebrd = &LAPACKE_dgebrd;
-template<>
-auto LAPACKE_Matrix_SVD<double,double>::f_bdsqr = &LAPACKE_dbdsqr;
-template<>
-auto LAPACKE_Matrix_SVD<double,double>::f_orgbr = &LAPACKE_dorgbr;
+lapack_int (*LAPACKE_Matrix_SVD<double,double>::f_orgbr)(int, char, lapack_int, lapack_int, lapack_int, double*, lapack_int, const double*) = &LAPACKE_dorgbr;
 template<>
 Mat_Ops<double>* LAPACKE_Matrix_SVD<double,double>::myOps = new Mat_Ops_Real<double>();
 
 template<>
-auto LAPACKE_Matrix_SVD<double, lapack_complex_double >::f_gebrd = &LAPACKE_zgebrd;
+lapack_int (*LAPACKE_Matrix_SVD<double,lapack_complex_double>::f_gebrd)(int, lapack_int, lapack_int, lapack_complex_double*, lapack_int, double*, double*, lapack_complex_double*, lapack_complex_double*) = &LAPACKE_zgebrd;
 template<>
-auto LAPACKE_Matrix_SVD<double, lapack_complex_double >::f_bdsqr = &LAPACKE_zbdsqr;
+lapack_int (*LAPACKE_Matrix_SVD<double,lapack_complex_double>::f_bdsqr)(int, char, lapack_int, lapack_int, lapack_int, lapack_int, double*, double*, lapack_complex_double*, lapack_int, lapack_complex_double*, lapack_int, lapack_complex_double*, lapack_int) = &LAPACKE_zbdsqr;
 template<>
-auto LAPACKE_Matrix_SVD<double, lapack_complex_double >::f_orgbr = &LAPACKE_zungbr;
+lapack_int (*LAPACKE_Matrix_SVD<double,lapack_complex_double>::f_orgbr)(int, char, lapack_int, lapack_int, lapack_int, lapack_complex_double*, lapack_int, const lapack_complex_double*) = &LAPACKE_zungbr;
 template<>
 Mat_Ops<lapack_complex_double>* LAPACKE_Matrix_SVD<double, lapack_complex_double >::myOps = new Mat_Ops_Complex<lapack_complex_double>();
 #endif

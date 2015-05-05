@@ -1,0 +1,8 @@
+*~
+*.o
+*.a
+*.pdf
+*.root
+*.pyc
+RotationShield
+fftw_wisdom

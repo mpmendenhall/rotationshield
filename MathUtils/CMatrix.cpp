@@ -390,9 +390,9 @@ CMatrix& CMatrix::invert() {
 
 
 const CMatrix CMatrix::inverse() const {
-	CMatrix I = *this;
-	I.invert();
-	return I;
+	CMatrix MI = *this;
+	MI.invert();
+	return MI;
 }
 
 
