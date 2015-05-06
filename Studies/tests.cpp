@@ -413,8 +413,8 @@ void flux_trap_test() {
     
     cout << "Selecting singular component from SVD, which indicates ``self-interacting'' mode without external field:" << std::endl;
     RS->incidentState = RS->finalState;
-    SS.set_singular_epsilon(-0.01);	// pick out only singular component of solution
-    SS.calculateResult(*RS);		// apply singular state
+    SS.set_singular_epsilon(-0.01);    // pick out only singular component of solution
+    SS.calculateResult(*RS);        // apply singular state
     RS->visualize();
     cout << "Total state vector magnitude: " << RS->finalState.mag() << std::endl;
     qsurvey(RS, vec3(0,.75,0), vec3(0,0,0), 6);
@@ -424,7 +424,7 @@ void flux_trap_test() {
         
         cout << "Checking stability of trapped-flux state by repeatedly applying interaction operator..." << std::endl;
         RS->incidentState = RS->finalState;
-        SS.selfInteract(*RS);	// state should be stable under self-interaction
+        SS.selfInteract(*RS);    // state should be stable under self-interaction
         cout << "Total state vector magnitude: " << RS->finalState.mag() << std::endl;
         cout << "Initial/final state difference magnitude: " << (RS->finalState - RS->incidentState).mag() << std::endl;
         

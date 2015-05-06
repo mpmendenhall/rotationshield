@@ -29,14 +29,14 @@
 /// exception class for error handling
 class SMExcept: public std::exception, public Stringmap {
 public:
-	/// constructor
-	SMExcept(std::string tp);
-	/// destructor
-	~SMExcept() throw() {}
-	/// display error
-	virtual const char* what() const throw();
-	/// string for holding error message
-	mutable std::string msg;
+    /// constructor
+    SMExcept(std::string tp);
+    /// destructor
+    ~SMExcept() throw() {}
+    /// display error
+    virtual const char* what() const throw();
+    /// string for holding error message
+    mutable std::string msg;
 };
 
 #endif

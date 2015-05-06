@@ -23,49 +23,49 @@
 #include <cmath>
 
 void MultiQuilibrator::addSet(ReactiveSet* RS, InteractionSolver* IS) {
-	assert(RS && IS);
-	solvedSet s;
-	s.RS = RS;
-	s.IS = IS;
-	mySets.push_back(s);
+    assert(RS && IS);
+    solvedSet s;
+    s.RS = RS;
+    s.IS = IS;
+    mySets.push_back(s);
 }
 
 double MultiQuilibrator::update_set(unsigned int i) {
-	assert(i<mySets.size());
-	mySets[i].RS->incidentState = mySets[i].v_inc + mySets[i].v_ext;
-	mvec prev = mySets[i].RS->finalState;
-	mySets[i].IS->calculateResult(*mySets[i].RS);
-	double di = (prev-mySets[i].RS->finalState).mag2();
-	double mi = prev.mag2();
-	std::cout << "Set " << i << " changed by " << sqrt(di) << " (" << 100*sqrt(di/mi) << " %)\n";
-	return di/mi;
+    assert(i<mySets.size());
+    mySets[i].RS->incidentState = mySets[i].v_inc + mySets[i].v_ext;
+    mvec prev = mySets[i].RS->finalState;
+    mySets[i].IS->calculateResult(*mySets[i].RS);
+    double di = (prev-mySets[i].RS->finalState).mag2();
+    double mi = prev.mag2();
+    std::cout << "Set " << i << " changed by " << sqrt(di) << " (" << 100*sqrt(di/mi) << " %)\n";
+    return di/mi;
 }
 
 double MultiQuilibrator::step() {
-	
-	std::cout << "Equilibration step on " << mySets.size() << " systems...\n";
-	double dv = 0;
-	for(unsigned int i=0; i<mySets.size(); i++) {
-	
-		if(!mySets[i].v_inc.size()) mySets[i].v_inc = mySets[i].RS->incidentState;
-		if(!mySets[i].v_ext.size()) mySets[i].v_ext = mvec(mySets[i].RS->nDF());
-		
-		// accumulate reaction to other systems
-		mySets[i].v_ext.zero();
-		for(unsigned int j=0; j<mySets.size(); j++) {
-			if(i==j) continue;
-			mySets[i].v_ext += mySets[i].RS->getFullReactionTo(mySets[j].RS);
-		}
-		
-		dv += update_set(i);
-	}
-	
-	std::cout << "\n** Net change\t" << 100*sqrt(dv) << "%\n\n";
-	return sqrt(dv);
+    
+    std::cout << "Equilibration step on " << mySets.size() << " systems...\n";
+    double dv = 0;
+    for(unsigned int i=0; i<mySets.size(); i++) {
+    
+        if(!mySets[i].v_inc.size()) mySets[i].v_inc = mySets[i].RS->incidentState;
+        if(!mySets[i].v_ext.size()) mySets[i].v_ext = mvec(mySets[i].RS->nDF());
+        
+        // accumulate reaction to other systems
+        mySets[i].v_ext.zero();
+        for(unsigned int j=0; j<mySets.size(); j++) {
+            if(i==j) continue;
+            mySets[i].v_ext += mySets[i].RS->getFullReactionTo(mySets[j].RS);
+        }
+        
+        dv += update_set(i);
+    }
+    
+    std::cout << "\n** Net change\t" << 100*sqrt(dv) << "%\n\n";
+    return sqrt(dv);
 }
 
 unsigned int MultiQuilibrator::equilibrate(double rel_err) {
-	unsigned int nsteps = 0;
-	while(step() > rel_err) { nsteps++; }
-	return nsteps;
+    unsigned int nsteps = 0;
+    while(step() > rel_err) { nsteps++; }
+    return nsteps;
 }

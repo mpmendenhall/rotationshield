@@ -22,11 +22,11 @@
 
 
 void InteractionSolver::print_singular_values() const {
-	mvec S = get_singular_values();
-	std::cout << "Most Singular values out of " << S.size() << " singular vectors:\n";
-	for(int i=S.size()-1; i>=0; i--) {
-		std::cout << S[i]/S[0] << "\t";
-		if(S[i] > 0.01*S[0]) break;
-	}
-	std::cout << "\n\n";
+    mvec S = get_singular_values();
+    std::cout << "Most Singular values out of " << S.size() << " singular vectors:\n";
+    for(int i=S.size()-1; i>=0; i--) {
+        std::cout << S[i]/S[0] << "\t";
+        if(S[i] > 0.01*S[0]) break;
+    }
+    std::cout << "\n\n";
 }

@@ -31,33 +31,33 @@
 /// Profile for optimizing cylinder to field
 class FieldAdaptiveSurface: public DVFunc1<2,double> {
 public:
-	/// constructor
-	FieldAdaptiveSurface(const DVFunc1<2,double>& f);
-	
-	/// evaluate function
-	virtual vec2 operator()(double x) const;
-	
-	/// derivative
-	virtual vec2 deriv(double x, bool normalized = false) const;
-	
-	/// optimize for field configuration
-	void optimizeSpacing(const FieldEstimator2D& fes, double pfixed = 0.5, bool useDeriv = true);
-	/// set constant spacing
-	void setConstantSpacing();
-	
-	/// print out test points
-	void symmetry_test() const;
-	
+    /// constructor
+    FieldAdaptiveSurface(const DVFunc1<2,double>& f);
+    
+    /// evaluate function
+    virtual vec2 operator()(double x) const;
+    
+    /// derivative
+    virtual vec2 deriv(double x, bool normalized = false) const;
+    
+    /// optimize for field configuration
+    void optimizeSpacing(const FieldEstimator2D& fes, double pfixed = 0.5, bool useDeriv = true);
+    /// set constant spacing
+    void setConstantSpacing();
+    
+    /// print out test points
+    void symmetry_test() const;
+    
 protected:
-	/// derivative of l distortion parameter
-	double l_dist_deriv(double l) const;
-	
-	/// wrap a number into [0,1) for periodic function, starting half-way on outside
-	double wrap(double x) const { double i; return x>=0 ? modf(x,&i) : 1+modf(x,&i); }
-	
-	CubicGrid l_remap;	///< distortion function, as interpolator
-	
-	const DVFunc1<2,double>& F;	///< reference function being distorted
+    /// derivative of l distortion parameter
+    double l_dist_deriv(double l) const;
+    
+    /// wrap a number into [0,1) for periodic function, starting half-way on outside
+    double wrap(double x) const { double i; return x>=0 ? modf(x,&i) : 1+modf(x,&i); }
+    
+    CubicGrid l_remap;                  ///< distortion function, as interpolator
+    
+    const DVFunc1<2,double>& F ;        ///< reference function being distorted
 };
 
 #endif

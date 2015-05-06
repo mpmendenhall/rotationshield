@@ -34,44 +34,44 @@
 
 class SymmetricSolver: public InteractionSolver, public BinaryOutputObject {
 public:
-	/// Constructor
-	SymmetricSolver(): InteractionSolver(true), the_GF(NULL) {}
-	/// Destructor
-	virtual ~SymmetricSolver() { if(the_GF) delete the_GF; }
-	
-	/// Solve for the Greene's Function of a ReactiveSet system
-	virtual void solve(ReactiveSet& R);
-	/// Apply solution to ReactiveSet system initial state
-	virtual void calculateResult(ReactiveSet& R);
-	/// Apply self-interaction to final state
-	virtual void selfInteract(ReactiveSet& R);
-	
-	/// Dump binary data to file
-	void writeToFile(std::ostream& o) const;
-	/// Read binary data from file
-	static SymmetricSolver* readFromFile(std::istream& s);
-	/// Read solution from file if available; otherwise, solve; save result to same file
-	static SymmetricSolver* cachedSolve(ReactiveSet& R, const std::string& fname);
+    /// Constructor
+    SymmetricSolver(): InteractionSolver(true), the_GF(NULL) {}
+    /// Destructor
+    virtual ~SymmetricSolver() { if(the_GF) delete the_GF; }
+    
+    /// Solve for the Greene's Function of a ReactiveSet system
+    virtual void solve(ReactiveSet& R);
+    /// Apply solution to ReactiveSet system initial state
+    virtual void calculateResult(ReactiveSet& R);
+    /// Apply self-interaction to final state
+    virtual void selfInteract(ReactiveSet& R);
+    
+    /// Dump binary data to file
+    void writeToFile(std::ostream& o) const;
+    /// Read binary data from file
+    static SymmetricSolver* readFromFile(std::istream& s);
+    /// Read solution from file if available; otherwise, solve; save result to same file
+    static SymmetricSolver* cachedSolve(ReactiveSet& R, const std::string& fname);
 
 #ifdef WITH_LAPACKE
-	/// get un-normalized vector of singular values
-	virtual mvec get_singular_values() const;
-	/// get right singular vector
-	virtual mvec get_singular_vector(unsigned int i) const;
+    /// get un-normalized vector of singular values
+    virtual mvec get_singular_values() const;
+    /// get right singular vector
+    virtual mvec get_singular_vector(unsigned int i) const;
 #endif
-	
+    
 protected:
-	
-	/// Assembles the interaction matrix
-	void buildInteractionMatrix(ReactiveSet& R);
-	
-	/// perform in-place block circulant multiplication
-	static void circulantMul(const BlockCMat& M, mvec& v, unsigned int nPhi);
-	/// check inversion accuracy
-	static double checkInversion(const BlockCMat& M, const BlockCMat& MI, unsigned int nPhi);
-	
-	BlockCMat the_ixn;			///< The interaction matrix R between degrees of freedom
-	BlockCMat_SVD* the_GF;		///< the Green's Function for the system, (I-R)^-1
+    
+    /// Assembles the interaction matrix
+    void buildInteractionMatrix(ReactiveSet& R);
+    
+    /// perform in-place block circulant multiplication
+    static void circulantMul(const BlockCMat& M, mvec& v, unsigned int nPhi);
+    /// check inversion accuracy
+    static double checkInversion(const BlockCMat& M, const BlockCMat& MI, unsigned int nPhi);
+    
+    BlockCMat the_ixn;          ///< The interaction matrix R between degrees of freedom
+    BlockCMat_SVD* the_GF;      ///< the Green's Function for the system, (I-R)^-1
 };
 
 

@@ -32,62 +32,62 @@
 /// ReactiveSet with utilities for interpolating between DF
 class InterpolatingRS: public ReactiveSet {
 public:
-	/// constructor
-	InterpolatingRS(unsigned int nph): ReactiveSet(nph) {}
-	
-	//===================================== ReactiveSet subclass
-	/// total number of degrees of freedom
-	virtual unsigned int nDF() const { return InterplDF.n_pts(); }
-	//=====================================
-	
+    /// constructor
+    InterpolatingRS(unsigned int nph): ReactiveSet(nph) {}
+    
+    //===================================== ReactiveSet subclass
+    /// total number of degrees of freedom
+    virtual unsigned int nDF() const { return InterplDF.n_pts(); }
+    //=====================================
+    
 protected:
 
-	//===================================== ReactiveSet subclass
-	/// additional routines for setting a DF value
-	virtual void _setDF(unsigned int DF, double v) { InterplDF[DF] = v; }
-	/// additional routines for setting entire state vector
-	virtual void _setDFv(const mvec& v) { assert(v.size() == nDF()); InterplDF.setData(&v[0]); }
-	//=====================================
-	
-	InterpolationHelper InterplDF;	///< degrees of freedom in InterpolatingHelper grid
+    //===================================== ReactiveSet subclass
+    /// additional routines for setting a DF value
+    virtual void _setDF(unsigned int DF, double v) { InterplDF[DF] = v; }
+    /// additional routines for setting entire state vector
+    virtual void _setDFv(const mvec& v) { assert(v.size() == nDF()); InterplDF.setData(&v[0]); }
+    //=====================================
+    
+    InterpolationHelper InterplDF;    ///< degrees of freedom in InterpolatingHelper grid
 };
 
 /// Simplified case for 2D interpolation
 class InterpolatingRS2D: public ReactiveSet {
 public:
-	/// constructor
-	InterpolatingRS2D(unsigned int nph): ReactiveSet(nph), nZ(0), nDFi(0) { }
-	/// destructor
-	virtual ~InterpolatingRS2D() { clear_data(); }
-	
-	//===================================== ReactiveSet subclass
-	/// total number of degrees of freedom
-	virtual unsigned int nDF() const { return nZ*nPhi*nDFi; }
-	//=====================================
-	
-	/// evaluate interpolators at point
-	mvec interpl_DF(vec2 l) const;
-	
-	/// display data grids
-	virtual void printData() const;
-	
+    /// constructor
+    InterpolatingRS2D(unsigned int nph): ReactiveSet(nph), nZ(0), nDFi(0) { }
+    /// destructor
+    virtual ~InterpolatingRS2D() { clear_data(); }
+    
+    //===================================== ReactiveSet subclass
+    /// total number of degrees of freedom
+    virtual unsigned int nDF() const { return nZ*nPhi*nDFi; }
+    //=====================================
+    
+    /// evaluate interpolators at point
+    mvec interpl_DF(vec2 l) const;
+    
+    /// display data grids
+    virtual void printData() const;
+    
 protected:
-	
-	//===================================== ReactiveSet subclass
-	/// additional routines for setting a DF value
-	virtual void _setDF(unsigned int DF, double v);
-	//=====================================
-	
-	/// determine "address" for DF in interpolating grids
-	void DF_address(unsigned int DF, unsigned int& p, unsigned int& z, unsigned int& d) const;
-	/// delete previous grids
-	virtual void clear_data();
-	/// set up data grid
-	virtual void make_grids(unsigned int nz, unsigned int ndf);
-	
-	std::vector<BicubicGrid*> G;	///< degrees of freedom stored in interpolator grid
-	unsigned int nZ;				///< grid size in z direction
-	unsigned int nDFi;				///< number of DF per element
+    
+    //===================================== ReactiveSet subclass
+    /// additional routines for setting a DF value
+    virtual void _setDF(unsigned int DF, double v);
+    //=====================================
+    
+    /// determine "address" for DF in interpolating grids
+    void DF_address(unsigned int DF, unsigned int& p, unsigned int& z, unsigned int& d) const;
+    /// delete previous grids
+    virtual void clear_data();
+    /// set up data grid
+    virtual void make_grids(unsigned int nz, unsigned int ndf);
+    
+    std::vector<BicubicGrid*> G;        ///< degrees of freedom stored in interpolator grid
+    unsigned int nZ;                    ///< grid size in z direction
+    unsigned int nDFi;                  ///< number of DF per element
 };
 
 

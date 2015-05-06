@@ -21,13 +21,13 @@
 #include "DipoleSource.hh"
 
 vec3 DipoleSource::fieldAt(const vec3& v) const {
-	vec3 r = v - x;
-	double mr = r.mag();
-	if(fabs(mr) < 1e-9) return vec3(0,0,0);
-	return (r*(m.dot(r)*3./(mr*mr)) - m) / (4.*M_PI*mr*mr*mr);
+    vec3 r = v - x;
+    double mr = r.mag();
+    if(fabs(mr) < 1e-9) return vec3(0,0,0);
+    return (r*(m.dot(r)*3./(mr*mr)) - m) / (4.*M_PI*mr*mr*mr);
 }
 
 void DipoleSource::_visualize() const {
-	vsr::setColor(1,0,0);
-	vsr::dot(x);
+    vsr::setColor(1,0,0);
+    vsr::dot(x);
 }

@@ -37,31 +37,31 @@ using namespace std;
 /// Stores fftw data for FFT'ing
 class cmatrix_fft {
 public:
-	/// constructor
-	cmatrix_fft(unsigned int m);
-	/// destructor
-	~cmatrix_fft() { delete[] realspace; delete[] kspace; }
-	
-	const unsigned int M;			///< number of elements
-	fftw_plan forwardplan;			///< FFTW data for forward Fourier Transforms of this size
-	fftw_plan reverseplan;			///< FFTW data for inverse Fourier Transforms of this size
-	double* realspace;				///< array for holding real-space side of transform data
-	complex<double>* kspace;		///< array for holding kspace-side of transform data
+    /// constructor
+    cmatrix_fft(unsigned int m);
+    /// destructor
+    ~cmatrix_fft() { delete[] realspace; delete[] kspace; }
+    
+    const unsigned int M;       ///< number of elements
+    fftw_plan forwardplan;      ///< FFTW data for forward Fourier Transforms of this size
+    fftw_plan reverseplan;      ///< FFTW data for inverse Fourier Transforms of this size
+    double* realspace;          ///< array for holding real-space side of transform data
+    complex<double>* kspace;    ///< array for holding kspace-side of transform data
 
-	/// get FFTer for dimension m
-	static cmatrix_fft& get_ffter(unsigned int m);
-	
+    /// get FFTer for dimension m
+    static cmatrix_fft& get_ffter(unsigned int m);
+    
 protected:
 
-	static std::map<unsigned int,cmatrix_fft*> ffters;	///< loaded FFTers
+    static std::map<unsigned int,cmatrix_fft*> ffters;  ///< loaded FFTers
 };
 
 namespace VarVec_element_IO {
-	template<>
-	inline void writeToFile(const complex<double>& t, std::ostream& o) { o.write((char*)&t, sizeof(t)); }
-	
-	template<>
-	inline complex<double> readFromFile(std::istream& s) { complex<double> x; s.read((char*)&x, sizeof(x)); return x; }
+    template<>
+    inline void writeToFile(const complex<double>& t, std::ostream& o) { o.write((char*)&t, sizeof(t)); }
+    
+    template<>
+    inline complex<double> readFromFile(std::istream& s) { complex<double> x; s.read((char*)&x, sizeof(x)); return x; }
 }
 
 /// Circulant matrices
@@ -80,105 +80,105 @@ namespace VarVec_element_IO {
  for a particular interaction symmetry).*/
 class CMatrix: public BinaryOutputObject {
 public:
-	/// Constructor
-	CMatrix(unsigned int m = 0): M(m), data(M,0.), kdata(M/2+1,0.), has_realspace(true), has_kspace(true) { }
-	
-	/*
-	/// Save matrix to a file (to be read by readFromFile())
-	void writeToFile(std::ostream& o) const;
-	/// Read matrix from a file written by writeToFile()
-	static CMatrix readFromFile(std::istream& s);
-	*/
-	
-	/// generate an identity CMatrix
-	static CMatrix identity(unsigned int m);
-	/// Fill this CMatrix with random numbers in [0,1]
-	static CMatrix random(unsigned int m);
-	
-	unsigned int nRows() const { return M; }
-	unsigned int nCols() const { return M; }
-	unsigned int size() const { return M*M; }
-	
-	/// Print this CMatrix to stdout
-	void display() const;
-	/// Print kspace data for this CMatrix to stdout
-	void displayK() const;
-	
-	/// immutable element access
-	double operator[](unsigned int n) const;
-	/// mutable element access
-	double& operator[](unsigned int n);
-	
-	/// L2 (Spectral) norm of circulant matrix
-	double norm_L2() const;
-	/// determinant of circulant matrix
-	double det() const;
-	/// trace of circulant matrix
-	double trace() const;
-	
-	/// Return a pointer to the CMatrix's Fourier representation
-	std::vector< complex<double> >& getKData();
-	/// Return a pointer to the CMatrix's Fourier representation (read only)
-	const std::vector< complex<double> >&  getKData() const;
-	/// Return a pointer to the CMatrix's real-space representation
-	std::vector<double>&  getRealData();
-	/// Return a pointer to the CMatrix's real-space representation (read only)
-	const std::vector<double>& getRealData() const;
-	
-	/// Calculate the inverse of this CMatrix
-	const CMatrix inverse() const;
-	/// Invert this CMatrix inplace
-	CMatrix& invert();
-	/// Return the transpose of this CMatrix
-	const CMatrix transpose() const;
-	
-	/// unary minus
-	const CMatrix operator-() const;
-	
-	/// Product with a scalar, inplace
-	CMatrix& operator*=(double c);
-	/// Product with another CMatrix (circulant matrices are commutative!)
-	CMatrix& operator*=(const CMatrix& m);
-	/// Product with a scalar
-	const CMatrix operator*(double c) const;
-	/// Product with another CMatrix (circulant matrices are commutative!)
-	const CMatrix operator*(const CMatrix& m) const;
-	/// Multiply a vector on the right
-	const VarVec<double> operator*(const VarVec<double>& v) const;
-	
-	/// add another CMatrix to this one
-	CMatrix& operator+=(const CMatrix& rhs);
-	/// sum of two CMatrices
-	const CMatrix operator+(const CMatrix& rhs) const;
-	/// subtract another CMatrix from this one
-	CMatrix& operator-=(const CMatrix& rhs);
-	/// difference of two CMatrices
-	const CMatrix operator-(const CMatrix& rhs) const;
-	
-	/// Print the rth row of the matrix to stdout
-	void printRow(int r) const;
-	
-	/// Dump binary data to file
-	void writeToFile(std::ostream& o) const;
-	/// Read binary data from file
-	static CMatrix readFromFile(std::istream& s);
-	
+    /// Constructor
+    CMatrix(unsigned int m = 0): M(m), data(M,0.), kdata(M/2+1,0.), has_realspace(true), has_kspace(true) { }
+    
+    /*
+    /// Save matrix to a file (to be read by readFromFile())
+    void writeToFile(std::ostream& o) const;
+    /// Read matrix from a file written by writeToFile()
+    static CMatrix readFromFile(std::istream& s);
+    */
+    
+    /// generate an identity CMatrix
+    static CMatrix identity(unsigned int m);
+    /// Fill this CMatrix with random numbers in [0,1]
+    static CMatrix random(unsigned int m);
+    
+    unsigned int nRows() const { return M; }
+    unsigned int nCols() const { return M; }
+    unsigned int size() const { return M*M; }
+    
+    /// Print this CMatrix to stdout
+    void display() const;
+    /// Print kspace data for this CMatrix to stdout
+    void displayK() const;
+    
+    /// immutable element access
+    double operator[](unsigned int n) const;
+    /// mutable element access
+    double& operator[](unsigned int n);
+    
+    /// L2 (Spectral) norm of circulant matrix
+    double norm_L2() const;
+    /// determinant of circulant matrix
+    double det() const;
+    /// trace of circulant matrix
+    double trace() const;
+    
+    /// Return a pointer to the CMatrix's Fourier representation
+    std::vector< complex<double> >& getKData();
+    /// Return a pointer to the CMatrix's Fourier representation (read only)
+    const std::vector< complex<double> >&  getKData() const;
+    /// Return a pointer to the CMatrix's real-space representation
+    std::vector<double>&  getRealData();
+    /// Return a pointer to the CMatrix's real-space representation (read only)
+    const std::vector<double>& getRealData() const;
+    
+    /// Calculate the inverse of this CMatrix
+    const CMatrix inverse() const;
+    /// Invert this CMatrix inplace
+    CMatrix& invert();
+    /// Return the transpose of this CMatrix
+    const CMatrix transpose() const;
+    
+    /// unary minus
+    const CMatrix operator-() const;
+    
+    /// Product with a scalar, inplace
+    CMatrix& operator*=(double c);
+    /// Product with another CMatrix (circulant matrices are commutative!)
+    CMatrix& operator*=(const CMatrix& m);
+    /// Product with a scalar
+    const CMatrix operator*(double c) const;
+    /// Product with another CMatrix (circulant matrices are commutative!)
+    const CMatrix operator*(const CMatrix& m) const;
+    /// Multiply a vector on the right
+    const VarVec<double> operator*(const VarVec<double>& v) const;
+    
+    /// add another CMatrix to this one
+    CMatrix& operator+=(const CMatrix& rhs);
+    /// sum of two CMatrices
+    const CMatrix operator+(const CMatrix& rhs) const;
+    /// subtract another CMatrix from this one
+    CMatrix& operator-=(const CMatrix& rhs);
+    /// difference of two CMatrices
+    const CMatrix operator-(const CMatrix& rhs) const;
+    
+    /// Print the rth row of the matrix to stdout
+    void printRow(int r) const;
+    
+    /// Dump binary data to file
+    void writeToFile(std::ostream& o) const;
+    /// Read binary data from file
+    static CMatrix readFromFile(std::istream& s);
+    
 private:
-	
-	unsigned int M;	///< number of cycles
-	
-	/// calculate K-space data from real space
-	void calculateKData() const;
-	/// calculate real-space data from K-space
-	void calculateRealData() const;
-	
-	/// zero all entries in this CMatrix
-	void zero() const;
-	
-	mutable std::vector<double> data;						///< real-space data
-	mutable std::vector< complex<double> > kdata;			///< K-space data
-	mutable bool has_realspace;								///< whether the real-space representation of this matrix has been calculated
-	mutable bool has_kspace;								///< whether the k-space representation of this matrix has been calculated
+    
+    unsigned int M;     ///< number of cycles
+    
+    /// calculate K-space data from real space
+    void calculateKData() const;
+    /// calculate real-space data from K-space
+    void calculateRealData() const;
+    
+    /// zero all entries in this CMatrix
+    void zero() const;
+    
+    mutable std::vector<double> data;                   ///< real-space data
+    mutable std::vector< complex<double> > kdata;       ///< K-space data
+    mutable bool has_realspace;                         ///< whether the real-space representation of this matrix has been calculated
+    mutable bool has_kspace;                            ///< whether the k-space representation of this matrix has been calculated
 };
 
 std::ostream& operator<<(std::ostream& o, const CMatrix& m);

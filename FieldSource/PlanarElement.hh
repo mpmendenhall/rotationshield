@@ -27,22 +27,22 @@
 /// a ReactiveElement on a plane
 class PlanarElement: public ReactiveElement {
 public:
-	/// constructor
-	PlanarElement(Plane pl): ReactiveElement(), p(pl) { }
-		
-	/// replicate around a new plane
-	virtual PlanarElement* replicate(Plane pl) const = 0;
-	
-	/// replicate with new annulus specification
-	virtual PlanarElement* reference(annulusSpec a) const { return replicate(Plane(a)); }
-	
-	/// replicate rotated around z axis
-	virtual PlanarElement* replicateRotated(double th) const = 0;
-	
-	/// Visualize the element
-	virtual void _visualize() const;
-	
-	Plane p;		///< The plane in which the element resides
+    /// constructor
+    PlanarElement(Plane pl): ReactiveElement(), p(pl) { }
+        
+    /// replicate around a new plane
+    virtual PlanarElement* replicate(Plane pl) const = 0;
+    
+    /// replicate with new annulus specification
+    virtual PlanarElement* reference(annulusSpec a) const { return replicate(Plane(a)); }
+    
+    /// replicate rotated around z axis
+    virtual PlanarElement* replicateRotated(double th) const = 0;
+    
+    /// Visualize the element
+    virtual void _visualize() const;
+    
+    Plane p;    ///< The plane in which the element resides
 };
 
 

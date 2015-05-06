@@ -27,35 +27,35 @@
 #include <vector>
 
 struct solvedSet {
-	ReactiveSet* RS;		///< the interacting system
-	InteractionSolver* IS;	///< its solver
-	mvec v_inc;				///< initial incident response
-	mvec v_ext;				///< sequence of perturbation responses
+    ReactiveSet* RS;            ///< the interacting system
+    InteractionSolver* IS;      ///< its solver
+    mvec v_inc;                 ///< initial incident response
+    mvec v_ext;                 ///< sequence of perturbation responses
 };
 
 /// Iteratively equilibrates multiple ReactiveSets
 class MultiQuilibrator {
 public:
-	/// constructor
-	MultiQuilibrator() {}
-	/// destructor
-	virtual ~MultiQuilibrator() {}
-	
-	/// add a subset
-	void addSet(ReactiveSet* RS, InteractionSolver* IS);
-	
-	/// perform one equilibration step
-	double step();
-	/// continue stepping until relative error limit reached
-	unsigned int equilibrate(double rel_err = 1e-4);
-	
+    /// constructor
+    MultiQuilibrator() {}
+    /// destructor
+    virtual ~MultiQuilibrator() {}
+    
+    /// add a subset
+    void addSet(ReactiveSet* RS, InteractionSolver* IS);
+    
+    /// perform one equilibration step
+    double step();
+    /// continue stepping until relative error limit reached
+    unsigned int equilibrate(double rel_err = 1e-4);
+    
 protected:
 
-	/// update one set
-	double update_set(unsigned int i);
-	
-	std::vector<solvedSet> mySets;	///< interacting systems
-	
+    /// update one set
+    double update_set(unsigned int i);
+    
+    std::vector<solvedSet> mySets;      ///< interacting systems
+    
 };
 
 #endif

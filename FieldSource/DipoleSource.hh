@@ -28,17 +28,17 @@
 /// Magenetic dipole field source
 class DipoleSource: public FieldSource {
 public:
-	/// Constructor
-	DipoleSource(vec3 X, vec3 M): FieldSource("DipoleSource"), x(X), m(M) { }
-	
-	/// Field at a specified point
-	virtual vec3 fieldAt(const vec3& v) const;
-	/// Visualize the field source
-	virtual void _visualize() const;
-	
+    /// Constructor
+    DipoleSource(vec3 X, vec3 M): FieldSource("DipoleSource"), x(X), m(M) { }
+    
+    /// Field at a specified point
+    virtual vec3 fieldAt(const vec3& v) const;
+    /// Visualize the field source
+    virtual void _visualize() const;
+    
 protected:
-	vec3 x;	///< location
-	vec3 m;	///< dipole moment
+    vec3 x;     ///< location
+    vec3 m;     ///< dipole moment
 };
 
 #endif

@@ -28,43 +28,43 @@
 /// Magnetic field source due to a plane of current (e.g. a bound surface current on a magnetic shield)
 class PlaneSource: public PlanarElement {
 public:
-	/// Constructor
-	PlaneSource(Plane cp, double mu): PlanarElement(cp), murel(mu) { setRmat(); }
-	
-	/// number of degrees of freedom
-	virtual unsigned int nDF() const { return 2; }
-	
-	/// state in response to applied field
-	virtual mvec responseToFieldSource(const FieldSource* f) const { return rmat * f->fieldOverPlane(p); }
-	
-	/// interaction matrix with another ReactiveElement
-	virtual mmat interactionWithComponents(const ReactiveElement* e) const { return rmat * e->fieldAtComponents(p.o); }
-	/// interaction matrix with another ReactiveElement
-	virtual mvec interactionWith(const ReactiveElement* e) const { return rmat * e->fieldAt(p.o); }
+    /// Constructor
+    PlaneSource(Plane cp, double mu): PlanarElement(cp), murel(mu) { setRmat(); }
+    
+    /// number of degrees of freedom
+    virtual unsigned int nDF() const { return 2; }
+    
+    /// state in response to applied field
+    virtual mvec responseToFieldSource(const FieldSource* f) const { return rmat * f->fieldOverPlane(p); }
+    
+    /// interaction matrix with another ReactiveElement
+    virtual mmat interactionWithComponents(const ReactiveElement* e) const { return rmat * e->fieldAtComponents(p.o); }
+    /// interaction matrix with another ReactiveElement
+    virtual mvec interactionWith(const ReactiveElement* e) const { return rmat * e->fieldAt(p.o); }
 
-	/// replicate around a new plane
-	virtual PlanarElement* replicate(Plane pl) const { return new PlaneSource(pl,murel); }
-	
-	/// generate initial reference element
-	virtual PlanarElement* reference(annulusSpec a) const { return new PlaneSource(Plane(a),murel); }
-	
-	/// replicate reference element to other angle
-	virtual PlanarElement* replicateRotated(double th) const { return new PlaneSource(p.zrotated(th),murel); }
+    /// replicate around a new plane
+    virtual PlanarElement* replicate(Plane pl) const { return new PlaneSource(pl,murel); }
+    
+    /// generate initial reference element
+    virtual PlanarElement* reference(annulusSpec a) const { return new PlaneSource(Plane(a),murel); }
+    
+    /// replicate reference element to other angle
+    virtual PlanarElement* replicateRotated(double th) const { return new PlaneSource(p.zrotated(th),murel); }
 
-	/// field components due to each DF at given point
-	virtual mmat fieldAtComponents(vec3 p0) const;
-			
+    /// field components due to each DF at given point
+    virtual mmat fieldAtComponents(vec3 p0) const;
+            
 private:
-	double murel;	///< relative permeability
-	mmat rmat;		///< response matrix to applied field
-	
-	/// generate correct response matrix to applied fields
-	void setRmat() {
-		Matrix<2,3,double> M = Matrix<2,3,double>();
-		M(0,1) = M(1,0) = 2.0*(1.0-murel)/(1.0+murel);
-		rmat = mmat(M*p.projectionMatrix());		
-	}
-	
+    double murel;       ///< relative permeability
+    mmat rmat;          ///< response matrix to applied field
+    
+    /// generate correct response matrix to applied fields
+    void setRmat() {
+        Matrix<2,3,double> M = Matrix<2,3,double>();
+        M(0,1) = M(1,0) = 2.0*(1.0-murel)/(1.0+murel);
+        rmat = mmat(M*p.projectionMatrix());        
+    }
+    
 };
 
 #endif

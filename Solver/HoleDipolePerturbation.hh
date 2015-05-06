@@ -31,35 +31,35 @@
 /// A small hole in a superconducting sheet
 class HoleDipolePerturbation: public ReactiveSet, public DipoleSource {
 public:
-	/// constructor
-	HoleDipolePerturbation(const SurfaceGeometry& SG, vec2 l, double r): ReactiveSet(1), DipoleSource(SG(l),vec3()), a(r), dh(0.01), mySurface(SG), surfacePos(l) {}
-	
-	//===================================== ReactiveSet subclass
-	/// total number of degrees of freedom
-	virtual unsigned int nDF() const { return 2; }
-	/// respond to interaction protocol; return whether protocol recognized
-	virtual bool queryInteraction(void* ip);
-	/// get DF for given phi reacting to state R
-	virtual mvec getReactionTo(ReactiveSet* R, unsigned int phi = 0);
-	//=====================================
-	
-	/// Visualize the interactor
-	virtual void _visualize() const;
-	
-	double a;	///< hole radius
-	double dh;	///< height above surface to evaluate response field
-	std::set<unsigned int> hide_ixn;	///< perturbed sets from which to hide interaction
+    /// constructor
+    HoleDipolePerturbation(const SurfaceGeometry& SG, vec2 l, double r): ReactiveSet(1), DipoleSource(SG(l),vec3()), a(r), dh(0.01), mySurface(SG), surfacePos(l) {}
+    
+    //===================================== ReactiveSet subclass
+    /// total number of degrees of freedom
+    virtual unsigned int nDF() const { return 2; }
+    /// respond to interaction protocol; return whether protocol recognized
+    virtual bool queryInteraction(void* ip);
+    /// get DF for given phi reacting to state R
+    virtual mvec getReactionTo(ReactiveSet* R, unsigned int phi = 0);
+    //=====================================
+    
+    /// Visualize the interactor
+    virtual void _visualize() const;
+    
+    double a;    ///< hole radius
+    double dh;    ///< height above surface to evaluate response field
+    std::set<unsigned int> hide_ixn;    ///< perturbed sets from which to hide interaction
 
-	
+    
 protected:
 
-	//===================================== ReactiveSet subclass
-	/// called when a DF is set
-	virtual void _setDF(unsigned int DF, double v);
-	//=====================================
-	
-	const SurfaceGeometry& mySurface;	///< surface to which this is "attached"
-	vec2 surfacePos;					///< position on surface
+    //===================================== ReactiveSet subclass
+    /// called when a DF is set
+    virtual void _setDF(unsigned int DF, double v);
+    //=====================================
+    
+    const SurfaceGeometry& mySurface;    ///< surface to which this is "attached"
+    vec2 surfacePos;                    ///< position on surface
 };
 
 #endif

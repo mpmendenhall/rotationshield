@@ -33,30 +33,30 @@
 
 class GenericSolver: public InteractionSolver {
 public:
-	/// Constructor
-	GenericSolver();
-	/// Destructor
-	virtual ~GenericSolver();
-	/// Solve for the Greene's Function of a ReactiveSet system
-	virtual void solve(ReactiveSet& R);
-	/// Apply solution to ReactiveSet system initial state
-	virtual void calculateResult(ReactiveSet& R);
+    /// Constructor
+    GenericSolver();
+    /// Destructor
+    virtual ~GenericSolver();
+    /// Solve for the Greene's Function of a ReactiveSet system
+    virtual void solve(ReactiveSet& R);
+    /// Apply solution to ReactiveSet system initial state
+    virtual void calculateResult(ReactiveSet& R);
 
 #ifdef WITH_LAPACKE
-	/// get un-normalized vector of singular values
-	virtual mvec get_singular_values() const { if(my_SVD) return my_SVD->singular_values().getData(); return mvec(); }
+    /// get un-normalized vector of singular values
+    virtual mvec get_singular_values() const { if(my_SVD) return my_SVD->singular_values().getData(); return mvec(); }
 #endif
-		
+        
 protected:
-	
-	/// Assembles the interaction matrix
-	void buildInteractionMatrix(ReactiveSet& R);
+    
+    /// Assembles the interaction matrix
+    void buildInteractionMatrix(ReactiveSet& R);
 
 #ifdef WITH_LAPACKE
-	mmat the_ixn;								///< The interaction matrix R between degrees of freedom
-	LAPACKE_Matrix_SVD<double,double>*  my_SVD;	///< SVD of (1-R)
+    mmat the_ixn;                               ///< The interaction matrix R between degrees of freedom
+    LAPACKE_Matrix_SVD<double,double>*  my_SVD; ///< SVD of (1-R)
 #else
-	gsl_matrix* the_GF; ///< The inverted interaction matrix, i.e. the Green's Function for the system
+    gsl_matrix* the_GF; ///< The inverted interaction matrix, i.e. the Green's Function for the system
 #endif
 
 };
