@@ -29,7 +29,7 @@
 class UniformField: public FieldSource {
 public:
     /// Constructor
-    UniformField(const vec3& f = vec3()): FieldSource("UniformField"), B(f) { }
+    UniformField(const vec3& f = vec3()): FieldSource("UniformField"), B(f) { mySymmetry.parity = 1; }
     /// Destructor
     virtual ~UniformField() {}
     

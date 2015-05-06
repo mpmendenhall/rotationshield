@@ -51,23 +51,23 @@ double polynomialFit(const gsl_matrix* coords, const gsl_vector* values, Polynom
     // build coefficients matrix
     gsl_matrix* coeffs = gsl_matrix_alloc(coords->size1,nparams);
     Vec<3,double> coord;
-    p.it = p.terms.begin();
+    auto it = p.terms.begin();
     for(int j=0; j<nparams; j++) {
-        Monomial<3,double,unsigned int> m = Monomial<3,double,unsigned int>(1.0,p.it->first);
+        Monomial<3,double,unsigned int> m = Monomial<3,double,unsigned int>(1.0, it->first);
         for(unsigned int i=0; i<values->size; i++) {
             for(int c=0; c<3; c++) coord[c] = gsl_matrix_get(coords,i,c);
             gsl_matrix_set(coeffs,i,j,m(coord));
         }
-        p.it++;
+        it++;
     }
     
     // fit, cleanup, return
     gsl_vector* resid = gsl_vector_calloc(values->size);
     gsl_vector* fitv = lsmin(coeffs,values,resid);
-    p.it = p.terms.begin();
+    it = p.terms.begin();
     for(int j=0; j<nparams; j++) {
-        p.terms[p.it->first] = gsl_vector_get(fitv,j);
-        p.it++;
+        p.terms[it->first] = gsl_vector_get(fitv,j);
+        it++;
     }
     double rsresid =  gsl_blas_dnrm2(resid);
     gsl_vector_free(fitv);

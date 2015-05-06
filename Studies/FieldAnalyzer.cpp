@@ -48,7 +48,7 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
     gsl_vector* bfield[3];
     for(int i=0; i<3; i++) bfield[i] = gsl_vector_alloc(nX*nY*nZ);
     
-    ProgressBar pb(nX*nY);
+    ProgressBar pb(nX*nY > 1? nX*nY : nZ);
     
     // scan over survey points
     vec3 bsXYZ(0,0,0);
@@ -62,12 +62,13 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
         vec3 bssYZ(0,0,0);
         for(n[1] = 0; n[1] < nY; n[1] ++) {
             
-            pb.update(n[0]*nY+n[1]);
+            if(nX*nY > 1) pb.update(n[0]*nY+n[1]);
             
             vec3 bsZ(0,0,0);
             vec3 bssZ(0,0,0);
-            for(n[2] = 0; n[2] < nZ; n[2]++)
-            {
+            for(n[2] = 0; n[2] < nZ; n[2]++) {
+                if(nX*nY == 1) pb.update(n[2]);
+                
                 vec3 x = ll + dx * vec3(n[0],n[1],n[2]);
                 vec3 b = FS->fieldAt(x);
                 for(int i=0; i<3; i++) gsl_vector_set(bfield[i],c,b[i]);
@@ -106,10 +107,10 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
     
     unsigned int polOrder = 0;
     for(unsigned int i=1; i<=8; i++)
-        if(nX>i && nY>i && nZ>i) polOrder = i;
+        if((nX*nY==1 || (nX>i && nY>i)) && nZ>i) polOrder = i;
     for(int i=0; i<3; i++) {
         if(!polOrder) continue;
-        Polynomial<3,double> p = Polynomial<3,double>::lowerTriangleTerms(polOrder);
+        Polynomial<3,double> p = (nX*nY == 1)? Polynomial<3,double>::onevarTerms(2,polOrder) : Polynomial<3,double>::lowerTriangleTerms(polOrder);
         resids = polynomialFit(coords, bfield[i], p);
         p.prune(1e-9*bRMS);
         resids = polynomialFit(coords, bfield[i], p);

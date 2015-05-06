@@ -1,6 +1,6 @@
 /* 
  * Polynomial.hh, part of the RotationShield program
- * Copyright (c) 2007-2014 Michael P. Mendenhall
+ * Copyright (c) 2007-2015 Michael P. Mendenhall
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,8 @@
 
 #include "Monomial.hh"
 #include <map>
+using std::map;
+#include <cassert>
 
 template<unsigned int N, typename T>
 class Polynomial {
@@ -40,6 +42,8 @@ public:
     static Polynomial<N,T> allTerms(unsigned int o);
     /// generate polynomial with all terms of total order <= o
     static Polynomial<N,T> lowerTriangleTerms(unsigned int o);
+    /// generate monovariate polynomial of given order
+    static Polynomial<N,T> onevarTerms(unsigned int i, unsigned int o);
     
     /// return polynomial with only even terms
     Polynomial<N,T> even() const;
@@ -86,15 +90,13 @@ public:
     /// output in LaTeX form
     std::ostream& latexForm(std::ostream& o) const;
     
-    std::map<Vec<N,unsigned int>, T> terms; ///< terms of the polynomial
-    typename std::map< Vec<N,unsigned int> , T >::iterator it; ///< iterator for terms
-    mutable typename std::map< Vec<N,unsigned int> , T >::const_iterator cit; ///< const iterator for terms
+    map<Vec<N,unsigned int>, T> terms; ///< terms of the polynomial
 };
 
 template<unsigned int N, typename T>
 T Polynomial<N,T>::operator()(const Vec<N,T>& v) const {
     T s = T();
-    for(cit = terms.begin(); cit != terms.end(); cit++)
+    for(auto cit = terms.begin(); cit != terms.end(); cit++)
         s += Monomial<N,T,unsigned int>(cit->second,cit->first)(v);
     return s;
 }
@@ -102,7 +104,7 @@ T Polynomial<N,T>::operator()(const Vec<N,T>& v) const {
 template<unsigned int N, typename T>
 const Polynomial<N,T> Polynomial<N,T>::operator()(const Vec< N,Polynomial<N,T> >& v) const {
     Polynomial<N,T> P = Polynomial<N,T>();
-    for(cit = terms.begin(); cit != terms.end(); cit++) {
+    for(auto cit = terms.begin(); cit != terms.end(); cit++) {
         Polynomial<N,T> Q = Polynomial<N,T>(Monomial<N,T,unsigned int>(cit->second));
         for(unsigned int i = 0; i<N; i++)
             for(unsigned int j=0; j<cit->first[i]; j++)
@@ -142,17 +144,28 @@ template<unsigned int N, typename T>
 Polynomial<N,T> Polynomial<N,T>::lowerTriangleTerms(unsigned int o) {
     Polynomial<N,T> lt = Polynomial<N,T>();
     Polynomial<N,T> t = Polynomial<N,T>::allTerms(o);
-    typename std::map< Vec<N,unsigned int> , T >::iterator it;
-    for(it = t.terms.begin(); it != t.terms.end(); it++)
+    for(auto it = t.terms.begin(); it != t.terms.end(); it++)
         if(it->first.sum() <= o)
             lt.terms[it->first] = 1.0;
     return lt;
 }
 
 template<unsigned int N, typename T>
+Polynomial<N,T> Polynomial<N,T>::onevarTerms(unsigned int i, unsigned int o) {
+    assert(i<N);
+    Polynomial<N,T> p = Polynomial<N,T>();
+    for(int k = 0; k <= o; k++) {
+        Vec<N,unsigned int> v;
+        v[i] = k;
+        p.terms[v] = 1.0;
+    }
+    return p;
+}
+
+template<unsigned int N, typename T>
 Polynomial<N,T> Polynomial<N,T>::even() const {
     Polynomial<N,T> e = Polynomial<N,T>();
-    for(cit = terms.begin(); cit != terms.end(); cit++) {
+    for(auto cit = terms.begin(); cit != terms.end(); cit++) {
         bool iseven = true;
         for(unsigned int i=0; i<N; i++) {
             if(cit->first[i].denominator() != 1 || (cit->first[i].numerator())%2 ) {
@@ -168,23 +181,23 @@ Polynomial<N,T> Polynomial<N,T>::even() const {
 
 template<unsigned int N, typename T>
 Polynomial<N,T>& Polynomial<N,T>::operator+=(const Polynomial<N,T>& rhs) {
-    for(cit = rhs.terms.begin(); cit != rhs.terms.end(); cit++)
+    for(auto cit = rhs.terms.begin(); cit != rhs.terms.end(); cit++)
         terms[cit->first] += cit->second;
     return *this;
 }
 
 template<unsigned int N, typename T>
 Polynomial<N,T>& Polynomial<N,T>::operator-=(const Polynomial<N,T>& rhs) {
-    for(cit = rhs.terms.begin(); cit != rhs.terms.end(); cit++)
+    for(auto cit = rhs.terms.begin(); cit != rhs.terms.end(); cit++)
         terms[cit->first] -= cit->second;
     return *this;
 }
 
 template<unsigned int N, typename T>
 Polynomial<N,T>& Polynomial<N,T>::operator*=(const Polynomial<N,T>& rhs) {
-    std::map<Vec<N,unsigned int>, T> newterms;
-    for(it = terms.begin(); it != terms.end(); it++)
-        for(cit = rhs.terms.begin(); cit != rhs.terms.end(); cit++)
+    map<Vec<N,unsigned int>, T> newterms;
+    for(auto it = terms.begin(); it != terms.end(); it++)
+        for(auto cit = rhs.terms.begin(); cit != rhs.terms.end(); cit++)
             newterms[it->first + cit->first] += it->second*cit->second; 
     terms = newterms;
     return *this;
@@ -192,15 +205,15 @@ Polynomial<N,T>& Polynomial<N,T>::operator*=(const Polynomial<N,T>& rhs) {
 
 template<unsigned int N, typename T>
 Polynomial<N,T>& Polynomial<N,T>::operator*=(T c) {
-    for(it = terms.begin(); it != terms.end(); it++)
+    for(auto it = terms.begin(); it != terms.end(); it++)
         it->second *= c;
     return *this;
 }
 
 template<unsigned int N, typename T>
 Polynomial<N,T>& Polynomial<N,T>::operator/=(const Monomial<N,T,unsigned int>& rhs) {
-    std::map<Vec<N,unsigned int>, T> newterms;
-    for(it = terms.begin(); it != terms.end(); it++)
+    map<Vec<N,unsigned int>, T> newterms;
+    for(auto it = terms.begin(); it != terms.end(); it++)
         newterms[it->first + rhs.dimensions] += it->second*rhs.val; 
     terms = newterms;
     return *this;
@@ -208,15 +221,15 @@ Polynomial<N,T>& Polynomial<N,T>::operator/=(const Monomial<N,T,unsigned int>& r
 
 template<unsigned int N, typename T>
 Polynomial<N,T>& Polynomial<N,T>::operator/=(T c) {
-    for(it = terms.begin(); it != terms.end(); it++)
+    for(auto it = terms.begin(); it != terms.end(); it++)
         it->second /= c;
     return *this;
 }
 
 template<unsigned int N, typename T>
 Polynomial<N,T>& Polynomial<N,T>::prune(T c) {
-    std::map<Vec<N,unsigned int>, T> newterms;
-    for(it = terms.begin(); it != terms.end(); it++)
+    map<Vec<N,unsigned int>, T> newterms;
+    for(auto it = terms.begin(); it != terms.end(); it++)
         if(it->second > c || it->second < -c)
             newterms[it->first] += it->second; 
     terms = newterms;
@@ -268,23 +281,21 @@ const Polynomial<N,T> Polynomial<N,T>::operator/(T c) const {
 
 template<unsigned int N, typename T>
 std::ostream& Polynomial<N,T>::algebraicForm(std::ostream& o) const {
-    typename std::map< Vec<N,unsigned int> , T >::const_iterator it2;
-    for(it2 = terms.begin(); it2 != terms.end(); it2++)
+    for(auto it2 = terms.begin(); it2 != terms.end(); it2++)
         Monomial<N,T,unsigned int>(it2->second, it2->first).algebraicForm(o);
     return o;
 }
 
 template<unsigned int N, typename T>
 std::ostream& Polynomial<N,T>::latexForm(std::ostream& o) const {
-    typename std::map< Vec<N,unsigned int> , T >::const_iterator it2;
-    for(it2 = terms.begin(); it2 != terms.end(); it2++)
+    for(auto it2 = terms.begin(); it2 != terms.end(); it2++)
         Monomial<N,T,unsigned int>(it2->second, it2->first).latexForm(o);
     return o;
 }
 
 template<unsigned int N, typename T>
 std::ostream& Polynomial<N,T>::tableForm(std::ostream& o) const {
-    for(cit = terms.begin(); cit != terms.end(); cit++) {
+    for(auto cit = terms.begin(); cit != terms.end(); cit++) {
         Monomial<N,T,unsigned int>(cit->second,cit->first).tableForm(o);
         o << "\n";
     }
