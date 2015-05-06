@@ -35,6 +35,8 @@ bool reference_simpleshield();
 bool integrator_tests();
 /// test cacheing solver to file
 bool reference_simpleshield_cached();
+/// test vectors handedness, expelling field from superconducting sphere
+void vectors_test();
 
 /// superconducting ball in uniform field
 void superball_test(unsigned int ngrid = 32);
