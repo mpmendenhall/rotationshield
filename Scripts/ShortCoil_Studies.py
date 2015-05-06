@@ -13,6 +13,7 @@ def make_asym_shortcoil_base(nm, r,
 							 gride = 32,		# endcap Nz grid
 							 gridhx = 0,		# extra gridding on hole side
 							 plategap = 0.01,	# shield-to-cap gap
+							 coilgap = 0.01,	# cap-to-coil-end gap
 							 sr = 0.02			# volume end radius
 							 ):
 
@@ -21,7 +22,7 @@ def make_asym_shortcoil_base(nm, r,
 	
 	clen = 2.5
 	crad = 1.0
-	S.fields.append(CoilSpec(crad, clen, 15))	# r=1, l=2.5, N=15 cos theta coil
+	S.fields.append(CoilSpec(crad, clen + 2*(plategap-coilgap), 15))	# r=1, l=2.5, N=15 cos theta coil
 	S.fields[-1].dist = [-0.0032]				# Closed: -.0032; smallhole -0.0033; r=70cm -.0005; flattener -0.0036
 	S.fields[-1].ends = ["none","none"]			# "endless" wires
 	
@@ -102,8 +103,8 @@ def make_outercoil(nm,r,**kwargs):
 #stname = "ShortCoil_50cm"
 #stname = "SC_SmallHole"
 
-#make_setup = make_bothends_closed
-#stname = "ClosedCoil"
+make_setup = make_bothends_closed
+stname = "ClosedCoil"
 
 #make_setup = make_smallholes_annular
 #stname = "SC_SmallAnnular"
@@ -111,8 +112,8 @@ def make_outercoil(nm,r,**kwargs):
 #make_setup = make_holey
 #stname = "SC_manyholes"
 
-make_setup = make_wiggley
-stname = "SC_Wiggles"
+#make_setup = make_wiggley
+#stname = "SC_Wiggles"
 
 def DistortionScan():
 	SS = StudyScan()
@@ -221,6 +222,20 @@ def WiggleScan():
 		SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
+def CoilEndScan():
+	SS = StudyScan()
+	for (n,r) in  enumerate(unifrange(0.001, 0.02, 8)):
+		S = make_setup(stname+"/WireDistance", r, dz=-0.5, gride = 64, coilgap = r)
+		S.fields[-1].ends = None
+		S.shields[-1].p = S.shields[-2].p = 0.5
+		S.solfl = "SC"
+		#if n == 7:
+		#	os.system(S.make_cmd("RotationShield_Vis"))
+		#else:
+		SS.fsimlist.write(S.make_cmd())
+	SS.run()
+
+
 
 if __name__=="__main__":
 
@@ -238,7 +253,7 @@ if __name__=="__main__":
 	
 	if options.scan:
 		
-		MovingCellScan()
+		#MovingCellScan()
 		#DistortionScan()
 		
 		#GriddingScan()
@@ -251,6 +266,7 @@ if __name__=="__main__":
 		#RotateEnd()
 		#Outer_Jscan()
 		#WiggleScan()
+		CoilEndScan()
 
 	outdir = os.environ["ROTSHIELD_OUT"]
 
@@ -258,9 +274,9 @@ if __name__=="__main__":
 
 	if options.plot:
 	
-		VPP = VarParamPlotter(outdir+"/"+stname+"/MovingCell")
-		VPP.keypos = "tc"
-		VPP.setupGraph("Cell center z [m]")
+		#VPP = VarParamPlotter(outdir+"/"+stname+"/MovingCell")
+		#VPP.keypos = "tc"
+		#VPP.setupGraph("Cell center z [m]")
 		
 		#VPP = VarParamPlotter(outdir+"/"+stname+"/Distortion")
 		#VPP.keypos = "tl"
@@ -310,6 +326,10 @@ if __name__=="__main__":
 		#VPP = VarParamPlotter(outdir+"/"+stname+"/WiggleSize")
 		#VPP.keypos = "tc"
 		#VPP.setupGraph("Bottom plate wiggle amplitude [cm]", xtrans=(lambda x: 100*x))
+
+		VPP = VarParamPlotter(outdir+"/"+stname+"/WireDistance")
+		VPP.keypos = "tc"
+		VPP.setupGraph("Endcap-to-coil gap [cm]", xtrans=(lambda x: 100*x))
 
 		if VPP is not None:
 			VPP.makePlot(PGlist=[PG_n(),PG_3He()])

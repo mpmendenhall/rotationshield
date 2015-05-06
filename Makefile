@@ -62,7 +62,7 @@ CXXFLAGS = -g -std=c++0x $(BUILDARCH) -O$(GCC_OPTIMIZATION_LEVEL) -pedantic -Wal
 ifdef ROTSHIELD_LAPACKE
 	# BLAS and LAPACK(E) libraries for matrix manipulation; also, need gfortran for LAPACK linking
 	LDFLAGS += -llapacke -llapack -lblas -lgfortran
-	BASE_LIB_DIRS += -L$(OS_DIR)/lib/lapack/ -L$(OS_DIR)/lib/gcc4.8/lib/
+	BASE_LIB_DIRS += -L$(OS_DIR)/lib/lapack/ -L$(OS_DIR)/lib/gcc4.9/lib/
 	CXXFLAGS += -DWITH_LAPACKE
 endif
 

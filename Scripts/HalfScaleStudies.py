@@ -38,9 +38,17 @@ def kDistScan():
 			SS.fsimlist.write(S.make_cmd())
 	SS.run()
 
+def basic_halfscale():
+	S = make_setup(stname+"/w", 0)
+	S.solfl = "../SC"
+	S.measGrid = (13,13,51)
+	S.measCell = [(-0.12, -0.12, 0), (0.12, 0.12, 1.0)]
+	os.system(S.make_cmd("RotationShield_Vis"))
 
 if __name__=="__main__":
 
+	basic_halfscale(); exit(0)
+	
 	parser = OptionParser()
 	parser.add_option("-k", "--kill", dest="kill", action="store_true", default=False, help="kill running replays")
 	parser.add_option("--scan", dest="scan", action="store_true", default=False, help="run simulation jobs")
