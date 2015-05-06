@@ -26,6 +26,7 @@
 
 #include "Geometry.hh"
 #include "SurfaceGeometry.hh"
+#include "SymmetrySpec.hh"
 #include "Typedefs.hh"
 #include "RefCounter.hh"
 #include "Integrator.hh"
@@ -62,7 +63,13 @@ public:
     virtual vec3 field_near(const SurfaceGeometry& S, double dh = 0, vec2 ll = vec2(0,0), vec2 ur = vec2(1,1)) const;
     /// RMS (component-wise) field strength averaged at or near surface
     virtual vec3 field_RMS_near(const SurfaceGeometry& S, double dh = 0, vec2 ll = vec2(0,0), vec2 ur = vec2(1,1)) const;
-        
+    
+    /// return information on field symmetries
+    const SymmetrySpec& getSymmetry() const { return mySymmetry; }
+
+protected:
+    SymmetrySpec mySymmetry;            ///< symmetries of field
+    
 private:
     static Integrator lineIntegrator;   ///< Integrator for averaging over lines
     static Integrator planeIntegrator;  ///< Integrator for averaging over planes

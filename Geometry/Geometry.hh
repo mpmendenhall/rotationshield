@@ -135,7 +135,7 @@ public:
     double wx;          ///< width in "x" (\f$\hat\phi\f$) direction
     double wz;          ///< width along z direction
     vec3 o;             ///< center of the plane
-    vec3 dx             ///< vector along the "x" edge of the plane
+    vec3 dx;            ///< vector along the "x" edge of the plane
     vec3 dz;            ///< vector along the "z" edge of the plane
     vec3 sn;            ///< Surface normal \f$ \frac{dx \times dz}{|dx||dz|} \f$
     

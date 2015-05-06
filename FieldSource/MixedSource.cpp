@@ -29,20 +29,25 @@ void MixedSource::loadSourcesFile(FILE* f, double scale = 1.0) {
 
 vec3 MixedSource::fieldAt(const vec3& v) const {
     vec3 b(0,0,0);
-    for(unsigned int i=0; i<sources.size(); i++) b += sources[i]->fieldAt(v);
+    for(auto it = sources.begin(); it != sources.end(); it++) b += (*it)->fieldAt(v);
     return b;    
 }
 
 vec3 MixedSource::fieldOverLine(Line l) const {
     vec3 b = vec3();
-    for(unsigned int i=0; i<sources.size(); i++) b += sources[i]->fieldOverLine(l);
+    for(auto it = sources.begin(); it != sources.end(); it++) b += (*it)->fieldOverLine(l);
     return b;    
 }
 
 vec3 MixedSource::fieldOverPlane(Plane p) const {
     vec3 b = vec3();
-    for(unsigned int i=0; i<sources.size(); i++) b += sources[i]->fieldOverPlane(p);
+    for(auto it = sources.begin(); it != sources.end(); it++) b += (*it)->fieldOverPlane(p);
     return b;    
+}
+
+void MixedSource::clear() {
+    for(auto it = sources.begin(); it != sources.end(); it++) (*it)->release();
+    sources.clear();
 }
 
 void MixedSource::arc(vec3 start, vec3 end, double j, int nsegs) {
@@ -77,10 +82,20 @@ void MixedSource::loop(double z, double r, double j, int nsides) {
     ScanRange sr(0,2*M_PI,nsides);
     double th = sr.next();
     v0[0] = r*cos(th); v0[1] = r*sin(th);
-    for(th = sr.next(); sr.goOn(); th=sr.next())
-    {
+    for(th = sr.next(); sr.goOn(); th = sr.next()) {
         v1[0] = r*cos(th); v1[1] = r*sin(th);
         addsource(new LineSource(v0,v1,j));
         v0 = v1;
     }
+}
+
+void MixedSource::addsource(const FieldSource* fs) {
+    fs->retain();
+    if(!sources.size()) mySymmetry = fs->getSymmetry();
+    else mySymmetry += fs->getSymmetry();
+    sources.push_back(fs);
+}
+
+void MixedSource::addsources(const MixedSource* MS) {
+    for(auto it = MS->sources.begin(); it != MS->sources.end(); it++) addsource(*it);
 }

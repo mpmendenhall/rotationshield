@@ -76,7 +76,7 @@ public:
     virtual vec2 operator()(double x) const;
     
 protected:
-    vec2 x0,x1,o        ///< endpoints and orthogonal
+    vec2 x0,x1,o;       ///< endpoints and orthogonal
     unsigned int n;     ///< number of cycles
 };
 

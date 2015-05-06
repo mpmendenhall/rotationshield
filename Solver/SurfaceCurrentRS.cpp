@@ -30,7 +30,6 @@ void SurfaceI_Response::setMu(double mu) {
     rmat2(1,0) = -rmat2(0,1);
 }
 
-
 void SurfaceCurrentRS::element_surface_range(unsigned int i, vec2& ll, vec2& ur) const {
     unsigned int zn = i/nPhi;
     unsigned int pn = i%nPhi;

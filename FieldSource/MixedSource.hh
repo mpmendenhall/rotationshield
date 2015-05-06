@@ -25,12 +25,13 @@
 #include "FieldSource.hh"
 #include "LineSource.hh"
 #include <vector>
+using std::vector;
 
 /// Combines several FieldSource objects into one (e.g. many LineSource wires into a Cos Theta coil)
 class MixedSource: public FieldSource {
 public:
     /// Constructor
-    MixedSource(const std::string& nm = "MixedSource"): FieldSource(nm), displayColor(vec3(1.0,0.0,0.0)), sources(std::vector<const FieldSource*>()) {}
+    MixedSource(const std::string& nm = "MixedSource"): FieldSource(nm), displayColor(vec3(1.0,0.0,0.0)) {}
     
     /// Destructor
     virtual ~MixedSource() { clear(); }
@@ -42,9 +43,11 @@ public:
     /// Field averaged over the given Plane
     virtual vec3 fieldOverPlane(Plane p) const;
     /// Add a new FieldSource to the source currents
-    virtual void addsource(const FieldSource* fs) { fs->retain(); sources.push_back(fs); }
+    virtual void addsource(const FieldSource* fs);
+    /// Add FieldSources from another MixedSource
+    void addsources(const MixedSource* MS);
     /// Remove all sources
-    void clear() { for(unsigned int i=0; i<sources.size(); i++) sources[i]->release(); sources.clear(); }
+    virtual void clear();
     /// Add FieldSource's specified in a file
     void loadSourcesFile(FILE* f, double scale);
     /// Get number of sources
@@ -70,7 +73,7 @@ public:
     
 private:
 
-    std::vector<const FieldSource*> sources;    ///< component sources
+    vector<const FieldSource*> sources;    ///< component sources
 };
 
 #endif

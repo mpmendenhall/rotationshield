@@ -43,8 +43,6 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
             ll[i] = 0.5*(ll[i]+ur[i]);
     }
     
-    
-    
     // set up results tables
     gsl_matrix* coords = gsl_matrix_alloc(nX*nY*nZ,3);
     gsl_vector* bfield[3];
@@ -110,6 +108,7 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
     for(unsigned int i=1; i<=8; i++)
         if(nX>i && nY>i && nZ>i) polOrder = i;
     for(int i=0; i<3; i++) {
+        if(!polOrder) continue;
         Polynomial<3,double> p = Polynomial<3,double>::lowerTriangleTerms(polOrder);
         resids = polynomialFit(coords, bfield[i], p);
         p.prune(1e-9*bRMS);

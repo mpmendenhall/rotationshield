@@ -30,6 +30,7 @@
 #include "HoleDipolePerturbation.hh"
 #include "GenericSolver.hh"
 #include "MultiQuilibrator.hh"
+#include "SymmetrizedSource.hh"
 #include <cassert>
 
 //--
@@ -92,6 +93,29 @@ void mi_addLineCurrent(StreamInteractor* S) {
     float sx = S->popFloat();
     
     SC->IncidentSource->addsource(new LineSource(vec3(sx,sy,sz), vec3(ex,ey,ez), j));
+    SC->TotalField->visualize();
+}
+
+void mi_addRingCurrent(StreamInteractor* S) {
+    SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+    float j = S->popFloat();
+    float r = S->popFloat();
+    float z = S->popFloat();
+    
+    SC->IncidentSource->loop(z,r,j);
+    SC->TotalField->visualize();
+}
+
+void mi_symmetrizeField(StreamInteractor* S) {
+    SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+    int p = S->popInt();
+    if(!p) return;
+    
+    MixedSource* MS = new MixedSource();
+    MS->addsources(SC->IncidentSource);
+    SymmetrizedSource* SS = new SymmetrizedSource(MS,p>0);
+    SC->IncidentSource->clear();
+    SC->IncidentSource->addsource(SS);
     SC->TotalField->visualize();
 }
 
@@ -355,6 +379,8 @@ addLineCurrent("Add line segment current", &mi_addLineCurrent, this),
 addUnifB("Add uniform field", &mi_addUnifB, this),
 clearIncident("Remove all field sources", &mi_ClearIncident, this),
 buildCosThetaExit("Build coil and exit", &mi_buildCosThetaExit, this),
+addRingCurrent("Add ring current", &mi_addRingCurrent, this),
+symmetrizeField("(Anti)Symmetrize field", &mi_symmetrizeField, this),
 OMfieldsrc("Field Source Options"),
 setPhi("Set rotational symmetry grid", &mi_setPhi, this),
 addSlab("Add circular slab", &mi_addSlab, this),
@@ -413,11 +439,19 @@ equilibratePtb("Equilibrate field perturbations", &mi_equilibratePtb, this) {
     addUnifB.addArg("By","1");
     addUnifB.addArg("Bz","1");
     //
+    addRingCurrent.addArg("z","0");
+    addRingCurrent.addArg("r","1");
+    addRingCurrent.addArg("I","1");
+    //
+    symmetrizeField.addArg("p","1");
+    //
     OMfieldsrc.addChoice(&addLineCurrent,"l");
+    OMfieldsrc.addChoice(&addRingCurrent,"r");
     OMfieldsrc.addChoice(&addUnifB,"u");
     CTB.OMcoil.addChoice(&buildCosThetaExit,"x");
     OMfieldsrc.addChoice(&CTB.OMcoil,"c");
     OMfieldsrc.addChoice(&clearIncident,"d");
+    OMfieldsrc.addChoice(&symmetrizeField,"s");
     OMfieldsrc.addChoice(&InputRequester::exitMenu,"x");
     
     setPhi.addArg("nPhi", std::to_string(RSC->nPhi));

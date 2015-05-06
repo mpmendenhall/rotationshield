@@ -5,6 +5,7 @@
 #include "Typedefs.hh"
 #include "DVFunc.hh"
 #include "Integrator.hh"
+#include "SymmetrySpec.hh"
 #include <gsl/gsl_multimin.h>
 
 /// base class for defining surface mapping [0,1]^2 -> R^3
@@ -42,6 +43,8 @@ public:
     
     /// whether surface is closed/periodic along particular axis
     virtual bool isClosed(unsigned int) const { return false; }
+    /// return information on surface symmetries
+    const SymmetrySpec& getSymmetry() const { return mySymmetry; }
     
     unsigned int dflt_integrator_ndivs_x;       ///< default number of sections to partition x integral in
     unsigned int dflt_integrator_ndivs_y;       ///< default number of sections to partition y integral in
@@ -61,6 +64,7 @@ protected:
     void cache_sincos(double theta, double& s, double& c) const;
     
     gsl_multimin_fdfminimizer* myMinimizer;    ///< minimizer routine as needed
+    SymmetrySpec mySymmetry;                   ///< symmetries of surface
 };
 
 /// Convenience 2D vector surface
@@ -79,7 +83,7 @@ public:
 class CylSurfaceGeometry: public SurfaceGeometry {
 public:
     /// constructor
-    CylSurfaceGeometry(DVFunc1<2,double>* f = NULL): zr_profile(f) {}
+    CylSurfaceGeometry(DVFunc1<2,double>* f = NULL): zr_profile(f) { mySymmetry.rotation = true; }
     
     /// evaluate function
     virtual vec3 operator()(const vec2& x) const;

@@ -102,6 +102,8 @@ public:
     InputRequester addUnifB;
     InputRequester clearIncident;
     InputRequester buildCosThetaExit;
+    InputRequester addRingCurrent;
+    InputRequester symmetrizeField;
     OptionsMenu OMfieldsrc;
     
     InputRequester setPhi;
