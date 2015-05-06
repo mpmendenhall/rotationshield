@@ -51,13 +51,20 @@ void ReactiveSet::_setDFv(const mvec& v) {
 
 mvec ReactiveSet::getFullReactionTo(ReactiveSet* R) {
     printf("Calculating reaction of %i = %i x %i elements...\n", nDF(), nDF()/nPhi, nPhi);
+    bool rsym = R->isRotSym();
+    if(rsym) printf("\tUsing rotational symmetry shortcut!\n");
     ProgressBar pb = ProgressBar(nPhi, 1, true);
     
     mvec v(nDF());
     for(unsigned int p=0; p<nPhi; p++) {
-        mvec vp = getReactionTo(R,p);
-        for(unsigned int i=0; i<vp.size(); i++)
-            v[i*nPhi+p] = vp[i];
+        if(p && rsym) {
+            for(unsigned int i=0; i<nDF()/nPhi; i++)
+                v[i*nPhi+p] = v[i*nPhi];
+        } else {
+            mvec vp = getReactionTo(R,p);
+            for(unsigned int i=0; i<vp.size(); i++)
+                v[i*nPhi+p] = vp[i];
+        }
         pb.update(p);
     }
     return v;

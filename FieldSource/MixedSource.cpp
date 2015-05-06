@@ -48,6 +48,7 @@ vec3 MixedSource::fieldOverPlane(Plane p) const {
 void MixedSource::clear() {
     for(auto it = sources.begin(); it != sources.end(); it++) (*it)->release();
     sources.clear();
+    mySymmetry = SymmetrySpec();
 }
 
 void MixedSource::arc(vec3 start, vec3 end, double j, int nsegs) {
@@ -76,6 +77,7 @@ void MixedSource::arc(vec3 start, vec3 end, double j, int nsegs) {
 }
 
 void MixedSource::loop(double z, double r, double j, int nsides) {
+    bool prevrot = mySymmetry.rotation || !sources.size();
     vec3 v0,v1;
     v0[2] = v1[2] = z;
     v0[0] = r; v0[1] = 0;
@@ -87,6 +89,7 @@ void MixedSource::loop(double z, double r, double j, int nsides) {
         addsource(new LineSource(v0,v1,j));
         v0 = v1;
     }
+    mySymmetry.rotation = prevrot; // loop preserved rotational symmetry
 }
 
 void MixedSource::addsource(const FieldSource* fs) {
@@ -97,5 +100,8 @@ void MixedSource::addsource(const FieldSource* fs) {
 }
 
 void MixedSource::addsources(const MixedSource* MS) {
+    SymmetrySpec prevSymm = (sources.size()? getSymmetry() : MS->getSymmetry());
     for(auto it = MS->sources.begin(); it != MS->sources.end(); it++) addsource(*it);
+    mySymmetry = prevSymm;
+    mySymmetry += MS->getSymmetry();
 }

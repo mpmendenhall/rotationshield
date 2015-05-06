@@ -55,6 +55,8 @@ public:
     virtual bool queryInteraction(void* ip);
     /// get DF for given phi reacting to state R
     virtual mvec getReactionTo(ReactiveSet*, unsigned int = 0) { return mvec(); }
+    /// whether interaction effect is rotationally symmetric
+    virtual bool isRotSym() const { return mySymmetry.rotation; }
     //=====================================
     
 protected:
