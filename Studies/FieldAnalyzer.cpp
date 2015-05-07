@@ -47,27 +47,26 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
     gsl_matrix* coords = gsl_matrix_alloc(nX*nY*nZ,3);
     gsl_vector* bfield[3];
     for(int i=0; i<3; i++) bfield[i] = gsl_vector_alloc(nX*nY*nZ);
-    
-    ProgressBar pb(nX*nY > 1? nX*nY : nZ);
-    
+
     // scan over survey points
     vec3 bsXYZ(0,0,0);
     vec3 bssXYZ(0,0,0);
     double avgBx0 = 0;
     double avgBx1 = 0;
     int c=0; // incrementing coordinate index
+    ProgressBar* pb = new ProgressBar(nX*nY > 1? nX*nY : nZ);
     for(n[0] = 0; n[0] < nX; n[0]++) {
     
         vec3 bsYZ(0,0,0);
         vec3 bssYZ(0,0,0);
         for(n[1] = 0; n[1] < nY; n[1] ++) {
             
-            if(nX*nY > 1) pb.update(n[0]*nY+n[1]);
+            if(nX*nY > 1) pb->update(n[0]*nY+n[1]);
             
             vec3 bsZ(0,0,0);
             vec3 bssZ(0,0,0);
             for(n[2] = 0; n[2] < nZ; n[2]++) {
-                if(nX*nY == 1) pb.update(n[2]);
+                if(nX*nY == 1) pb->update(n[2]);
                 
                 vec3 x = ll + dx * vec3(n[0],n[1],n[2]);
                 vec3 b = FS->fieldAt(x);
@@ -93,31 +92,34 @@ void FieldAnalyzer::survey(vec3 ll, vec3 ur, unsigned int nX, unsigned int nY, u
         bsXYZ += bsYZ*simpsonCoeff(n[0],nX);
         bssXYZ += bssYZ*simpsonCoeff(n[0],nX);
     }
-    
+    delete pb;
     
     // summary data and field fit
     double bRMS = sqrt(bssXYZ.sum());
     statsout << "#Field Shape" << std::endl;
     statsout << "#<B> = (" << bsXYZ[0] << " " << bsXYZ[1] << " " << bsXYZ[2] << ")\n";
     statsout << "#<B^2> = (" << bssXYZ[0] << " " << bssXYZ[1] << " " << bssXYZ[2] << ")\n";
+    statsout << "#RMS |B| = " << bRMS << "\n";
     statsout << "#sigmaBx/Bx0 = " << sqrt(bssXYZ[0] - bsXYZ[0]*bsXYZ[0])/bsXYZ[0] << std::endl;
-    statsout << "#<dBx/dx>/Bx0 = " << (avgBx1-avgBx0)/(bsXYZ[0]*(ur[0]-ll[0])) << std::endl;
+    if(nX > 1) statsout << "#<dBx/dx>/Bx0 = " << (avgBx1-avgBx0)/(bsXYZ[0]*(ur[0]-ll[0])) << std::endl;
+    statsout << std::endl;
+    
     double resids;
     char axisnames[] = "xyz";
-    
     unsigned int polOrder = 0;
     for(unsigned int i=1; i<=8; i++)
         if((nX*nY==1 || (nX>i && nY>i)) && nZ>i) polOrder = i;
+    printf("Fitting gridded data with order %u polynomial.\n", polOrder);
     for(int i=0; i<3; i++) {
         if(!polOrder) continue;
         Polynomial<3,double> p = (nX*nY == 1)? Polynomial<3,double>::onevarTerms(2,polOrder) : Polynomial<3,double>::lowerTriangleTerms(polOrder);
         resids = polynomialFit(coords, bfield[i], p);
         p.prune(1e-9*bRMS);
         resids = polynomialFit(coords, bfield[i], p);
-        gsl_vector_free(bfield[i]);
         statsout << "#" << polOrder << "th order polynomial (" << p.terms.size() << " terms) fit to B" << axisnames[i]
             << " centered at " << xcenter << ", rms residual = " << resids << std::endl;
         p.tableForm(statsout);
+        gsl_vector_free(bfield[i]);
     }
     gsl_matrix_free(coords);
     

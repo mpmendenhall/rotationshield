@@ -49,6 +49,8 @@ public:
     
     /// evaluate function
     virtual vec3 operator()(double x) const;
+    /// derivative
+    virtual vec3 deriv(double x, bool normalized = false) const;
     /// whether curve is closed
     virtual bool isClosed() const { return true; }
     

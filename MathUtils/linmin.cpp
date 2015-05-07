@@ -26,7 +26,9 @@
 
 gsl_vector* lsmin(gsl_matrix* coeffs, const gsl_vector* rslt, gsl_vector* resid) {
     
-    assert(coeffs && rslt && resid);
+    assert(coeffs);
+    assert(rslt);
+    assert(resid);
     assert(coeffs->size1 >= coeffs->size2);
     assert(resid->size == coeffs->size1);
     assert(rslt->size == coeffs->size1);

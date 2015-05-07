@@ -23,6 +23,7 @@
 #include "PathUtils.hh"
 #include "FieldAdaptiveSurface.hh"
 #include "LineSource.hh"
+#include "CurveSource.hh"
 #include "UniformField.hh"
 #include "SurfaceGeometry.hh"
 #include "SurfaceProfiles.hh"
@@ -108,7 +109,12 @@ void mi_addRingCurrent(StreamInteractor* S) {
     float r = S->popFloat();
     float z = S->popFloat();
     
-    SC->IncidentSource->loop(z,r,j);
+    CircleCurve* C = new CircleCurve(vec3(0,0,z), vec3(0,0,r));
+    CurveSource* CS = new CurveSource(C,j);
+    CS->ownsCurve = true;
+    SC->IncidentSource->addsource(CS);
+    //SC->IncidentSource->loop(z,r,j);
+    
     if(SC->updateVis) SC->TotalField->visualize();
 }
 
@@ -576,7 +582,7 @@ void SystemConfiguration::measureFields(const string& xpath) const {
     statsout.open((fieldspath+"/Fieldstats.txt").c_str());
     
     // run analyzer
-    if(Visualizable::vis_on) {
+    if(Visualizable::vis_on && cell.nx > 1 && cell.ny > 1 && cell.nz > 1) {
         TotalField->visualize();
         FA.visualizeSurvey(cell.ll,cell.ur,cell.vx,cell.vy,cell.vz);
     }

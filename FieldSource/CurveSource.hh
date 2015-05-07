@@ -10,9 +10,9 @@
 class CurveSource: public FieldSource {
 public:
     /// Constructor
-    CurveSource(CurveGeometry* CG = NULL, const string& nm = "CurveSource"): FieldSource(nm), myCurve(CG), vis_n(12) {}
+    CurveSource(CurveGeometry* CG = NULL, double jj = 0, const string& nm = "CurveSource");
     /// Destructor
-    virtual ~CurveSource() { }
+    virtual ~CurveSource() { if(ownsCurve) delete myCurve; }
     
     /// field contribution f(x)dl; x in [0,1]
     virtual vec3 fieldAt_contrib_from(const vec3& v, double x) const;
@@ -30,10 +30,14 @@ public:
     virtual vec2 fieldAtWithTransform2(const vec3& v, const Matrix<2,3,double>& M) const { return fieldAtWithTransform2(v,M,0,1); }
     /// Magnetic field at a point, with interaction matrix
     virtual vec3 fieldAtWithTransform3(const vec3& v, const Matrix<3,3,double>& M) const { return fieldAtWithTransform3(v,M,0,1); }
-                
+    
+    /// Visualize the field source
+    virtual void _visualize() const;
     
     CurveGeometry* myCurve;     ///< surface on which source is defined
+    bool ownsCurve = false;     ///< whether this object "owns" myCurve for deletion
     unsigned int vis_n;         ///< visualization divisions
+    double j0;                  ///< current along curve
 };
 
 #endif

@@ -1,6 +1,6 @@
 #include "CurveGeometry.hh"
 
-CurveGeometry::CurveGeometry(): dflt_integrator_ndivs(5) {
+CurveGeometry::CurveGeometry(): dflt_integrator_ndivs(1) {
     myIntegrator.setMethod(INTEG_GSL_QAG);
 }
 
@@ -33,6 +33,28 @@ vec3 EllipseCurve::operator()(double x) const {
     return x0 + a1*cos(2*M_PI*x) + a2*sin(2*M_PI*x);
 }
 
+vec3 EllipseCurve::deriv(double x, bool normalized) const {
+    vec3 dx = (a1*(-sin(2*M_PI*x)) + a2*cos(2*M_PI*x))*2*M_PI;
+    if(normalized) return dx.normalized();
+    return dx;
+}
+
 CircleCurve::CircleCurve(vec3 xx0, vec3 dx): EllipseCurve(xx0, vec3(), vec3()), r(dx.mag()) {
-    /// TODO calculate axes
+    double m0 = fabs(dx[0]);
+    double m1 = fabs(dx[1]);
+    double m2 = fabs(dx[2]);
+    
+    if(m0 > m1) {
+        if(m1 > m2) a1 = vec3(-dx[1],dx[0],0);
+        else a1 = vec3(-dx[2],0,dx[0]);
+    } else {
+        if(m0 > m2) a1 = vec3(-dx[1],dx[0],0);
+        else a1 = vec3(0,-dx[2],dx[1]);
+    }
+    
+    dx /= r;
+    a1 = a1.normalized()*r;
+    a2 = cross(dx, a1);
+    
+    if(!dx[0] && !dx[1]) mySymmetry.rotation = true;
 }

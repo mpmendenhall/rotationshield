@@ -7,8 +7,8 @@ def make_aCORN(nm,r):
     S.nPhi = 32
     
     ncoils = 25                 # number of coils
-    nsimwind = 7                # number of simulated winding radii
-    nsimz = 3                   # number of simulated winding heights
+    nsimwind = 3                # number of simulated winding radii
+    nsimz = 1                   # number of simulated winding heights
     crad0 = 0.22225             # main coil inner radius
     crad1 = 0.385               # main coil outer radius
     dcoils = 0.12               # spacing between coils
