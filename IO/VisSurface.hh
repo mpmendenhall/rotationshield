@@ -70,7 +70,7 @@ public:
     /// set up data grids
     void make_grids(unsigned int nx, unsigned int ny, unsigned int ng);
     
-    std::vector<BicubicGrid*> G;
+    vector<BicubicGrid*> G;
     unsigned int NX;
     unsigned int NY;
     

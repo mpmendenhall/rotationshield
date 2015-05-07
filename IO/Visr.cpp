@@ -32,14 +32,14 @@ bool Visualizable::vis_on = true;
 namespace vsr {
     
     struct qcmd {
-        qcmd(void (*f)(std::vector<float>&)): fcn(f) {}
-        void (*fcn)(std::vector<float>&);
-        std::vector<float> v;
+        qcmd(void (*f)(vector<float>&)): fcn(f) {}
+        void (*fcn)(vector<float>&);
+        vector<float> v;
     };
-    std::deque<qcmd> commands;
+    deque<qcmd> commands;
     pthread_mutex_t commandLock;
     GLuint displayList;
-    std::vector<GLuint> displaySegs;
+    vector<GLuint> displaySegs;
     int clickx0,clicky0;
     int modifier;
     float winwidth, winheight;
@@ -74,7 +74,7 @@ namespace vsr {
     void mouseTrackingAction(int x, int y);
     void redrawIfUnlocked();
     
-    void appendv(std::vector<float>& v, vec3 a) {
+    void appendv(vector<float>& v, vec3 a) {
         v.push_back(a[0]);
         v.push_back(a[1]);
         v.push_back(a[2]);
@@ -86,7 +86,7 @@ namespace vsr {
         pthread_mutex_unlock(&commandLock);
     }
     
-    void _setColor(std::vector<float>& v) {
+    void _setColor(vector<float>& v) {
         assert(v.size()==4);
         glColor4f(v[0],v[1],v[2],v[3]);
     }
@@ -105,7 +105,7 @@ namespace vsr {
         bgA = a;
     }
     
-    void _clearWindow(std::vector<float>&) {
+    void _clearWindow(vector<float>&) {
         glClearColor(bgR, bgG, bgB, bgA);
         glClearDepth(100.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -131,7 +131,7 @@ namespace vsr {
         updateViewWindow();
     }
     
-    void _startRecording(std::vector<float>& v) {
+    void _startRecording(vector<float>& v) {
         glFlush();
         glFinish();
         if(!v.size()) {
@@ -151,7 +151,7 @@ namespace vsr {
         addCmd(c);
     }
     
-    void _stopRecording(std::vector<float>&) {
+    void _stopRecording(vector<float>&) {
         glEndList();
         glutPostRedisplay();
         glFlush();
@@ -163,7 +163,7 @@ namespace vsr {
         pthread_mutex_unlock(&commandLock);
     }    
 
-    void _line(std::vector<float>& v) {
+    void _line(vector<float>& v) {
         assert(v.size()==6);
         glBegin(GL_LINES);
         glVertex3f(v[0],v[1],v[2]);
@@ -177,13 +177,13 @@ namespace vsr {
         addCmd(c);
     }
     
-    void _startLines(std::vector<float>&) {
+    void _startLines(vector<float>&) {
         glBegin(GL_LINE_STRIP);
     }
     void startLines() {
         addCmd(qcmd(_startLines));
     }
-    void _vertex(std::vector<float>& v) {
+    void _vertex(vector<float>& v) {
         glVertex3f(v[0],v[1],v[2]);
     }
     void vertex(vec3 v) {
@@ -192,14 +192,14 @@ namespace vsr {
         addCmd(c);
     }
     
-    void _endLines(std::vector<float>&) {
+    void _endLines(vector<float>&) {
         glEnd();
     }
     void endLines() {
         addCmd(qcmd(_endLines));
     }
     
-    void _plane(std::vector<float>& v) {
+    void _plane(vector<float>& v) {
         assert(v.size()==9);
         glBegin(GL_QUADS);
         glVertex3f(v[0]+0.5*v[3]+0.5*v[6],v[1]+0.5*v[4]+0.5*v[7],v[2]+0.5*v[5]+0.5*v[8]);
@@ -216,7 +216,7 @@ namespace vsr {
         addCmd(c);
     }
     
-    void _quad(std::vector<float>& xyz) {
+    void _quad(vector<float>& xyz) {
         assert(xyz.size()==12);
         glBegin(GL_LINE_LOOP);
         glVertex3f(xyz[0],xyz[1],xyz[2]);
@@ -227,11 +227,11 @@ namespace vsr {
     }
     void quad(float* xyz) {
         qcmd c(_quad);
-        c.v = std::vector<float>(xyz,xyz+12);
+        c.v = vector<float>(xyz,xyz+12);
         addCmd(c);
     }
     
-    void _filledquad(std::vector<float>& xyz) {
+    void _filledquad(vector<float>& xyz) {
         assert(xyz.size()==12);
         glBegin(GL_QUADS);
         glVertex3f(xyz[0],xyz[1],xyz[2]);
@@ -242,11 +242,11 @@ namespace vsr {
     }
     void filledquad(float* xyz) {
         qcmd c(_filledquad);
-        c.v = std::vector<float>(xyz,xyz+12);
+        c.v = vector<float>(xyz,xyz+12);
         addCmd(c);
     }
     
-    void _dot(std::vector<float>& p) {
+    void _dot(vector<float>& p) {
         assert(p.size()==3);
         double l = viewrange/100.0;
         glBegin(GL_QUADS);
@@ -270,7 +270,7 @@ namespace vsr {
         addCmd(c);
     }
     
-    void initWindow(const std::string& windowTitle) {
+    void initWindow(const string& windowTitle) {
         
         pause_display = false;
         pthread_mutexattr_t displayLockAttr;
@@ -360,7 +360,7 @@ namespace vsr {
         if(kill_flag) exit(0);
         if(pthread_mutex_trylock(&commandLock)) return;
         while(commands.size()) {
-            void (*f)(std::vector<float>&) = commands.front().fcn;
+            void (*f)(vector<float>&) = commands.front().fcn;
             if(f)
                 f(commands.front().v);
             commands.pop_front();
@@ -429,7 +429,7 @@ bool Visualizable::vis_on = false;
 
 namespace vsr {
 
-    void initWindow(const std::string&) { }
+    void initWindow(const string&) { }
     void clearWindow() {}
     void resetViewTransformation() {}
     void updateViewWindow() {}

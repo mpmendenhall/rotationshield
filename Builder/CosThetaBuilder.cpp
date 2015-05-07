@@ -59,8 +59,8 @@ Stringmap AlarconKPositioner::getInfo() const {
 Stringmap VecTrans::getInfo() const {
     Stringmap m;
     m.insert("class","VecTrans");
-    m.insert(std::string("t1"),vtos(vec2doublevec<3,double>(trans1)));
-    m.insert(std::string("t2"),vtos(vec2doublevec<3,double>(trans2)));
+    m.insert(string("t1"),vtos(vec2doublevec<3,double>(trans1)));
+    m.insert(string("t2"),vtos(vec2doublevec<3,double>(trans2)));
     return m;
 }
 
@@ -110,7 +110,7 @@ void mi_setDistortionK(StreamInteractor* S) {
 
 
 void mi_setEndcaps(StreamInteractor* S) {
-    std::string ec[2];
+    string ec[2];
     ec[1] = S->popString();
     ec[0] = S->popString();
     CosThetaBuilder* CT = dynamic_cast<CosThetaBuilder*>(S);
@@ -209,7 +209,7 @@ void CosThetaBuilder::buildEndpoints() {
     assert(AP);
     double x,y,phi;
     double xmul,ymul,zmul;
-    endp = std::vector<vec3>(8*ncoils);
+    endp = vector<vec3>(8*ncoils);
     for(unsigned int i = 0; i<ncoils; i++) {
         for(int a1 = 0; a1<2; a1++) { // z
             for(int a2=0; a2<2; a2++) { // y
@@ -272,7 +272,7 @@ void CosThetaBuilder::buildStraightCap(MixedSource& M, unsigned int zside) {
 
 void CosThetaBuilder::buildMixedCaps(MixedSource& M, float rinner) {
     
-    std::vector<vec3> innercircle[2][2][2];
+    vector<vec3> innercircle[2][2][2];
     
     for(unsigned int xside = 0; xside < 2; xside++) {
         for(unsigned int zside = 0; zside < 2; zside++) {

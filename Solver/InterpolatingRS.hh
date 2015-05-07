@@ -85,7 +85,7 @@ protected:
     /// set up data grid
     virtual void make_grids(unsigned int nz, unsigned int ndf);
     
-    std::vector<BicubicGrid*> G;        ///< degrees of freedom stored in interpolator grid
+    vector<BicubicGrid*> G;        ///< degrees of freedom stored in interpolator grid
     unsigned int nZ;                    ///< grid size in z direction
     unsigned int nDFi;                  ///< number of DF per element
 };

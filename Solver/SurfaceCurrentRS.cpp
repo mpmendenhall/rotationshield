@@ -43,7 +43,7 @@ vec2 surfaceJ(vec2 v, void* p) {
     return ((SurfaceCurrentRS*)p)->eval_J(v);
 }
 
-SurfaceCurrentRS::SurfaceCurrentRS(SurfaceGeometry* SG, unsigned int nph, unsigned int nz, const std::string& nm):
+SurfaceCurrentRS::SurfaceCurrentRS(SurfaceGeometry* SG, unsigned int nph, unsigned int nz, const string& nm):
 SurfaceCurrentSource(SG,nm), InterpolatingRS2D(nph), point_ixn(true) {
     
     assert(mySurface);
@@ -175,7 +175,7 @@ bool SurfaceCurrentRS::queryInteraction(void* ip) {
     bool self_intersection = (BField_Protocol::BFP->caller == RS_UID && delta_z == 0 && delta_phi == 0);
     
     // How to slice up integration range
-    std::vector<int> integ_domains;
+    vector<int> integ_domains;
     const int idomains_9[] = {-2,-1,1,2};
     integ_domains.insert(integ_domains.end(), idomains_9, idomains_9+4);
     

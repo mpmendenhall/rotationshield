@@ -25,17 +25,18 @@
 #include <cassert>
 #include <stdio.h>
 #include <string>
+using std::string;
 
 class RefCounter {
 public:
-    RefCounter(const std::string& nm = "RefCounter"): ref_name(nm+"_"+std::to_string(nReferencedObjects)), refcount(0) { ++nReferencedObjects; }
+    RefCounter(const string& nm = "RefCounter"): ref_name(nm+"_"+std::to_string(nReferencedObjects)), refcount(0) { ++nReferencedObjects; }
     virtual ~RefCounter();
     virtual void retain() const { ++refcount; ++nTotalReferences; }
     virtual void release() const;
     static int referencedObjectCount() { return nReferencedObjects; }
     static int totalReferenceCount() { return nTotalReferences; }
     
-    std::string ref_name;    ///< name for this object, for tracing down deletion issues
+    string ref_name;    ///< name for this object, for tracing down deletion issues
     
 protected:
     mutable unsigned int refcount;

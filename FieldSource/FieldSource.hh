@@ -36,7 +36,7 @@
 class FieldSource: public RefCounter, public Visualizable {
 public:
     /// Constructor
-    FieldSource(const std::string& nm = "FieldSource"): RefCounter(nm) {}
+    FieldSource(const string& nm = "FieldSource"): RefCounter(nm) {}
     /// Destructor
     virtual ~FieldSource() {}
     

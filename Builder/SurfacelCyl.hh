@@ -64,7 +64,7 @@ public:
     bool verbose;    ///< whether to display calculation progress
     
 protected:
-    std::vector<ReactiveElement*> surfacels;    ///< the surface elements
+    vector<ReactiveElement*> surfacels;    ///< the surface elements
     
     //======================================
     /// set state for i^th sub-element
@@ -114,7 +114,7 @@ public:
     void makeOptCyl(unsigned int nZ0, unsigned int nZ1, double r, double z0, double z1, PlanarElement* base, FieldEstimator2D* fe = NULL) { OptCone(nZ0,nZ1,vec2(z0,r),vec2(z1,r),base,fe); }
     
 protected:
-    std::vector<ShieldSegment*> segments;    ///< element generators for each ring in shield
+    vector<ShieldSegment*> segments;    ///< element generators for each ring in shield
 };
 
 

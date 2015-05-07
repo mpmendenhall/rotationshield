@@ -143,7 +143,7 @@ public:
     
 protected:
     
-    std::vector<vec3> endp;
+    vector<vec3> endp;
     
     void buildEndpoints();
     void buildSides(MixedSource& M);

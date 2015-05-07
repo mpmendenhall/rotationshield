@@ -68,7 +68,7 @@ void Angular_Interval_Set::subtract_interval(angular_interval i) {
     bool tr0 = (it0 != endpts.begin() && (--it0m)->th1 > i.th0);
     bool tr1 = (it1 != endpts.begin() && (--it1m)->th1 > i.th1);
         
-    std::vector<angular_interval> partials;
+    vector<angular_interval> partials;
     if(tr0) {
         partials.push_back(angular_interval(it0m->th0,i.th0));
         --it0;
@@ -79,7 +79,7 @@ void Angular_Interval_Set::subtract_interval(angular_interval i) {
     
     endpts.erase(it0,it1);
     
-    for(std::vector<angular_interval>::const_iterator it = partials.begin(); it != partials.end(); it++)
+    for(vector<angular_interval>::const_iterator it = partials.begin(); it != partials.end(); it++)
         endpts.insert(*it);
 }
 
@@ -113,8 +113,8 @@ void Angular_Interval_Set::Angular_Interval_Set::add_interval(angular_interval i
     endpts.insert(i);
 }
 
-std::vector<angular_interval> Angular_Interval_Set::get_intervals(bool merge_wrap) const {
-    std::vector<angular_interval> v;
+vector<angular_interval> Angular_Interval_Set::get_intervals(bool merge_wrap) const {
+    vector<angular_interval> v;
     for(std::set<angular_interval>::const_iterator it = endpts.begin(); it != endpts.end(); it++)
         v.push_back(*it);
     if(merge_wrap && v.size()>=2 && v[0].th0 == 0 && v.back().th1 == 2*M_PI) {
@@ -134,9 +134,9 @@ std::ostream& operator<<(std::ostream& o, const angular_interval& i) {
 }
 
 std::ostream& operator<<(std::ostream& o, const Angular_Interval_Set& S) {
-    std::vector<angular_interval> v = S.get_intervals();
+    vector<angular_interval> v = S.get_intervals();
     if(!v.size()) o << "{}";
-    for(std::vector<angular_interval>::iterator it = v.begin(); it != v.end(); it++) {
+    for(vector<angular_interval>::iterator it = v.begin(); it != v.end(); it++) {
         if(it != v.begin()) o << " U ";
         o << *it;
     }

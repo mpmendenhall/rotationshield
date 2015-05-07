@@ -33,7 +33,7 @@ SurfacelSet::~SurfacelSet() {
     
 vec3 SurfacelSet::fieldAt(const vec3& v) const {
     vec3 B;
-    for(std::vector<ReactiveElement*>::const_iterator it = surfacels.begin(); it != surfacels.end(); it++)
+    for(vector<ReactiveElement*>::const_iterator it = surfacels.begin(); it != surfacels.end(); it++)
         B += (*it)->fieldAt(v);
     return B;
 }
@@ -46,7 +46,7 @@ void SurfacelSet::addSurfacel(ReactiveElement* e) {
 }
 
 void SurfacelSet::_visualize() const {
-    for(std::vector<ReactiveElement*>::const_iterator it = surfacels.begin(); it != surfacels.end(); it++)
+    for(vector<ReactiveElement*>::const_iterator it = surfacels.begin(); it != surfacels.end(); it++)
         (*it)->_visualize();
 }
 

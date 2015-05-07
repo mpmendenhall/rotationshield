@@ -29,7 +29,7 @@
 class SurfaceCurrentSource: public SurfaceSource {
 public:
     /// constructor
-    SurfaceCurrentSource(SurfaceGeometry* SG = NULL, const std::string& nm = "SurfaceCurrentSource"):
+    SurfaceCurrentSource(SurfaceGeometry* SG = NULL, const string& nm = "SurfaceCurrentSource"):
         SurfaceSource(SG,nm), sj(NULL), sjparams(NULL) {}
         
     /// field contribution f(x,y)dA; x,y in [0,1]^2

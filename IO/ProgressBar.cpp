@@ -20,7 +20,7 @@
 
 #include "ProgressBar.hh"
 
-ProgressBar::ProgressBar(unsigned int nt, unsigned int nm, bool v, const std::string& label): ntotal(nt), nsteps(nt/nm), nmod(nm), c(0), s(0), verbose(v) {
+ProgressBar::ProgressBar(unsigned int nt, unsigned int nm, bool v, const string& label): ntotal(nt), nsteps(nt/nm), nmod(nm), c(0), s(0), verbose(v) {
     if(verbose) {
         printf("%s+",label.c_str()); 
         for(unsigned int i=0; i<nsteps; i++)

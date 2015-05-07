@@ -137,12 +137,12 @@ protected:
     
     // groups
     unsigned int n_subels() const { return (unsigned int)group_DF.size()*nPhi; }
-    std::vector<unsigned int> group_DF;         ///< number of DF for elements in this group
-    std::vector<unsigned int> group_start;      ///< starting index for each group of nPhi sub-elements
+    vector<unsigned int> group_DF;         ///< number of DF for elements in this group
+    vector<unsigned int> group_start;      ///< starting index for each group of nPhi sub-elements
     
     // individual DF
-    std::vector<unsigned int> df_subel;         ///< sub-element number corresponding to each DF
-    std::vector<unsigned int> df_subel_df;      ///< sub-element's DF corresponding to each DF
+    vector<unsigned int> df_subel;         ///< sub-element number corresponding to each DF
+    vector<unsigned int> df_subel_df;      ///< sub-element's DF corresponding to each DF
 };
 
 
@@ -179,7 +179,7 @@ public:
     /// load finalState DF from separately-processed components
     virtual void load_component_DF();
     /// get access to set listing
-    const std::vector<ReactiveSet*>& getSets() { return mySets; }
+    const vector<ReactiveSet*>& getSets() { return mySets; }
     
     bool ownSets;       ///< whether this object is responsible for deleting its member sets
     
@@ -191,9 +191,9 @@ protected:
     //=====================================
     
     unsigned int ixn_set;                       ///< set currently responsible for interacting
-    std::vector<ReactiveSet*> mySets;           ///< sub-units this class combined
-    std::vector<unsigned int> df_set;           ///< which set each DF belongs to
-    std::vector<unsigned int> df_set_df;        ///< which DF of its subset each DF corresponds to
+    vector<ReactiveSet*> mySets;           ///< sub-units this class combined
+    vector<unsigned int> df_set;           ///< which set each DF belongs to
+    vector<unsigned int> df_set_df;        ///< which DF of its subset each DF corresponds to
 };
 
 #endif

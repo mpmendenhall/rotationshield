@@ -61,7 +61,7 @@ public:
     const Permutation operator*(const Permutation& p) const;
     
 private:
-    std::vector<unsigned int> data; ///< the permutation data
+    vector<unsigned int> data; ///< the permutation data
 };
 
 #endif

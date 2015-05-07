@@ -72,9 +72,9 @@ public:
     void display() const { std::cout << "annulusSpec "<< start << "-" << end << " " << dTheta << "@" << theta0 << std::endl; }
     
     /// split into grid of sub-sections
-    std::vector<annulusSpec> subdivide(unsigned int nZ, unsigned int nTheta) const {
+    vector<annulusSpec> subdivide(unsigned int nZ, unsigned int nTheta) const {
         assert(nZ>0 && nTheta>0);
-        std::vector<annulusSpec> v = std::vector<annulusSpec>();
+        vector<annulusSpec> v = vector<annulusSpec>();
         for(unsigned int z=0; z<nZ; z++) {
             double lz0 = 1.0-double(z)/double(nZ);
             double lz1 = 1.0-double(z+1)/double(nZ);
@@ -129,7 +129,7 @@ public:
     /// Rotate a vector around the z axis
     static vec3 zrotate(const vec3& v, double th);
     /// split into grid of sub-sections
-    std::vector<Plane> subdivide(unsigned int nX, unsigned int nZ) const;
+    vector<Plane> subdivide(unsigned int nX, unsigned int nZ) const;
     
     double area;        ///< area of the plane
     double wx;          ///< width in "x" (\f$\hat\phi\f$) direction

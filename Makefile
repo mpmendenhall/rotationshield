@@ -85,9 +85,9 @@ obj_IO = Visr.o strutils.o ControlMenu.o QFile.o SMExcept.o PathUtils.o VisSurfa
 obj_MathUtils = Geometry.o Integrator.o CMatrix.o LAPACKE_Matrix.o BlockCMat.o RefCounter.o \
 	linmin.o InterpolationHelper.o BicubicGrid.o hcubature.o pcubature.o
 
-obj_Geometry = Angles.o SurfaceGeometry.o SurfaceProfiles.o
+obj_Geometry = Angles.o CurveGeometry.o SurfaceGeometry.o SurfaceProfiles.o
 
-obj_FieldSource = FieldSource.o MixedSource.o InfiniteLineSource.o LineSource.o InfinitePlaneSource.o \
+obj_FieldSource = CurveSource.o FieldSource.o MixedSource.o InfiniteLineSource.o LineSource.o InfinitePlaneSource.o \
 	SurfaceSource.o SurfaceCurrentSource.o PlanarElement.o PlaneSource.o SymmetrizedSource.o DipoleSource.o FieldEstimator2D.o
 
 obj_Solver = ReactiveSet.o InterpolatingRS.o MagRS.o SurfaceCurrentRS.o HoleDipolePerturbation.o \

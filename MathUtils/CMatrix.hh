@@ -117,13 +117,13 @@ public:
     double trace() const;
     
     /// Return a pointer to the CMatrix's Fourier representation
-    std::vector< complex<double> >& getKData();
+    vector< complex<double> >& getKData();
     /// Return a pointer to the CMatrix's Fourier representation (read only)
-    const std::vector< complex<double> >&  getKData() const;
+    const vector< complex<double> >&  getKData() const;
     /// Return a pointer to the CMatrix's real-space representation
-    std::vector<double>&  getRealData();
+    vector<double>&  getRealData();
     /// Return a pointer to the CMatrix's real-space representation (read only)
-    const std::vector<double>& getRealData() const;
+    const vector<double>& getRealData() const;
     
     /// Calculate the inverse of this CMatrix
     const CMatrix inverse() const;
@@ -175,8 +175,8 @@ private:
     /// zero all entries in this CMatrix
     void zero() const;
     
-    mutable std::vector<double> data;                   ///< real-space data
-    mutable std::vector< complex<double> > kdata;       ///< K-space data
+    mutable vector<double> data;                   ///< real-space data
+    mutable vector< complex<double> > kdata;       ///< K-space data
     mutable bool has_realspace;                         ///< whether the real-space representation of this matrix has been calculated
     mutable bool has_kspace;                            ///< whether the k-space representation of this matrix has been calculated
 };

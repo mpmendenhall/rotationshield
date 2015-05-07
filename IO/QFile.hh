@@ -25,14 +25,16 @@
 
 #include <map>
 #include <vector>
+using std::vector;
 #include <string>
+using std::string;
 
-/// wrapper for multimap<std::string,std::string> with useful functions
+/// wrapper for multimap<string,string> with useful functions
 class Stringmap {
 public:
     
     /// constructor
-    Stringmap(const std::string& s = "");
+    Stringmap(const string& s = "");
     /// copy constructor from another Stringmap
     Stringmap(const Stringmap& m);
     /// destructor
@@ -40,27 +42,27 @@ public:
     
     
     /// insert key/(string)value pair
-    void insert(const std::string& s, const std::string& v);
+    void insert(const string& s, const string& v);
     /// insert key/(double)value
-    void insert(const std::string& s, double d);
+    void insert(const string& s, double d);
     /// retrieve key values
-    std::vector<std::string> retrieve(const std::string& s) const;    
+    vector<string> retrieve(const string& s) const;    
     /// get first key value (string) or default
-    std::string getDefault(const std::string& s, const std::string& d) const;
+    string getDefault(const string& s, const string& d) const;
     /// return number of elements
     unsigned int size() const { return dat.size(); }
     /// serialize to a string
-    std::string toString() const;
+    string toString() const;
     
     /// get first key value (double) or default
-    double getDefault(const std::string& s, double d) const;
+    double getDefault(const string& s, double d) const;
     /// retrieve key values as doubles
-    std::vector<double> retrieveDouble(const std::string& s) const;
+    vector<double> retrieveDouble(const string& s) const;
     /// remove a key
-    void erase(const std::string& s);
+    void erase(const string& s);
     
     /// display to screen
-    void display(std::string linepfx = "") const;
+    void display(string linepfx = "") const;
     
     /// merge data from another stringmap
     void operator+=(const Stringmap& S) { S.mergeInto(*this); }
@@ -68,7 +70,7 @@ public:
     /// convert to RData format
     //RData* toRData() const;
     
-    std::multimap< std::string, std::string > dat;    ///< key-value multimap
+    std::multimap< string, string > dat;    ///< key-value multimap
     
 protected:
     
@@ -85,9 +87,9 @@ public:
     virtual ~StringmapProvider() {}
     
     /// insert key/(string)value pair
-    void insert(const std::string& s, const std::string& v) { Sxtra.insert(s,v); }
+    void insert(const string& s, const string& v) { Sxtra.insert(s,v); }
     /// insert key/(double)value
-    void insert(const std::string& s, double d) { Sxtra.insert(s,d); }
+    void insert(const string& s, double d) { Sxtra.insert(s,d); }
     
     /// provide stringmap from self properties
     Stringmap toStringmap() const {
@@ -97,45 +99,45 @@ public:
     }
     
     /// display
-    void display(std::string linepfx = "") const { toStringmap().display(linepfx); }
+    void display(string linepfx = "") const { toStringmap().display(linepfx); }
     
 protected:
     Stringmap Sxtra;
     virtual Stringmap getProperties() const { return Stringmap(); }
 };
 
-/// wrapper for multimap<std::string,Stringmap> with useful functions
+/// wrapper for multimap<string,Stringmap> with useful functions
 class QFile {
 public:
     
     /// constructor given a string
-    QFile(const std::string& s = "", bool readit = true);
+    QFile(const string& s = "", bool readit = true);
     
     /// insert key/(string)value pair
-    void insert(const std::string& s, const Stringmap& v);
+    void insert(const string& s, const Stringmap& v);
     /// remove a key
-    void erase(const std::string& s);
+    void erase(const string& s);
     /// retrieve values for key
-    std::vector<Stringmap> retrieve(const std::string& s) const;
+    vector<Stringmap> retrieve(const string& s) const;
     /// retrieve first value for key
-    Stringmap getFirst(const std::string& s, const Stringmap& dflt = Stringmap()) const;
+    Stringmap getFirst(const string& s, const Stringmap& dflt = Stringmap()) const;
     /// retrieve all sub-key values
-    std::vector<std::string> retrieve(const std::string& k1, const std::string& k2) const;
+    vector<string> retrieve(const string& k1, const string& k2) const;
     /// retreive sub-key with default
-    std::string getDefault(const std::string& k1, const std::string& k2, const std::string& d) const;
+    string getDefault(const string& k1, const string& k2, const string& d) const;
     /// retrieve sub-key as double with default
-    double getDefault(const std::string& k1, const std::string& k2, double d) const;
+    double getDefault(const string& k1, const string& k2, double d) const;
     /// retrieve all sub-key values as doubles
-    std::vector<double> retrieveDouble(const std::string& k1, const std::string& k2) const;    
+    vector<double> retrieveDouble(const string& k1, const string& k2) const;    
     /// return number of elements
     unsigned int size() const { return dat.size(); }
     /// transfer all data for given key from other QFile
-    void transfer(const QFile& Q, const std::string& k);
+    void transfer(const QFile& Q, const string& k);
     
     /// set output file location
-    void setOutfile(std::string nm) { name = nm; }
+    void setOutfile(string nm) { name = nm; }
     /// commit data to file
-    void commit(std::string outname = "") const;
+    void commit(string outname = "") const;
     /// display to stdout
     void display() const;
     
@@ -144,8 +146,8 @@ public:
 
 protected:
     
-    std::string name;                                ///< name for this object
-    std::multimap< std::string, Stringmap > dat;    ///< key-value multimap
+    string name;                                ///< name for this object
+    std::multimap< string, Stringmap > dat;    ///< key-value multimap
 
 };
 

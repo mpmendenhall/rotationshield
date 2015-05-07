@@ -39,7 +39,7 @@ double InterpolationHelper::eval(const double* x) const {
 
 void InterpolationHelper::setInterpolatorMethod(Interpolator* (*makeInterp)(DataSequence*), unsigned int nDeep) {
     if(nDeep) {
-        for(std::vector<InterpolationHelper*>::iterator it = subInterpolators.begin(); it != subInterpolators.end(); it++)
+        for(vector<InterpolationHelper*>::iterator it = subInterpolators.begin(); it != subInterpolators.end(); it++)
             (*it)->setInterpolatorMethod(makeInterp,nDeep-1);
     } else {
         Interpolator* newInterp = makeInterp(this);
@@ -55,7 +55,7 @@ void InterpolationHelper::setInterpolatorMethod(Interpolator* (*makeInterp)(Data
 void InterpolationHelper::setBoundaryCondition(BoundaryCondition b, unsigned int nDeep) {
     if(!nDeep) bc = b;
     else {
-        for(std::vector<InterpolationHelper*>::iterator it = subInterpolators.begin(); it != subInterpolators.end(); it++)
+        for(vector<InterpolationHelper*>::iterator it = subInterpolators.begin(); it != subInterpolators.end(); it++)
             (*it)->setBoundaryCondition(b, nDeep-1);
     }
 }
@@ -65,7 +65,7 @@ void InterpolationHelper::setupDataGrid(const unsigned int* n0, const unsigned i
     clearSubinterps();
     myData.clear();
     if(n1 == n0+1) {
-        myData = std::vector<double>(*n0);
+        myData = vector<double>(*n0);
     } else {
         for(unsigned int i = 0; i < *n0; i++) {
             subInterpolators.push_back(new InterpolationHelper());
@@ -99,7 +99,7 @@ double& InterpolationHelper::operator[](unsigned int n) {
 void InterpolationHelper::zeroData() {
     if(isBottom()) std::fill(myData.begin(), myData.end(), 0);
     else {
-        for(std::vector<InterpolationHelper*>::iterator it = subInterpolators.begin(); it != subInterpolators.end(); it++)
+        for(vector<InterpolationHelper*>::iterator it = subInterpolators.begin(); it != subInterpolators.end(); it++)
             (*it)->zeroData();
     }
 }
@@ -120,12 +120,12 @@ const InterpolationHelper& InterpolationHelper::getSubHelper(unsigned int nDeep,
     return subInterpolators[n[0]]->getSubHelper(nDeep-1,n+1);
 }
 
-std::vector<InterpolationHelper*> InterpolationHelper::getSubHelpers(unsigned int nDeep) {
-    std::vector<InterpolationHelper*> v;
+vector<InterpolationHelper*> InterpolationHelper::getSubHelpers(unsigned int nDeep) {
+    vector<InterpolationHelper*> v;
     if(!nDeep) v.push_back(this);
     else {
-        for(std::vector<InterpolationHelper*>::iterator it = subInterpolators.begin(); it != subInterpolators.end(); it++) {
-            std::vector<InterpolationHelper*> v2 = (*it)->getSubHelpers(nDeep-1);
+        for(vector<InterpolationHelper*>::iterator it = subInterpolators.begin(); it != subInterpolators.end(); it++) {
+            vector<InterpolationHelper*> v2 = (*it)->getSubHelpers(nDeep-1);
             v.insert(v.end(), v2.begin(), v2.end());
         }
     }
@@ -142,7 +142,7 @@ double InterpolationHelper::valueAt(int i, void* xopts) const {
 }
 
 void InterpolationHelper::clearSubinterps() {
-    for(std::vector<InterpolationHelper*>::iterator it = subInterpolators.begin(); it != subInterpolators.end(); it++)
+    for(vector<InterpolationHelper*>::iterator it = subInterpolators.begin(); it != subInterpolators.end(); it++)
         delete *it;
     subInterpolators.clear();
 }
@@ -155,7 +155,7 @@ void InterpolationHelper::recalc_structure(bool recurse) {
         cum_sum_dpts.push_back(myData.size());
     } else {
         npts = subInterpolators.size();
-        for(std::vector<InterpolationHelper*>::iterator it = subInterpolators.begin(); it != subInterpolators.end(); it++) {
+        for(vector<InterpolationHelper*>::iterator it = subInterpolators.begin(); it != subInterpolators.end(); it++) {
             if(recurse) (*it)->recalc_structure(true);
             cum_sum_dpts.push_back(cum_sum_dpts.back()+(*it)->n_pts());
         }
@@ -163,7 +163,7 @@ void InterpolationHelper::recalc_structure(bool recurse) {
 }
 
 unsigned int InterpolationHelper::from_flat_index(unsigned int& n) const {
-    std::vector<unsigned int>::const_iterator it = std::upper_bound(cum_sum_dpts.begin(), cum_sum_dpts.end(), n);
+    vector<unsigned int>::const_iterator it = std::upper_bound(cum_sum_dpts.begin(), cum_sum_dpts.end(), n);
     assert(it != cum_sum_dpts.end());
     unsigned int m = it-cum_sum_dpts.begin()-1;
     assert(m<cum_sum_dpts.size());

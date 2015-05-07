@@ -35,7 +35,7 @@ public:
     /// set up n1-n0 - dimensional data grid with (*n0), ... points in each dimension
     void setupDataGrid(const unsigned int* n0, const unsigned int* n1);
     /// convenience form using std::vector
-    void setupDataGrid(const std::vector<unsigned int>& n) { setupDataGrid(&*n.begin(), &*n.end()); }
+    void setupDataGrid(const vector<unsigned int>& n) { setupDataGrid(&*n.begin(), &*n.end()); }
     
     
     /// direct access to point by multi-dimensional index
@@ -54,7 +54,7 @@ public:
     /// directly address sub-InterpolationHelper
     const InterpolationHelper& getSubHelper(unsigned int nDeep, const unsigned int* n) const;
     /// get a list of sub-interpolators at given depth
-    std::vector<InterpolationHelper*> getSubHelpers(unsigned int nDeep);
+    vector<InterpolationHelper*> getSubHelpers(unsigned int nDeep);
     /// get interpolator
     Interpolator* getInterpolator() { return myInterpolator; }
     
@@ -83,9 +83,9 @@ protected:
     unsigned int from_flat_index(unsigned int& n) const;
     
     Interpolator* myInterpolator;
-    std::vector<InterpolationHelper*> subInterpolators;    ///< sub-interpolators if not lowest dimension
-    std::vector<double> myData;                            ///< internal list of data points if lowest dimension
-    std::vector<unsigned int> cum_sum_dpts;                ///< cumulative sum of datapoints in underlying structures
+    vector<InterpolationHelper*> subInterpolators;    ///< sub-interpolators if not lowest dimension
+    vector<double> myData;                            ///< internal list of data points if lowest dimension
+    vector<unsigned int> cum_sum_dpts;                ///< cumulative sum of datapoints in underlying structures
 };
 
 

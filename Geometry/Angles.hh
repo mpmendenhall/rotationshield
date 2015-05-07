@@ -23,6 +23,7 @@
 #define ANGLES_HH
 
 #include <vector>
+using std::vector;
 #include <set>
 #include <cmath>
 #include <iostream>
@@ -59,7 +60,7 @@ public:
     void subtract_interval(double a, double b) { subtract_interval(angular_interval(a,b)); }
     
     /// get list of intervals in set, optionally merging wrap-around
-    std::vector<angular_interval> get_intervals(bool merge_wrap = true) const;
+    vector<angular_interval> get_intervals(bool merge_wrap = true) const;
 
 protected:
     std::set<angular_interval> endpts;  ///< interval endpoints

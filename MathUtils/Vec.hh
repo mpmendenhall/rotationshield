@@ -28,6 +28,7 @@
 #include <cassert>
 #include <iostream>
 #include <vector>
+using std::vector;
 
 /// Fixed-length vector arithmetic class
 template<unsigned int N, typename T>
@@ -366,8 +367,8 @@ Vec<2,T> polarVec(T r, T th) {
 
 /// Vec to vector<double>
 template<unsigned int N, typename T>
-std::vector<double> vec2doublevec(const Vec<N,T>& v) {
-    std::vector<double> dv(N);
+vector<double> vec2doublevec(const Vec<N,T>& v) {
+    vector<double> dv(N);
     for(unsigned int i=0; i<N; i++) dv[i] = (double)v[i];
     return dv;
 }

@@ -54,7 +54,7 @@ protected:
     /// update one set
     double update_set(unsigned int i);
     
-    std::vector<solvedSet> mySets;      ///< interacting systems
+    vector<solvedSet> mySets;      ///< interacting systems
     
 };
 

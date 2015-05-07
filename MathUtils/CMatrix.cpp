@@ -155,27 +155,27 @@ double& CMatrix::operator[](unsigned int i) {
     return data[i];
 }
 
-std::vector< complex<double> >& CMatrix::getKData() {
+vector< complex<double> >& CMatrix::getKData() {
     if(!has_kspace)
         calculateKData();
     has_realspace = false; // messing with kspace data invalidates real data
     return kdata;
 }
 
-const std::vector< complex<double> >& CMatrix::getKData() const {
+const vector< complex<double> >& CMatrix::getKData() const {
     if(!has_kspace)
         calculateKData();
     return kdata;
 }
 
-std::vector<double>& CMatrix::getRealData() {
+vector<double>& CMatrix::getRealData() {
     if(!has_realspace)
         calculateRealData();
     has_kspace = false; // messing with real space data invalidates kspace data
     return data;
 }
 
-const std::vector<double>& CMatrix::getRealData() const {
+const vector<double>& CMatrix::getRealData() const {
     if(!has_realspace)
         calculateRealData();
     return data;
@@ -185,8 +185,8 @@ const std::vector<double>& CMatrix::getRealData() const {
 
 
 double CMatrix::norm_L2() const {
-    const std::vector< complex<double> >& v = getKData();
-    std::vector<double> vn;
+    const vector< complex<double> >& v = getKData();
+    vector<double> vn;
     for(unsigned int i=0; i<v.size(); i++)
         vn.push_back(abs(v[i]));
     return *std::max_element(vn.begin(),vn.end());
@@ -195,7 +195,7 @@ double CMatrix::norm_L2() const {
 
 double CMatrix::det() const {
     if(!M) return 0;
-    const std::vector< complex<double> >& v = getKData();
+    const vector< complex<double> >& v = getKData();
     double d = v[0].real();
     for(unsigned int i=1; i<v.size(); i++)
         d *= norm(v[i]);
@@ -264,13 +264,13 @@ CMatrix& CMatrix::operator+=(const CMatrix& m) {
     assert(m.has_realspace || m.has_kspace);
     
     if(has_kspace && (m.has_kspace || !has_realspace)) {
-        const std::vector< complex<double> >& kd = m.getKData();
+        const vector< complex<double> >& kd = m.getKData();
         for(unsigned int i=0; i<kdata.size(); i++)
             kdata[i] += kd[i];
     } else has_kspace = false;
     
     if(has_realspace && (m.has_realspace || !has_kspace)) {
-        const std::vector<double>& d = m.getRealData();
+        const vector<double>& d = m.getRealData();
         for(unsigned int i=0; i<data.size(); i++)
             data[i] += d[i];
     } else has_realspace = false;
@@ -293,13 +293,13 @@ CMatrix& CMatrix::operator-=(const CMatrix& m) {
     assert(m.has_realspace || m.has_kspace);
     
     if(has_kspace && (m.has_kspace || !has_realspace)) {
-        const std::vector< complex<double> >& kd = m.getKData();
+        const vector< complex<double> >& kd = m.getKData();
         for(unsigned int i=0; i<kdata.size(); i++)
             kdata[i] -= kd[i];
     } else has_kspace = false;
     
     if(has_realspace && (m.has_realspace || !has_kspace)) {
-        const std::vector<double>& d = m.getRealData();
+        const vector<double>& d = m.getRealData();
         for(unsigned int i=0; i<data.size(); i++)
             data[i] -= d[i];
     } else has_realspace = false;
@@ -345,8 +345,8 @@ CMatrix& CMatrix::operator*=(const CMatrix& m) {
     
     assert(m.nRows()==nRows());
     
-    std::vector< complex<double> >& kd = getKData();
-    const std::vector< complex<double> >& mkd = m.getKData();
+    vector< complex<double> >& kd = getKData();
+    const vector< complex<double> >& mkd = m.getKData();
     for(unsigned int i=0; i<kd.size(); i++) kd[i] *= mkd[i];
 
     return *this;
@@ -362,7 +362,7 @@ const CMatrix CMatrix::operator*(const CMatrix& m) const {
 const VarVec<double> CMatrix::operator*(const VarVec<double>& v) const {
     
     assert(M>0 && v.size()==M);
-    const std::vector< complex<double> >& kd = getKData();    // make sure to do this first, since we need ffter's storage space after
+    const vector< complex<double> >& kd = getKData();    // make sure to do this first, since we need ffter's storage space after
     
     cmatrix_fft& ffter = cmatrix_fft::get_ffter(M);
     ffter.realspace[0] = v[0];
@@ -381,7 +381,7 @@ const VarVec<double> CMatrix::operator*(const VarVec<double>& v) const {
 
 
 CMatrix& CMatrix::invert() {
-    std::vector< complex<double> >& kd = getKData();
+    vector< complex<double> >& kd = getKData();
     for(unsigned int i=0; i<kdata.size(); i++)
         kd[i] = 1./kd[i];
     has_realspace = false;

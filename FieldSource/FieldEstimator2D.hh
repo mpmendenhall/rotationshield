@@ -41,8 +41,8 @@ public:
     /// Add a "line source" perpendicular to plane of interest
     void addsource(const vec2& v, double j) { sources.push_back(v); currents.push_back(j); }
 protected:
-    std::vector<vec2> sources;
-    std::vector<double> currents;
+    vector<vec2> sources;
+    vector<double> currents;
 };
 
 /// Field estimator based off 3D field source

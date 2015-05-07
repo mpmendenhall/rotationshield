@@ -201,7 +201,7 @@ void Integrator::printErrorCodes() {
 
 void Integrator2D::setup_singularities(double a, double b) {
     singularities.clear();
-    for(std::vector<vec2>::iterator it = xysingularities.begin(); it != xysingularities.end(); it++)
+    for(vector<vec2>::iterator it = xysingularities.begin(); it != xysingularities.end(); it++)
         singularities.insert((*it)[0]);
     Integrator::setup_singularities(a,b);
 }
@@ -240,7 +240,7 @@ double Integrator2D::integrate2D(double (*f)(vec2,void*), vec2 ll, vec2 ur, void
     
     setup_singularities(ll[0],ur[0]); // TODO better selection of y singularities
     yIntegrator.singularities.clear();
-    for(std::vector<vec2>::iterator it = xysingularities.begin(); it != xysingularities.end(); it++)
+    for(vector<vec2>::iterator it = xysingularities.begin(); it != xysingularities.end(); it++)
         yIntegrator.singularities.insert((*it)[1]);
     
     return Integrator::integrate(&xslice_integral, ll[0], ur[0], &p);
@@ -299,7 +299,7 @@ mvec Integrator2D::integrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, void* pa
     
     setup_singularities(ll[0],ur[0]); // TODO better selection of y singularities
     yIntegrator.singularities.clear();
-    for(std::vector<vec2>::iterator it = xysingularities.begin(); it != xysingularities.end(); it++)
+    for(vector<vec2>::iterator it = xysingularities.begin(); it != xysingularities.end(); it++)
         yIntegrator.singularities.insert((*it)[1]);
     
     p.y0 = ll[1];
@@ -336,7 +336,7 @@ angular_interval clip_interval(double l, double r) {
 }
 
 // determine angular clipping
-std::vector<angular_interval> rectangle_clip(vec2 c, vec2 ll, vec2 ur, double r) {
+vector<angular_interval> rectangle_clip(vec2 c, vec2 ll, vec2 ur, double r) {
     
      Angular_Interval_Set AIS;
     AIS.add_interval(0,2*M_PI);
@@ -375,11 +375,11 @@ double polar_slice_v_integral(double x, void* params) {
     p2.yIntegrator = p->yIntegrator;
     p2.c = p->c;
     
-    std::vector<angular_interval> ii = rectangle_clip(p->c, p->ll, p->ur, x);
+    vector<angular_interval> ii = rectangle_clip(p->c, p->ll, p->ur, x);
     if(!ii.size()) return 0;
     
     mvec v;
-    for(std::vector<angular_interval>::iterator it = ii.begin(); it != ii.end(); it++) {
+    for(vector<angular_interval>::iterator it = ii.begin(); it != ii.end(); it++) {
         mvec vi = p->yIntegrator->integrate(&polar_slice_v, it->th0, it->th1, &p2);
         if(it==ii.begin()) v = vi;
         else v += vi;

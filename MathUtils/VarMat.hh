@@ -325,7 +325,7 @@ void VarMat<T>::subinvert(unsigned int n) {
     subinvert(n+1);
     
     // temporary space allocation
-    std::vector<T> subvec = std::vector<T>(M-n-1);
+    vector<T> subvec = vector<T>(M-n-1);
     
     // first column gets multiplied by inverting subVarMat
     for(unsigned int r=n+1; r<M; r++)

@@ -91,9 +91,9 @@ vec3 Plane::zrotate(const vec3& v, double th) {
     return vec3( cs*v[0]-sn*v[1], sn*v[0]+cs*v[1], v[2] );
 }
 
-std::vector<Plane> Plane::subdivide(unsigned int nX, unsigned int nZ) const {
+vector<Plane> Plane::subdivide(unsigned int nX, unsigned int nZ) const {
     assert(nX>0 && nZ>0);
-    std::vector<Plane> v = std::vector<Plane>();
+    vector<Plane> v = vector<Plane>();
     for(unsigned int x=0; x<nX; x++)
         for(unsigned int z=0; z<nZ; z++)
             v.push_back( Plane(o - dx*(0.5 - (double(x)+0.5)/nX) - dz*(0.5 - (double(z)+0.5)/nZ), dx/nX, dz/nZ) );

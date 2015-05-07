@@ -51,7 +51,7 @@ public:
     const BlockCMat& calc_pseudo_inverse(double epsilon = 0);
     
     /// return sorted list of singular values, for threshold determination
-    const std::vector<double>& singular_values() const { return svalues.getData(); }
+    const vector<double>& singular_values() const { return svalues.getData(); }
     
     /// Dump binary data to file
     void writeToFile(std::ostream& o) const;
@@ -72,7 +72,7 @@ protected:
     
     unsigned int M, N, Mc, Ms;
 #ifdef WITH_LAPACKE
-    std::vector< LAPACKE_Matrix_SVD<double,lapack_complex_double>* > block_SVDs;
+    vector< LAPACKE_Matrix_SVD<double,lapack_complex_double>* > block_SVDs;
 #endif
     VarVec<double> svalues;     ///< sorted singular values
     VarVec<unsigned int> sloc;  ///< location of sorted singular-values in sub-matrix

@@ -37,8 +37,8 @@
 
 Stringmap fieldCell::getInfo() const {
     Stringmap m;
-    m.insert(std::string("ll"),vtos(vec2doublevec<3,double>(ll)));
-    m.insert(std::string("ur"),vtos(vec2doublevec<3,double>(ur)));
+    m.insert(string("ll"),vtos(vec2doublevec<3,double>(ll)));
+    m.insert(string("ur"),vtos(vec2doublevec<3,double>(ur)));
     m.insert("nx",nx);
     m.insert("ny",ny);
     m.insert("nz",nz);
@@ -150,7 +150,7 @@ void mi_buildCosThetaExit(StreamInteractor* S) {
 
 void mi_Solve(StreamInteractor* S) {
     SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
-    std::string savenm = S->popString();
+    string savenm = S->popString();
     if(savenm=="none") savenm = "";
     SC->solve(savenm);
     SC->calculate_result();
@@ -327,7 +327,7 @@ void mi_punchHole(StreamInteractor* S) {
     float y = S->popFloat();
     float x = S->popFloat();
     
-    const std::vector<ReactiveSet*>& v = SC->RSC->getSets();
+    const vector<ReactiveSet*>& v = SC->RSC->getSets();
     if(!v.size()) {
         std::cout << "No previous surface defined to puncture!\n";
         return;
@@ -541,7 +541,7 @@ void SystemConfiguration::initReactiveSet(unsigned int nPhi) {
 }
 
 
-void SystemConfiguration::solve(const std::string& cfile) {
+void SystemConfiguration::solve(const string& cfile) {
     assert(RSC); if(!RSC) return;
     if(SS) delete SS;
     SS = SymmetricSolver::cachedSolve(*RSC, cfile.size()?basedir+"/"+cfile:"");
@@ -565,9 +565,9 @@ DVFunc1<2,double>* SystemConfiguration::adaptSurface(DVFunc1<2,double>* f, doubl
     return FAS;
 }
 
-void SystemConfiguration::measureFields(const std::string& xpath) const {
+void SystemConfiguration::measureFields(const string& xpath) const {
     // set up output files
-    std::string fieldspath = basedir+"/"+xpath;
+    string fieldspath = basedir+"/"+xpath;
     makePath(fieldspath);
     std::ofstream fieldsout;
     std::ofstream statsout;
@@ -587,7 +587,7 @@ void SystemConfiguration::measureFields(const std::string& xpath) const {
     statsout.close();
 }
 
-void SystemConfiguration::writeInfo(const std::string& xpath) const {
+void SystemConfiguration::writeInfo(const string& xpath) const {
     QFile qout;
     qout.insert("cell",cell.getInfo());
     qout.commit(basedir+"/"+xpath+"/GeomInfo.txt");

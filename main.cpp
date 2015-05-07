@@ -41,7 +41,7 @@ void hypercube_rotator() {
     
     double ftime = 15.e-3; // min frame time in s
     srand(time(NULL));
-    std::vector<double> vrot;
+    vector<double> vrot;
     for(unsigned int i=1; i<N; i++)
         for(unsigned int j=0; j<i; j++)
             vrot.push_back(randunif(-2./sqrt(N),2./sqrt(N)));
@@ -103,7 +103,7 @@ void mi_clearcolor(StreamInteractor* S) {
     vsr::stopRecording();
 }
 
-void menuSystem(std::deque<std::string> args = std::deque<std::string>()) {
+void menuSystem(deque<string> args = deque<string>()) {
     
     InputRequester ncube("Hyercube visualization test", &mi_ncube);
     ncube.addArg("n dim","3");
@@ -159,7 +159,7 @@ void menuSystem(std::deque<std::string> args = std::deque<std::string>()) {
     OM.addChoice(&selfTests,"test",SELECTOR_HIDDEN);
     OM.addChoice(&SC.toggleUpdateVis,"tv",SELECTOR_HIDDEN);
     
-    std::stack<std::string> stack;
+    stack<string> stack;
     OM.mydeque = &args;
     OM.mystack = &stack;
     OM.doIt();
@@ -168,14 +168,14 @@ void menuSystem(std::deque<std::string> args = std::deque<std::string>()) {
 }
 
 void* menuThread(void* args) {
-    std::deque<std::string>& inArgs = *(std::deque<std::string>*)args;
+    deque<string>& inArgs = *(deque<string>*)args;
     menuSystem(inArgs);
     vsr::set_kill();
     return NULL;
 }
 
 int main(int argc, char *argv[]) {
-    std::deque<std::string> args;
+    deque<string> args;
     for(int i=1; i<argc; i++)
         args.push_back(argv[i]);
     #ifdef WITH_OPENGL

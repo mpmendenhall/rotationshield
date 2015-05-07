@@ -127,7 +127,7 @@ void ReactiveUnitSet::add_DF_group(unsigned int N) {
 
 ReactiveSetCombiner::~ReactiveSetCombiner() {
     if(ownSets) {
-        for(std::vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++)
+        for(vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++)
             delete *it;
     }
     mySets.clear();
@@ -139,7 +139,7 @@ bool ReactiveSetCombiner::queryInteraction(void* ip) {
         return mySets[ixn_set]->queryInteraction(ip);
     }
     bool did_interact  = false;
-    for(std::vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++)
+    for(vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++)
         did_interact |= (*it)->queryInteraction(ip);
     return did_interact;
 }
@@ -156,7 +156,7 @@ void ReactiveSetCombiner::addSet(ReactiveSet* R) {
 
 void ReactiveSetCombiner::setInteractionDF(unsigned int DF, double v) {
     if(DF >= nDF()) {
-        for(std::vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++)
+        for(vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++)
             (*it)->setInteractionDF((*it)->nDF(),0);
     } else {
         if(ixn_df < nDF()) {
@@ -180,7 +180,7 @@ void ReactiveSetCombiner::_setDF(unsigned int DF, double v) {
 
 void ReactiveSetCombiner::startInteractionScan() {
     ReactiveSet::startInteractionScan();
-    for(std::vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++)
+    for(vector<ReactiveSet*>::iterator it = mySets.begin(); it != mySets.end(); it++)
         (*it)->startInteractionScan();
 }
 

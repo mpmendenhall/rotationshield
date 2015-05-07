@@ -123,7 +123,7 @@ SymmetricSolver* SymmetricSolver::readFromFile(std::istream& s) {
     return foo;
 }
 
-SymmetricSolver* SymmetricSolver::cachedSolve(ReactiveSet& R, const std::string& fname) {
+SymmetricSolver* SymmetricSolver::cachedSolve(ReactiveSet& R, const string& fname) {
     
     SymmetricSolver* foo = NULL;
     if(!fname.size()) {
@@ -132,7 +132,7 @@ SymmetricSolver* SymmetricSolver::cachedSolve(ReactiveSet& R, const std::string&
         return foo;
     }
     
-    std::string ext_fname = fname + "_" + std::to_string(R.nDF()/R.nPhi) + "_" + std::to_string(R.nPhi) + ".slvdat";
+    string ext_fname = fname + "_" + std::to_string(R.nDF()/R.nPhi) + "_" + std::to_string(R.nPhi) + ".slvdat";
     makePath(ext_fname, true);
     
     std::ifstream ifs(ext_fname.c_str(), std::ifstream::in | std::ifstream::binary);

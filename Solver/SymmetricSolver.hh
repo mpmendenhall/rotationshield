@@ -51,7 +51,7 @@ public:
     /// Read binary data from file
     static SymmetricSolver* readFromFile(std::istream& s);
     /// Read solution from file if available; otherwise, solve; save result to same file
-    static SymmetricSolver* cachedSolve(ReactiveSet& R, const std::string& fname);
+    static SymmetricSolver* cachedSolve(ReactiveSet& R, const string& fname);
 
 #ifdef WITH_LAPACKE
     /// get un-normalized vector of singular values

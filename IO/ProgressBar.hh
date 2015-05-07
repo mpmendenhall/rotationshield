@@ -25,13 +25,14 @@
 
 #include <stdio.h>
 #include <string>
+using std::string;
 
 /// class for printing a progress bar to stdout
 class ProgressBar {
 public:
 
     /// constructor
-    ProgressBar(unsigned int nt, unsigned int nm=1, bool v=true, const std::string& label="");
+    ProgressBar(unsigned int nt, unsigned int nm=1, bool v=true, const string& label="");
     
     /// destructor
     ~ProgressBar() { if(verbose) printf("* Done.\n"); }

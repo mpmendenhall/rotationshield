@@ -31,7 +31,7 @@ using std::vector;
 class MixedSource: public FieldSource {
 public:
     /// Constructor
-    MixedSource(const std::string& nm = "MixedSource"): FieldSource(nm), displayColor(vec3(1.0,0.0,0.0)) {}
+    MixedSource(const string& nm = "MixedSource"): FieldSource(nm), displayColor(vec3(1.0,0.0,0.0)) {}
     
     /// Destructor
     virtual ~MixedSource() { clear(); }

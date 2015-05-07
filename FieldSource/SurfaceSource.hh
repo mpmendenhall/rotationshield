@@ -11,7 +11,7 @@
 class SurfaceSource: public FieldSource {
 public:
     /// constructor
-    SurfaceSource(SurfaceGeometry* SG = NULL, const std::string& nm = "SurfaceSource"):
+    SurfaceSource(SurfaceGeometry* SG = NULL, const string& nm = "SurfaceSource"):
         FieldSource(nm), mySurface(SG), vis_n1(200), vis_n2(200) {}
 
     /// destructor

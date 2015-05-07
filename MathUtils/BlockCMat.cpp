@@ -111,7 +111,7 @@ VarVec<double> BlockCMat_SVD::getRightSVec(unsigned int i) const {
     for(unsigned int m=0; m<M; m++) {
         CMatrix C(Mc);
         C.getKData()[idiag] = sv[m] * (iset ? complex<double>(0,1) : 1);
-        const std::vector<double>& r = C.getRealData();
+        const vector<double>& r = C.getRealData();
         for(unsigned int mc=0; mc<Mc; mc++) v.push_back(r[mc]);
     }
 #endif

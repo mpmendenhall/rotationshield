@@ -67,14 +67,14 @@ public:
     /// destructor
     virtual ~integratingParams() {}
     
-    void* fparams;                     ///< additional arguments for the function being integrated
-    mvec (*f)(double,void *);        ///< pointer to the function being integrated
-    unsigned int axis;                ///< which of the three vector components is currently being integrated
-    unsigned int n_dim;                ///< dimension of return vector
-    std::map<double,mvec> m;        ///< cache for evaluated function points
+    void* fparams;              ///< additional arguments for the function being integrated
+    mvec (*f)(double,void *);   ///< pointer to the function being integrated
+    unsigned int axis;          ///< which of the three vector components is currently being integrated
+    unsigned int n_dim;         ///< dimension of return vector
+    std::map<double,mvec> m;    ///< cache for evaluated function points
     
-    std::string nm;                    ///< name describing integration, for error display
-    static bool verbose;            ///< whether to display pts during integration
+    string nm;             ///< name describing integration, for error display
+    static bool verbose;        ///< whether to display pts during integration
 };
 
 ///    The Integrator class uses gsl_integration_qag()
@@ -127,7 +127,7 @@ protected:
     
     /// set list of interesting singularities
     virtual void setup_singularities(double a, double b);
-    std::vector<double> _singularities;    ///< singularities in integrating range
+    vector<double> _singularities;    ///< singularities in integrating range
     
     Integration_Method myMethod;                    ///< selection of internal integration method
     gsl_integration_workspace* gslIntegrationWS;     ///< needed by GSL integration routines called in integrate()
@@ -161,7 +161,7 @@ public:
     /// performs polar integral around point, clipped to specfied rectangle
     mvec polarIntegrate2D(mvec (*f)(vec2,void*), vec2 ll, vec2 ur, vec2 c, void* params = NULL, double r1 = -666, double r0 = 0);
     
-    std::vector<vec2> xysingularities;    ///< known singularities
+    vector<vec2> xysingularities;    ///< known singularities
     
     /// set integration method
     virtual void setMethod(Integration_Method m) { Integrator::setMethod(m); yIntegrator.setMethod(m); }

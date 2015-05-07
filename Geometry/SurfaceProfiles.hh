@@ -173,7 +173,7 @@ protected:
     /// locate sub-function and position therein
     unsigned int locate(T& l) const {
         assert(mysegs.size());
-        typename std::vector<T>::const_iterator it = std::upper_bound(seg_endpts.begin(), seg_endpts.end(), l*seg_endpts.back());
+        typename vector<T>::const_iterator it = std::upper_bound(seg_endpts.begin(), seg_endpts.end(), l*seg_endpts.back());
         unsigned int i = it-seg_endpts.begin();
         if(!i) i += 1;
         if(it==seg_endpts.end()) i -= 1;
@@ -194,9 +194,9 @@ protected:
     /// wrap a number into [0,1) for periodic function, starting half-way on outside
     T wrap(T x) const { T i; x += 0.5*seg_endpts[1]/seg_endpts.back(); return x>=0 ? modf(x,&i) : 1+modf(x,&i); }
     
-    std::vector< DVFunc1<N,T>* > mysegs;    ///< subsections
-    std::vector<T> seg_endpts;                ///< map from global l to sub-range endpoints
-    std::vector< Vec<N,T> > seg_offsets;    // endpoint offsets for each segment
+    vector< DVFunc1<N,T>* > mysegs;    ///< subsections
+    vector<T> seg_endpts;                ///< map from global l to sub-range endpoints
+    vector< Vec<N,T> > seg_offsets;    // endpoint offsets for each segment
 };
 
 /// Circular-rounded-ends circular slab

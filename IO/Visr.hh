@@ -26,12 +26,14 @@
 #include "Vec.hh"
 #include "Typedefs.hh"
 #include <vector>
+using std::vector;
 #include <deque>
+using std::deque;
 
 namespace vsr {
 
     /// initialize visualization window
-    void initWindow(const std::string& title = "OpenGL Viewer Window");
+    void initWindow(const string& title = "OpenGL Viewer Window");
     /// enter main drawing loop
     void doGlutLoop();
     

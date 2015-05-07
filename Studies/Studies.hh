@@ -63,20 +63,20 @@ public:
     /// adapt a geometry to current field source
     DVFunc1<2,double>* adaptSurface(DVFunc1<2,double>* f, double pfixed, bool useTotal = false) const;
     /// solve surface interaction system
-    void solve(const std::string& cfile = "");
+    void solve(const string& cfile = "");
     /// calculate applied response
     void calculate_result();
     
     /// measure fields, writing to given output file
-    void measureFields(const std::string& xpath="") const;
+    void measureFields(const string& xpath="") const;
     /// write measurement info to file at basedir/xpath/GeomInfo.txt
-    void writeInfo(const std::string& xpath="") const;
+    void writeInfo(const string& xpath="") const;
     
     /// display singular solution
     void add_singular_state(unsigned int i, double c);
     
     
-    std::string basedir;                ///< base directory for IO operations
+    string basedir;                ///< base directory for IO operations
     MagRSCombiner* RSC;                 ///< reacting boundary condition surfaces
     MagRSCombiner* PTB;                 ///< perturbation reaction
     MagExtField* IncidentSource;        ///< incident field source

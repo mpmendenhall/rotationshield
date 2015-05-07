@@ -20,7 +20,7 @@
 
 #include "SMExcept.hh"
 
-SMExcept::SMExcept(std::string tp): std::exception(), Stringmap() {
+SMExcept::SMExcept(string tp): std::exception(), Stringmap() {
     insert("type",tp);
 }
 

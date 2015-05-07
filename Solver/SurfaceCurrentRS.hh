@@ -45,7 +45,7 @@ public:
 class SurfaceCurrentRS: public SurfaceCurrentSource, public InterpolatingRS2D {
 public:
     /// constructor
-    SurfaceCurrentRS(SurfaceGeometry* SG, unsigned int nph, unsigned int nz, const std::string& nm = "SurfaceCurrentRS");
+    SurfaceCurrentRS(SurfaceGeometry* SG, unsigned int nph, unsigned int nz, const string& nm = "SurfaceCurrentRS");
     
     //===================================== ReactiveSet subclass
     /// respond to interaction protocol; return whether protocol recognized
@@ -82,7 +82,7 @@ protected:
     
     unsigned int ixn_el;                        ///< interacting element currently being probed
     
-    std::vector<SurfaceI_Response> sdefs;       ///< surface response definitions at each site
+    vector<SurfaceI_Response> sdefs;       ///< surface response definitions at each site
 };
 
 #endif

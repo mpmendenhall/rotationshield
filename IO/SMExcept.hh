@@ -30,13 +30,13 @@
 class SMExcept: public std::exception, public Stringmap {
 public:
     /// constructor
-    SMExcept(std::string tp);
+    SMExcept(string tp);
     /// destructor
     ~SMExcept() throw() {}
     /// display error
     virtual const char* what() const throw();
     /// string for holding error message
-    mutable std::string msg;
+    mutable string msg;
 };
 
 #endif

@@ -23,6 +23,7 @@
 #define INTERPOLATOR_HH
 
 #include <vector>
+using std::vector;
 #include <cassert>
 #include <stdio.h>
 #include <cmath>
@@ -86,7 +87,7 @@ public:
         printf("(%i)\n",npts);
     }
 protected:    
-    std::vector<double> pts;    ///< internal list of points
+    vector<double> pts;    ///< internal list of points
 };
 
 /// generic interpolator for intermediate points in a sequence
@@ -191,7 +192,7 @@ public:
     /// data retreival
     virtual double valueAt(int i, void* xopts) const { return myInterpolators[coerce(i)]->eval((const double*)xopts); }
 protected:
-    std::vector<Interpolator*> myInterpolators; ///< interpolators in sequence
+    vector<Interpolator*> myInterpolators; ///< interpolators in sequence
 };
 
 
