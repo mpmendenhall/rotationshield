@@ -85,7 +85,7 @@ public:
     fieldCell cell;                     ///< field measurement cell
     SymmetricSolver* SS;                ///< system solver
     CosThetaBuilder CTB;                ///< cos theta field coil builder
-    
+    bool updateVis = true;              ///< whether to update visualization
     
     
     //------------------------------------
@@ -104,6 +104,7 @@ public:
     InputRequester buildCosThetaExit;
     InputRequester addRingCurrent;
     InputRequester symmetrizeField;
+    InputRequester toggleUpdateVis;
     OptionsMenu OMfieldsrc;
     
     InputRequester setPhi;

@@ -114,11 +114,11 @@ class StudySetup:
         os.system("mkdir -p "+self.logdir)
         
     def make_cmd(self, rshield="RotationShield"):
-        cmd = "dir %s field"%(self.outfl)
+        cmd = "dir %s tv field"%(self.outfl)
         for f in self.fields:
             cmd += " " + f.make_cmd()
         
-        cmd += " x bound n %i"%(self.nPhi)
+        cmd += " x tv tv bound n %i"%(self.nPhi)
         npert = 0
         for s in self.shields:
             cmd += " " + s.make_cmd()
@@ -134,7 +134,7 @@ class StudySetup:
         cmd += " x"
         if self.sng_ep is not None:
             cmd += " ep %g"%self.sng_ep
-        cmd += " solve %s"%(self.solfl)
+        cmd += " tv solve %s"%(self.solfl)
         if npert:
             cmd += " ptb"
         cmd += " meas x"

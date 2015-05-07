@@ -82,6 +82,12 @@ void mi_outDir(StreamInteractor* S) {
 
 //-------------------------------------------
 
+void mi_toggleUpdateVis(StreamInteractor* S) {
+    SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
+    SC->updateVis = !SC->updateVis;
+    if(SC->updateVis) SC->TotalField->visualize();
+}
+
 void mi_addLineCurrent(StreamInteractor* S) {
     SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
     float j = S->popFloat();
@@ -93,7 +99,7 @@ void mi_addLineCurrent(StreamInteractor* S) {
     float sx = S->popFloat();
     
     SC->IncidentSource->addsource(new LineSource(vec3(sx,sy,sz), vec3(ex,ey,ez), j));
-    SC->TotalField->visualize();
+    if(SC->updateVis) SC->TotalField->visualize();
 }
 
 void mi_addRingCurrent(StreamInteractor* S) {
@@ -103,7 +109,7 @@ void mi_addRingCurrent(StreamInteractor* S) {
     float z = S->popFloat();
     
     SC->IncidentSource->loop(z,r,j);
-    SC->TotalField->visualize();
+    if(SC->updateVis) SC->TotalField->visualize();
 }
 
 void mi_symmetrizeField(StreamInteractor* S) {
@@ -116,7 +122,7 @@ void mi_symmetrizeField(StreamInteractor* S) {
     SymmetrizedSource* SS = new SymmetrizedSource(MS,p>0);
     SC->IncidentSource->clear();
     SC->IncidentSource->addsource(SS);
-    SC->TotalField->visualize();
+    if(SC->updateVis) SC->TotalField->visualize();
 }
 
 void mi_addUnifB(StreamInteractor* S) {
@@ -130,14 +136,14 @@ void mi_addUnifB(StreamInteractor* S) {
 void mi_ClearIncident(StreamInteractor* S) {
     SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
     SC->IncidentSource->clear();
-    SC->TotalField->visualize();
+    if(SC->updateVis) SC->TotalField->visualize();
 }
 
 void mi_buildCosThetaExit(StreamInteractor* S) {
     SystemConfiguration* SC = dynamic_cast<SystemConfiguration*>(S);
     SC->CTB.buildCoil(*SC->IncidentSource);
     S->mydeque->push_front(NameSelector::exit_control);
-    SC->TotalField->visualize();
+    if(SC->updateVis) SC->TotalField->visualize();
 }
 
 //---------------------------------------------
@@ -227,7 +233,7 @@ void mi_addTube(StreamInteractor* S) {
     RS->point_ixn = false;
     SC->RSC->addSet(RS);
     
-    SC->TotalField->visualize();
+    if(SC->updateVis) SC->TotalField->visualize();
 }
 
 void mi_addSlab(StreamInteractor* S) {
@@ -247,7 +253,7 @@ void mi_addSlab(StreamInteractor* S) {
     RS->point_ixn = false;
     SC->RSC->addSet(RS);
     
-    SC->TotalField->visualize();
+    if(SC->updateVis) SC->TotalField->visualize();
 }
 
 void mi_addWiggleSlab(StreamInteractor* S) {
@@ -269,7 +275,7 @@ void mi_addWiggleSlab(StreamInteractor* S) {
     RS->point_ixn = false;
     SC->RSC->addSet(RS);
     
-    SC->TotalField->visualize();
+    if(SC->updateVis) SC->TotalField->visualize();
 }
 
 void mi_addBall(StreamInteractor* S) {
@@ -288,7 +294,7 @@ void mi_addBall(StreamInteractor* S) {
     RS->point_ixn = false;
     SC->RSC->addSet(RS);
     
-    SC->TotalField->visualize();
+    if(SC->updateVis) SC->TotalField->visualize();
 }
 
 void mi_addTorus(StreamInteractor* S) {
@@ -309,7 +315,7 @@ void mi_addTorus(StreamInteractor* S) {
     RS->point_ixn = false;
     SC->RSC->addSet(RS);
     
-    SC->TotalField->visualize();
+    if(SC->updateVis) SC->TotalField->visualize();
 }
 
 //---------------------------------------------
@@ -350,7 +356,8 @@ void mi_equilibratePtb(StreamInteractor* S) {
     MQ.addSet(SC->RSC, SC->SS);
     MQ.addSet(SC->PTB, &GS);
     while(MQ.step() > 1e-6)
-        SC->TotalField->visualize();
+        if(SC->updateVis)
+            SC->TotalField->visualize();
 }
 
 //---------------------------------------------
@@ -381,6 +388,7 @@ clearIncident("Remove all field sources", &mi_ClearIncident, this),
 buildCosThetaExit("Build coil and exit", &mi_buildCosThetaExit, this),
 addRingCurrent("Add ring current", &mi_addRingCurrent, this),
 symmetrizeField("(Anti)Symmetrize field", &mi_symmetrizeField, this),
+toggleUpdateVis("Toggle visualization updating", &mi_toggleUpdateVis, this),
 OMfieldsrc("Field Source Options"),
 setPhi("Set rotational symmetry grid", &mi_setPhi, this),
 addSlab("Add circular slab", &mi_addSlab, this),
