@@ -21,7 +21,7 @@ public:
     virtual double dl(double x) const { return deriv(x).mag(); }
     
     /// length corresponding to x range
-    virtual double length(double x0, double x1) const;
+    virtual double length(double x0 = 0, double x1 = 1) const;
         
     /// whether curve is closed
     virtual bool isClosed() const { return false; }
@@ -55,9 +55,9 @@ public:
     virtual bool isClosed() const { return true; }
     
 protected:
-    vec3 x0;            /// center
-    vec3 a1;            /// major axis
-    vec3 a2;            /// minor axis
+    vec3 x0;            ///< center
+    vec3 a1;            ///< first axis (position at x=0)
+    vec3 a2;            ///< second axis (position at x=1/4)
 };
 
 /// Circle, as special case of ellipse
@@ -67,9 +67,11 @@ public:
     CircleCurve(vec3 xx0, vec3 dx);
     /// evaluate differential pathlength at position
     virtual double dl(double) const { return 2*M_PI*r; }
+    /// length corresponding to x range
+    virtual double length(double x0 = 0, double x1 = 1) const { return (x1-x0)*2*M_PI*r; }
     
 protected:
-    double r;
+    double r;           ///< radius
 };
 
 #endif

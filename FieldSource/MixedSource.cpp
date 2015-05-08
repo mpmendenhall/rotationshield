@@ -78,6 +78,10 @@ void MixedSource::arc(vec3 start, vec3 end, double j, int nsegs) {
 
 void MixedSource::loop(double z, double r, double j, int nsides) {
     bool prevrot = mySymmetry.rotation || !sources.size();
+    
+    // refine r for equal area of polygon and circle
+    r *= sqrt(M_PI/(nsides*sin(M_PI/nsides)*cos(M_PI/nsides)));
+    
     vec3 v0,v1;
     v0[2] = v1[2] = z;
     v0[0] = r; v0[1] = 0;
@@ -89,6 +93,7 @@ void MixedSource::loop(double z, double r, double j, int nsides) {
         addsource(new LineSource(v0,v1,j));
         v0 = v1;
     }
+    
     mySymmetry.rotation = prevrot; // loop preserved rotational symmetry
 }
 

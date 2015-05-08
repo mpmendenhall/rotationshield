@@ -109,11 +109,14 @@ void mi_addRingCurrent(StreamInteractor* S) {
     float r = S->popFloat();
     float z = S->popFloat();
     
-    CircleCurve* C = new CircleCurve(vec3(0,0,z), vec3(0,0,r));
-    CurveSource* CS = new CurveSource(C,j);
-    CS->ownsCurve = true;
-    SC->IncidentSource->addsource(CS);
-    //SC->IncidentSource->loop(z,r,j);
+    if(false) {
+        CircleCurve* C = new CircleCurve(vec3(0,0,z), vec3(0,0,r));
+        CurveSource* CS = new CurveSource(C,j);
+        CS->ownsCurve = true;
+        SC->IncidentSource->addsource(CS);
+    } else {
+        SC->IncidentSource->loop(z,r,j);
+    }
     
     if(SC->updateVis) SC->TotalField->visualize();
 }

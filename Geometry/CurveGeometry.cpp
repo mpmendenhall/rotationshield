@@ -44,6 +44,7 @@ CircleCurve::CircleCurve(vec3 xx0, vec3 dx): EllipseCurve(xx0, vec3(), vec3()), 
     double m1 = fabs(dx[1]);
     double m2 = fabs(dx[2]);
     
+    // TODO check consistency of cross-products signs
     if(m0 > m1) {
         if(m1 > m2) a1 = vec3(-dx[1],dx[0],0);
         else a1 = vec3(-dx[2],0,dx[0]);
